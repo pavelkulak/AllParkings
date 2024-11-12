@@ -9,7 +9,6 @@ const path = require('path');
 const { PORT } = process.env;
 
 const tokensRouter = require('./routers/token.router');
-
 const authRouter = require('./routers/authRouter');
 
 const parkingLotsRouter = require('./routers/parkingLots.router');

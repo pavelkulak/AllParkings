@@ -6,9 +6,11 @@ import { refreshToken } from "./redux/thunkActions";
 import SignIn from "./components/auth/SignIn";
 import SignUp from "./components/auth/SignUp";
 import ProtectedRoute from "./components/HOC/ProtectedRoute";
+import "./App.css";
 import ParkingConstructor from "./components/constructor/ParkingConstructor";
 import CreateParkingForm from "./components/parking/CreateParkingForm";
 import ProfilePage from "./components/pages/ProfilePage";
+
 
 function App() {
   const dispatch = useAppDispatch();
@@ -30,7 +32,7 @@ function App() {
         {
           path: '/',
           element: (
-            <ProtectedRoute isAllowed={!!user}>
+            <ProtectedRoute isAllowed={!!user} user={null}>
               <div>Защищенная страница</div>
             </ProtectedRoute>
           ),
