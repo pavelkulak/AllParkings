@@ -4,9 +4,14 @@ import axiosInstance from '../services/axiosInstance';
 
 export const refreshToken = createAsyncThunk<AuthResponse, void>(
   'auth/refreshToken',
-  async () => {
-    const response = await axiosInstance.get<AuthResponse>('/tokens/refresh');
-    return response.data;
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get<AuthResponse>('/tokens/refresh');
+      console.log('Refresh token response:', response.data);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue('Ошибка обновления токена');
+    }
   }
 );
 
@@ -28,7 +33,11 @@ export const signUp = createAsyncThunk<AuthResponse, RegisterCredentials>(
 
 export const signOut = createAsyncThunk<void, void>(
   'auth/signOut',
-  async () => {
-    await axiosInstance.post('auth/signout');
+  async (_, { rejectWithValue }) => {
+    try {
+      await axiosInstance.post('auth/signout');
+    } catch (error) {
+      return rejectWithValue('Ошибка при выходе из системы');
+    }
   }
 ); 

@@ -69,11 +69,19 @@ const authSlice = createSlice({
         state.error = action.error.message ?? 'Unknown error';
       })
       // Sign Out
+      .addCase(signOut.pending, (state) => {
+        state.status = 'loading';
+      })
       .addCase(signOut.fulfilled, (state) => {
         state.status = 'idle';
         state.user = null;
         state.accessToken = '';
+        state.error = null;
         setAccessToken('');
+      })
+      .addCase(signOut.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload as string;
       });
   },
 });

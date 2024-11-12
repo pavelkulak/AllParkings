@@ -6,6 +6,7 @@ import { refreshToken } from "./redux/thunkActions";
 import SignIn from "./components/auth/SignIn";
 import SignUp from "./components/auth/SignUp";
 import ProtectedRoute from "./components/HOC/ProtectedRoute";
+import ParkingConstructor from "./components/constructor/ParkingConstructor";
 import ProfilePage from "./components/pages/ProfilePage";
 
 function App() {
@@ -16,7 +17,7 @@ function App() {
     dispatch(refreshToken());
   }, [dispatch]);
 
-  if (status === 'loading') {
+  if (status === 'loading' || status === 'idle') {
     return <div>Загрузка...</div>;
   }
 
@@ -44,6 +45,19 @@ function App() {
         {
           path: '/profile',
           element: <ProfilePage />,
+        },
+        {
+          path: '/parking-constructor',
+          element: (
+            <ProtectedRoute 
+              isAllowed={!!user} 
+              allowedRoles={['owner', 'admin']}
+              user={user}
+              redirectPath="/"
+            >
+              <ParkingConstructor />
+            </ProtectedRoute>
+          ),
         },
       ],
     },
