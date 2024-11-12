@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
-import type { AuthState } from '../../../types/auth.types';
-import { setAccessToken } from '../../../services/axiosInstance';
-import { refreshToken, signIn, signUp, signOut } from './thunkActions';
+import type { AuthState } from '../../types/auth.types';
+import { setAccessToken } from '../../services/axiosInstance';
+import { refreshToken, signIn, signUp, signOut } from '../../redux/thunkActions';
 
 const initialState: AuthState = {
   user: null,

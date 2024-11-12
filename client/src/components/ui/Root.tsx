@@ -1,5 +1,5 @@
 import { useAppSelector, useAppDispatch } from '../../redux/hooks';
-import { signOut } from '../../redux/store/features/auth/authSlice';
+
 import NavBar from './NavBar';
 import { Outlet } from 'react-router-dom';
 
