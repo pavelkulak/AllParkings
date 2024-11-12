@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { AuthState } from '../../types/auth.types';
 import { setAccessToken } from '../../services/axiosInstance';
 import { refreshToken, signIn, signUp, signOut } from '../../redux/thunkActions';
@@ -16,6 +16,11 @@ const authSlice = createSlice({
   reducers: {
     clearError: (state) => {
       state.error = null;
+    },
+    updateUserAvatar: (state, action: PayloadAction<string>) => {
+      if (state.user) {
+        state.user.avatar = action.payload;
+      }
     },
   },
   extraReducers: (builder) => {
@@ -86,5 +91,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { clearError } = authSlice.actions;
+export const { clearError, updateUserAvatar } = authSlice.actions;
 export default authSlice.reducer;

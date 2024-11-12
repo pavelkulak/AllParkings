@@ -9,15 +9,50 @@ import {
   ListItemText,
 } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
+import { useState, useRef } from 'react';
+import axiosInstance from '../../services/axiosInstance';
+import { useDispatch } from 'react-redux';
+import { updateUserAvatar } from '../../redux/slices/authSlice';
 
 export default function ProfilePage() {
   const { user } = useAppSelector((state) => state.auth);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const dispatch = useDispatch();
 
   const fullName = `
   ${user?.surname || ''} 
   ${user?.name || ''} 
   ${user?.patronymic || ''}`
   .trim();
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploading(true);
+      const formData = new FormData();
+      formData.append('avatar', file);
+
+      const response = await axiosInstance.post('/api/upload/avatar', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      dispatch(updateUserAvatar(response.data.avatar));
+    } catch (error: any) {
+      console.error('Ошибка при загрузке аватара:', error);
+      alert(error.response?.data?.error || 'Ошибка при загрузке аватара');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   return (
     <Box
@@ -51,6 +86,7 @@ export default function ProfilePage() {
             }}
           >
             <Avatar
+              src={user?.avatar ? `${import.meta.env.VITE_API_URL}${user.avatar}` : undefined}
               sx={{
                 width: 120,
                 height: 120,
@@ -58,14 +94,25 @@ export default function ProfilePage() {
                 fontSize: '3.5rem'
               }}
             >
-              {user?.name.charAt(0).toUpperCase() || 'А'}
+              {!user?.avatar && (user?.name.charAt(0).toUpperCase() || 'А')}
             </Avatar>
+            <input
+              type="file"
+              ref={fileInputRef}
+              style={{ display: 'none' }}
+              accept="image/*"
+              onChange={handleFileChange}
+            />
             <Typography
               variant='body2'
               color='primary'
-              sx={{ cursor: 'pointer', mt: 1 }}
+              sx={{ 
+                cursor: uploading ? 'default' : 'pointer',
+                mt: 1 
+              }}
+              onClick={handleAvatarClick}
             >
-              сменить аватар
+              {uploading ? 'Загрузка...' : 'сменить аватар'}
             </Typography>
           </Box>
 
