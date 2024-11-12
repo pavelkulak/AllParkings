@@ -44,7 +44,7 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
                   color="inherit" 
                   component={Link} 
                   to="/signin"
-                >св
+                >
                   Войти
                 </Button>
                 <Button 
