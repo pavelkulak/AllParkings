@@ -2,17 +2,15 @@ import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "./redux/hooks";
 import Root from './components/ui/Root';
 import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
-import { refreshToken, signOut } from "./redux/thunkActions";
+import { refreshToken } from "./redux/thunkActions";
 import SignIn from "./components/auth/SignIn";
 import SignUp from "./components/auth/SignUp";
 import ProtectedRoute from "./components/HOC/ProtectedRoute";
-<<<<<<< HEAD
 import "./App.css";
-=======
 import ParkingConstructor from "./components/constructor/ParkingConstructor";
 import CreateParkingForm from "./components/parking/CreateParkingForm";
 
->>>>>>> dev
+
 
 function App() {
   const dispatch = useAppDispatch();
@@ -34,7 +32,7 @@ function App() {
         {
           path: '/',
           element: (
-            <ProtectedRoute isAllowed={!!user}>
+            <ProtectedRoute isAllowed={!!user} user={null}>
               <div>Защищенная страница</div>
             </ProtectedRoute>
           ),

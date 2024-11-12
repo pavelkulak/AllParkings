@@ -3,7 +3,7 @@ import { signOut } from '../../redux/thunkActions';
 
 import NavBar from './NavBar';
 import { Outlet } from 'react-router-dom';
-import { signOut } from '../../redux/thunkActions';
+
 
 export default function Root() {
   const dispatch = useAppDispatch();

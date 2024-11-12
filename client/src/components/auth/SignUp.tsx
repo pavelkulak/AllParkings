@@ -1,66 +1,69 @@
-import { FormEvent, useState } from 'react';
-import { useAppDispatch, useAppSelector } from '../../redux/hooks';
-import { signUp } from '../../redux/thunkActions';
-import type { RegisterCredentials } from '../../types/auth.types';
-import { Link, useNavigate } from 'react-router-dom';
-import { VisibilityOff, Visibility } from '@mui/icons-material';
-import { Container, Box, Typography, TextField, InputAdornment, IconButton, Button } from '@mui/material';
+import { FormEvent, useState } from "react";
+import { useAppDispatch, useAppSelector } from "../../redux/hooks";
+import { signUp } from "../../redux/thunkActions";
+import {
+  Box,
+  Container,
+  TextField,
+  Button,
+  Typography,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Stack,
+} from "@mui/material";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function SignUp() {
   const dispatch = useAppDispatch();
-  const { error, isLoading } = useAppSelector((state) => state.auth);
-  const [showPass, setShowPass] = useState<boolean>(false);
+  const { error, status } = useAppSelector((state) => state.auth);
+  const [formError, setFormError] = useState("");
+
   const navigate = useNavigate();
-  
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setFormError('');
-    
+    setFormError("");
+
     const formData = new FormData(e.currentTarget);
     const credentials = {
-      name: formData.get('name') as string,
-      surname: formData.get('surname') as string,
-      patronymic: formData.get('patronymic') as string,
-      phone: formData.get('phone') as string,
-      email: formData.get('email') as string,
-      password: formData.get('password') as string,
-      confirmPassword: formData.get('confirmPassword') as string,
-      role: formData.get('role') as 'user' | 'owner'
+      name: formData.get("name") as string,
+      surname: formData.get("surname") as string,
+      patronymic: formData.get("patronymic") as string,
+      phone: formData.get("phone") as string,
+      email: formData.get("email") as string,
+      password: formData.get("password") as string,
+      confirmPassword: formData.get("confirmPassword") as string,
+      role: formData.get("role") as "user" | "owner",
     };
 
     if (credentials.password !== credentials.confirmPassword) {
-      setFormError('Пароли не совпадают');
+      setFormError("Пароли не совпадают");
       return;
     }
 
-    await dispatch(signUp({
-      name: credentials.name,
-      surname: credentials.surname,
-      patronymic: credentials.patronymic,
-      phone: Number(credentials.phone),
-      email: credentials.email,
-      password: credentials.password,
-      role: credentials.role
-    }));
+    await dispatch(
+      signUp({
+        name: credentials.name,
+        surname: credentials.surname,
+        patronymic: credentials.patronymic,
+        phone: Number(credentials.phone),
+        email: credentials.email,
+        password: credentials.password,
+        role: credentials.role,
+      })
+    );
   };
 
   return (
-    // <form onSubmit={handleSubmit}>
-    //   {error && <div style={{ color: 'red' }}>{error}</div>}
-    //   <input type="text" name="username" required placeholder="Username" />
-    //   <input type="email" name="email" required placeholder="Email" />
-    //   <input type="password" name="password" required placeholder="Password" />
-    //   <button type="submit" disabled={isLoading}>
-    //     {isLoading ? 'Загрузка...' : 'Зарегистрироваться'}
-    //   </button>
-    // </form>
     <Container
       maxWidth="sm"
       sx={{
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        minHeight: "70vh",
+        minHeight: "80vh",
       }}
     >
       <Box
@@ -69,109 +72,67 @@ export default function SignUp() {
         alignItems="center"
         width="100%"
       >
-        <Typography variant="h4" component="h1" gutterBottom>
+        <Typography component="h1" variant="h5" >
           Регистрация
         </Typography>
-
-        <form onSubmit={handleSubmit} style={{ width: "100%" }}>
-          <TextField
-            label="Имя"
-            variant="outlined"
-            fullWidth
-            margin="normal"
-            name="name"
-            type="text"           
-            autoComplete="username"
-            required
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "secondary.main",
-                },
-              },
-              "& .MuiInputLabel-root": {
-                "&.Mui-focused": {
-                  color: "secondary.main",
-                },
-              },
-            }}
-          />
-
-          <TextField
-            label="Email"
-            variant="outlined"
-            fullWidth
-            margin="normal"
-            name="email"
-            type="email"           
-            autoComplete="email"
-            required
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "secondary.main",
-                },
-              },
-              "& .MuiInputLabel-root": {
-                "&.Mui-focused": {
-                  color: "secondary.main",
-                },
-              },
-            }}
-          />
-
-          <TextField
-            label="Пароль"
-            variant="outlined"
-            fullWidth
-            margin="normal"
-            name="password"
-            type={showPass ? "text" : "password"}
-            autoComplete="current-password"
-            required
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton onClick={() => setShowPass((s) => !s)} edge="end">
-                    {showPass ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "secondary.main",
-                },
-              },
-              "& .MuiInputLabel-root": {
-                "&.Mui-focused": {
-                  color: "secondary.main",
-                },
-              },
-            }}
-          />
-
-          <Button
-            variant="contained"
-            color="secondary"
-            type="submit"
-            fullWidth
-            sx={{ 
-              mt: 2,
-              color:"white",
-              "&:hover": {
-                  backgroundColor: "primary.dark",
-              },
-              "&:active": {
-                backgroundColor: "primary.light",
-              }, 
-            }}
-          >
-            Зарегистрироваться
-          </Button>
-        </form>
-
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{ mt: 3, width: "100%" }}
+        >
+          <Stack spacing={2}>
+            {/* {(error || formError) && (
+              <Typography color="error">{formError || error}</Typography>
+            )} */}
+            <TextField required fullWidth name="name" label="Имя" autoFocus />
+            <TextField required fullWidth name="surname" label="Фамилия" />
+            <TextField fullWidth name="patronymic" label="Отчество" />
+            <TextField
+              required
+              fullWidth
+              name="phone"
+              label="Номер телефона"
+              type="tel"
+            />
+            <TextField
+              required
+              fullWidth
+              name="email"
+              label="Email"
+              type="email"
+            />
+            <TextField
+              required
+              fullWidth
+              name="password"
+              label="Пароль"
+              type="password"
+            />
+            <TextField
+              required
+              fullWidth
+              name="confirmPassword"
+              label="Подтвердите пароль"
+              type="password"
+            />
+            <FormControl fullWidth required>
+              <InputLabel>Роль</InputLabel>
+              <Select name="role" label="Роль" defaultValue="user">
+                <MenuItem value="user">Водитель</MenuItem>
+                <MenuItem value="owner">Владелец парковки</MenuItem>
+              </Select>
+            </FormControl>
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              disabled={status === "loading"}
+              sx={{ mt: 2 }}
+            >
+              {status === "loading" ? "Загрузка..." : "Зарегистрироваться"}
+            </Button>
+          </Stack>
+        </Box>
         <Button
           variant="text"
           component={Link}

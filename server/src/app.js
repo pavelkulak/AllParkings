@@ -9,10 +9,6 @@ const cors = require('cors');
 const { PORT } = process.env;
 
 const tokensRouter = require('./routers/token.router');
-<<<<<<< HEAD
-=======
-
->>>>>>> dev
 const authRouter = require('./routers/authRouter');
 
 const parkingLotsRouter = require('./routers/parkingLots.router');

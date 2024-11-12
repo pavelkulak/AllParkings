@@ -1,46 +1,34 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent } from "react";
+import { useAppDispatch, useAppSelector } from "../../redux/hooks";
+import { signIn } from "../../redux/thunkActions";
+import type { LoginCredentials } from "../../types/auth.types";
 import {
-  Typography,
-  Container,
   Box,
+  Container,
   TextField,
   Button,
-  IconButton,
-  InputAdornment,
+  Typography,
+  Stack,
 } from "@mui/material";
-import { useAppDispatch, useAppSelector } from '../../redux/hooks';
-import { signIn } from '../../redux/thunkActions';
-import type { LoginCredentials } from '../../types/auth.types';
-import { VisibilityOff, Visibility } from '@mui/icons-material';
 import { Link, useNavigate } from "react-router-dom";
 
 export default function SignIn() {
   const dispatch = useAppDispatch();
-  const { error, isLoading } = useAppSelector((state) => state.auth);
-  const [showPass, setShowPass] = useState<boolean>(false);
-  const navigate = useNavigate();
-  
+  const { error, status } = useAppSelector((state) => state.auth);
+
+   const navigate = useNavigate();
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const credentials: LoginCredentials = {
-      email: formData.get('email') as string,
-      password: formData.get('password') as string,
+      email: formData.get("email") as string,
+      password: formData.get("password") as string,
     };
-    
     await dispatch(signIn(credentials));
   };
 
   return (
-    // <form onSubmit={handleSubmit}>
-    //   {error && <div style={{ color: 'red' }}>{error}</div>}
-    //   <input type="email" name="email" required placeholder="Email" />
-    //   <input type="password" name="password" required placeholder="Password" />
-    //   <button type="submit" disabled={isLoading}>
-    //     {isLoading ? 'Загрузка...' : 'Войти'}
-    //   </button>
-    // </form>
-
     <Container
       maxWidth="sm"
       sx={{
@@ -56,85 +44,42 @@ export default function SignIn() {
         alignItems="center"
         width="100%"
       >
-        <Typography variant="h4" component="h1" gutterBottom>
+        <Typography component="h1" variant="h5">
           Вход
         </Typography>
-
-        <form onSubmit={handleSubmit} style={{ width: "100%" }}>
-          <TextField
-            label="Email"
-            variant="outlined"
-            fullWidth
-            margin="normal"
-            name="email"
-            type="email"
-            autoComplete="email"
-            required
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "secondary.main",
-                },
-              },
-              "& .MuiInputLabel-root": {
-                "&.Mui-focused": {
-                  color: "secondary.main",
-                },
-              },
-            }}
-          />
-
-          <TextField
-            label="Пароль"
-            variant="outlined"
-            fullWidth
-            margin="normal"
-            name="password"
-            type={showPass ? "text" : "password"}
-            autoComplete="current-password"
-            required
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton onClick={() => setShowPass((s) => !s)} edge="end">
-                    {showPass ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "secondary.main",
-                },
-              },
-              "& .MuiInputLabel-root": {
-                "&.Mui-focused": {
-                  color: "secondary.main",
-                },
-              },
-            }}
-          />
-
-          <Button
-            variant="contained"
-            color="secondary"
-            type="submit"
-            fullWidth
-            sx={{ 
-              mt: 2,
-              color:"white",
-              "&:hover": {
-                  backgroundColor: "primary.dark",
-              },
-              "&:active": {
-                backgroundColor: "primary.light",
-              }, 
-            }}            
-          >
-            Войти
-          </Button>
-        </form>
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{ mt: 3, width: "100%" }}
+        >
+          <Stack spacing={2}>
+            {/* {error && <Typography color="error">{error}</Typography>} */}
+            <TextField
+              required
+              fullWidth
+              name="email"
+              label="Email"
+              type="email"
+              autoFocus
+            />
+            <TextField
+              required
+              fullWidth
+              name="password"
+              label="Пароль"
+              type="password"
+            />
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              disabled={status === "loading"}
+              sx={{ mt: 2 }}
+            >
+              {status === "loading" ? "Загрузка..." : "Войти"}
+            </Button>
+          </Stack>
+        </Box>
 
         <Button
           variant="text"
@@ -147,4 +92,4 @@ export default function SignIn() {
       </Box>
     </Container>
   );
-} 
+}
