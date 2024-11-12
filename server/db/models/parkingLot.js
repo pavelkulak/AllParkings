@@ -37,8 +37,8 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false
     },
     status: {
-      type: DataTypes.ENUM('active', 'inactive'),
-      defaultValue: 'active'
+      type: DataTypes.ENUM('pending', 'active', 'inactive'),
+      defaultValue: 'pending'
     },
     average_rating: {
       type: DataTypes.BIGINT,
