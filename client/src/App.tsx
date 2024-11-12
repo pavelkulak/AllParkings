@@ -7,6 +7,7 @@ import SignIn from "./components/auth/SignIn";
 import SignUp from "./components/auth/SignUp";
 import ProtectedRoute from "./components/HOC/ProtectedRoute";
 import ParkingConstructor from "./components/constructor/ParkingConstructor";
+import CreateParkingForm from "./components/parking/CreateParkingForm";
 
 
 function App() {
@@ -44,6 +45,32 @@ function App() {
         },
         {
           path: '/parking-constructor',
+          element: (
+            <ProtectedRoute 
+              isAllowed={!!user} 
+              allowedRoles={['owner', 'admin']}
+              user={user}
+              redirectPath="/"
+            >
+              <ParkingConstructor />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: '/create-parking',
+          element: (
+            <ProtectedRoute 
+              isAllowed={!!user} 
+              allowedRoles={['owner', 'admin']}
+              user={user}
+              redirectPath="/"
+            >
+              <CreateParkingForm />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: '/parking-constructor/:parkingId',
           element: (
             <ProtectedRoute 
               isAllowed={!!user} 

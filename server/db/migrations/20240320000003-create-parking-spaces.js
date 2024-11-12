@@ -20,7 +20,7 @@ module.exports = {
         onDelete: 'CASCADE'
       },
       space_number: {
-        type: Sequelize.BIGINT,
+        type: Sequelize.STRING,
         allowNull: false
       },
       is_free: {
@@ -28,8 +28,15 @@ module.exports = {
         defaultValue: true
       },
       location: {
-        type: Sequelize.STRING,
-        allowNull: false
+        type: Sequelize.JSON,
+        allowNull: false,
+        defaultValue: {
+          x: 0,
+          y: 0,
+          rotation: 0,
+          width: 40,
+          height: 80
+        }
       },
       createdAt: {
         allowNull: false,

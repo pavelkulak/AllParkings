@@ -12,8 +12,10 @@ const tokensRouter = require('./routers/token.router');
 
 const authRouter = require('./routers/authRouter');
 
+const parkingLotsRouter = require('./routers/parkingLots.router');
+
 const corsConfig = {
-  origin: ['http://localhost:5173', 'http://127.0.0.1:5173', 'https://news.ru/rss/category/post/economics/'],
+  origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
   credentials: true,
 };
 app.use(cors(corsConfig));
@@ -26,6 +28,8 @@ app.use(express.json());
 app.use('/api/auth', authRouter);
 
 app.use('/api/tokens', tokensRouter);
+
+app.use('/api/parking-lots', parkingLotsRouter);
 
 
 
