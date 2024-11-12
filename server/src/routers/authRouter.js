@@ -1,5 +1,5 @@
 const bcrypt = require('bcrypt');
-const {User} = require('../../db/models');
+const { User } = require('../../db/models');
 const generateToken = require('../utils/generateToken');
 const cookieConfig = require('../configs/cookieConfig');
 const authRouter = require('express').Router();
@@ -60,7 +60,8 @@ authRouter.post('/signup', async (req, res) => {
             patronymic: newUser.patronymic,
             phone: newUser.phone,
             email: newUser.email,
-            role: newUser.role
+            role: newUser.role,
+            avatar: newUser.avatar
         };
 
         // Генерируем токены
@@ -103,7 +104,8 @@ authRouter.post('/signin', async (req, res) => {
             patronymic: foundUser.patronymic,
             phone: foundUser.phone,
             email: foundUser.email,
-            role: foundUser.role
+            role: foundUser.role,
+            avatar: foundUser.avatar
         };
 
         console.log('User data being sent:', user);
@@ -135,4 +137,3 @@ authRouter.post('/signout', async (req, res) => {
 });
 
 module.exports = authRouter;
-

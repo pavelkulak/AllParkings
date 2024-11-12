@@ -2,13 +2,13 @@ import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "./redux/hooks";
 import Root from './components/ui/Root';
 import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
-import { refreshToken, signOut } from "./redux/thunkActions";
+import { refreshToken } from "./redux/thunkActions";
 import SignIn from "./components/auth/SignIn";
 import SignUp from "./components/auth/SignUp";
 import ProtectedRoute from "./components/HOC/ProtectedRoute";
 import ParkingConstructor from "./components/constructor/ParkingConstructor";
 import CreateParkingForm from "./components/parking/CreateParkingForm";
-
+import ProfilePage from "./components/pages/ProfilePage";
 
 function App() {
   const dispatch = useAppDispatch();
@@ -42,6 +42,10 @@ function App() {
         {
           path: '/signup',
           element: user ? <Navigate to="/" replace /> : <SignUp />,
+        },
+        {
+          path: '/profile',
+          element: <ProfilePage />,
         },
         {
           path: '/parking-constructor',
