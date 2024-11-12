@@ -1,14 +1,14 @@
-import { useAppSelector, useAppDispatch } from '../../redux/hooks';
+import { useAppSelector } from '../../redux/hooks';
 
 import NavBar from './NavBar';
 import { Outlet } from 'react-router-dom';
 
 export default function Root() {
-  const dispatch = useAppDispatch();
+  // const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
 
   const handleSignOut = () => {
-    dispatch(signOut());
+    // dispatch(signOut());
   };
 
   return (
