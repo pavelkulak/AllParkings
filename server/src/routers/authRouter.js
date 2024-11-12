@@ -82,27 +82,19 @@ authRouter.post('/signin', async (req, res) => {
     try {
         const { email, password } = req.body;
         
-        if (!email || !password) {
-            return res.status(400).json({ 
-                error: 'Email и пароль обязательны' 
-            });
-        }
-
         const foundUser = await User.findOne({ where: { email } });
         
         if (!foundUser) {
-            return res.status(400).json({ 
-                error: 'Пользователь не найден' 
-            });
+            return res.status(400).json({ error: 'Пользователь не найден' });
         }
 
         const isValid = await bcrypt.compare(password, foundUser.password);
         
         if (!isValid) {
-            return res.status(400).json({ 
-                error: 'Неверный пароль' 
-            });
+            return res.status(400).json({ error: 'Неверный пароль' });
         }
+
+        console.log('User found:', foundUser.toJSON());
 
         const user = {
             id: foundUser.id,
@@ -114,6 +106,8 @@ authRouter.post('/signin', async (req, res) => {
             role: foundUser.role
         };
 
+        console.log('User data being sent:', user);
+
         const { accessToken, refreshToken } = generateToken({ user });
 
         res
@@ -122,9 +116,7 @@ authRouter.post('/signin', async (req, res) => {
 
     } catch (error) {
         console.error('Ошибка входа:', error);
-        res.status(500).json({ 
-            error: 'Ошибка сервера при входе' 
-        });
+        res.status(500).json({ error: 'Ошибка сервера при входе' });
     }
 });
 
