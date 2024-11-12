@@ -1,7 +1,11 @@
 export interface IUser {
   id: number;
+  name: string;
+  surname: string;
+  patronymic?: string;
+  phone: number;
   email: string;
-  username: string;
+  role: 'user' | 'owner' | 'admin';
 }
 
 export interface AuthState {
@@ -16,8 +20,14 @@ export interface LoginCredentials {
   password: string;
 }
 
-export interface RegisterCredentials extends LoginCredentials {
-  username: string;
+export interface RegisterCredentials {
+  name: string;
+  surname: string;
+  patronymic?: string;
+  phone: number;
+  email: string;
+  password: string;
+  role: 'user' | 'owner';
 }
 
 export interface AuthResponse {
