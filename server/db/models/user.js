@@ -1,21 +1,48 @@
 'use strict';
 const { Model } = require('sequelize');
+
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
-    static associate({ KeyWord }) {
-      this.hasMany(KeyWord, { foreignKey: 'userId' });
+    static associate(models) {
+      this.hasMany(models.Booking, { foreignKey: 'user_id' });
+      this.hasMany(models.Review, { foreignKey: 'user_id' });
+      this.hasMany(models.FavoritesParking, { foreignKey: 'user_id' });
+      this.hasMany(models.ParkingHistory, { foreignKey: 'user_id' });
+      this.hasMany(models.ParkingLot, { foreignKey: 'owner_id' });
     }
   }
-  User.init(
-    {
-      name: DataTypes.STRING,
-      email: DataTypes.STRING,
-      pass: DataTypes.STRING,
+  
+  User.init({
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false
     },
-    {
-      sequelize,
-      modelName: 'User',
+    surname: {
+      type: DataTypes.STRING,
+      allowNull: false
     },
-  );
+    patronymic: DataTypes.STRING,
+    phone: {
+      type: DataTypes.BIGINT,
+      allowNull: false
+    },
+    role: {
+      type: DataTypes.ENUM('user', 'admin', 'owner'),
+      defaultValue: 'user'
+    },
+    email: {
+      type: DataTypes.STRING,
+      unique: true,
+      allowNull: false
+    },
+    password: {
+      type: DataTypes.STRING,
+      allowNull: false
+    }
+  }, {
+    sequelize,
+    modelName: 'User',
+  });
+  
   return User;
 };

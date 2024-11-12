@@ -1,6 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { AuthResponse, LoginCredentials, RegisterCredentials } from './types/auth.types';
-import axiosInstance from './services/axiosInstance';
+import axiosInstance from '../services/axiosInstance';
 
 export const refreshToken = createAsyncThunk<AuthResponse, void>(
   'auth/refreshToken',

@@ -7,7 +7,7 @@ export interface IUser {
 export interface AuthState {
   user: IUser | null;
   accessToken: string;
-  isLoading: boolean;
+  status: 'idle' | 'loading' | 'succeeded' | 'failed';
   error: string | null;
 }
 
