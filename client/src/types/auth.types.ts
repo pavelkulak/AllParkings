@@ -1,18 +1,20 @@
 export interface IUser {
+  img: any;
+  isAdmin: any;
   id: number;
   name: string;
   surname: string;
   patronymic?: string;
   phone: number;
   email: string;
-  role: 'user' | 'owner' | 'admin';
+  role: "user" | "owner" | "admin";
   avatar?: string;
 }
 
 export interface AuthState {
   user: IUser | null;
   accessToken: string;
-  status: 'idle' | 'loading' | 'succeeded' | 'failed';
+  status: "idle" | "loading" | "succeeded" | "failed";
   error: string | null;
 }
 
@@ -28,10 +30,10 @@ export interface RegisterCredentials {
   phone: number;
   email: string;
   password: string;
-  role: 'user' | 'owner';
+  role: "user" | "owner";
 }
 
 export interface AuthResponse {
   user: IUser;
   accessToken: string;
-} 
+}
