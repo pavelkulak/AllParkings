@@ -17,7 +17,7 @@ function App() {
     dispatch(refreshToken());
   }, [dispatch]);
 
-  if (status === 'loading') {
+  if (status === 'loading' || status === 'idle') {
     return <div>Загрузка...</div>;
   }
 

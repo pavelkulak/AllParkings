@@ -5,6 +5,7 @@ const generateToken = require('../utils/generateToken');
 
 tokensRouter.get('/refresh', verifyRefreshToken, (req, res) => {
   const { user } = res.locals;
+  console.log('Refresh token user data:', user);
   const { accessToken, refreshToken } = generateToken({ user });
 
   res
