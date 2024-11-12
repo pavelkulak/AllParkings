@@ -19,7 +19,7 @@ module.exports = (sequelize, DataTypes) => {
       }
     },
     space_number: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.STRING,
       allowNull: false
     },
     is_free: {
@@ -27,8 +27,15 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: true
     },
     location: {
-      type: DataTypes.STRING,
-      allowNull: false
+      type: DataTypes.JSON,
+      allowNull: false,
+      defaultValue: {
+        x: 0,
+        y: 0,
+        rotation: 0,
+        width: 40,
+        height: 80
+      }
     }
   }, {
     sequelize,

@@ -14,13 +14,34 @@ export default function SignUp() {
   
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setFormError('');
+    
     const formData = new FormData(e.currentTarget);
-    const credentials: RegisterCredentials = {
+    const credentials = {
+      name: formData.get('name') as string,
+      surname: formData.get('surname') as string,
+      patronymic: formData.get('patronymic') as string,
+      phone: formData.get('phone') as string,
       email: formData.get('email') as string,
       password: formData.get('password') as string,
-      username: formData.get('username') as string,
+      confirmPassword: formData.get('confirmPassword') as string,
+      role: formData.get('role') as 'user' | 'owner'
     };
-    await dispatch(signUp(credentials));
+
+    if (credentials.password !== credentials.confirmPassword) {
+      setFormError('Пароли не совпадают');
+      return;
+    }
+
+    await dispatch(signUp({
+      name: credentials.name,
+      surname: credentials.surname,
+      patronymic: credentials.patronymic,
+      phone: Number(credentials.phone),
+      email: credentials.email,
+      password: credentials.password,
+      role: credentials.role
+    }));
   };
 
   return (
@@ -162,4 +183,4 @@ export default function SignUp() {
       </Box>
     </Container>
   );
-} 
+}

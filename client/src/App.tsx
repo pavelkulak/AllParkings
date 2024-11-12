@@ -6,7 +6,13 @@ import { refreshToken, signOut } from "./redux/thunkActions";
 import SignIn from "./components/auth/SignIn";
 import SignUp from "./components/auth/SignUp";
 import ProtectedRoute from "./components/HOC/ProtectedRoute";
+<<<<<<< HEAD
 import "./App.css";
+=======
+import ParkingConstructor from "./components/constructor/ParkingConstructor";
+import CreateParkingForm from "./components/parking/CreateParkingForm";
+
+>>>>>>> dev
 
 function App() {
   const dispatch = useAppDispatch();
@@ -16,7 +22,7 @@ function App() {
     dispatch(refreshToken());
   }, [dispatch]);
 
-  if (status === 'loading') {
+  if (status === 'loading' || status === 'idle') {
     return <div>Загрузка...</div>;
   }
 
@@ -40,6 +46,45 @@ function App() {
         {
           path: '/signup',
           element: user ? <Navigate to="/" replace /> : <SignUp />,
+        },
+        {
+          path: '/parking-constructor',
+          element: (
+            <ProtectedRoute 
+              isAllowed={!!user} 
+              allowedRoles={['owner', 'admin']}
+              user={user}
+              redirectPath="/"
+            >
+              <ParkingConstructor />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: '/create-parking',
+          element: (
+            <ProtectedRoute 
+              isAllowed={!!user} 
+              allowedRoles={['owner', 'admin']}
+              user={user}
+              redirectPath="/"
+            >
+              <CreateParkingForm />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: '/parking-constructor/:parkingId',
+          element: (
+            <ProtectedRoute 
+              isAllowed={!!user} 
+              allowedRoles={['owner', 'admin']}
+              user={user}
+              redirectPath="/"
+            >
+              <ParkingConstructor />
+            </ProtectedRoute>
+          ),
         },
       ],
     },
