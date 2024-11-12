@@ -121,7 +121,16 @@ export default function SignIn() {
             color="secondary"
             type="submit"
             fullWidth
-            sx={{ mt: 2 }}
+            sx={{ 
+              mt: 2,
+              color:"white",
+              "&:hover": {
+                  backgroundColor: "primary.dark",
+              },
+              "&:active": {
+                backgroundColor: "primary.light",
+              }, 
+            }}            
           >
             Войти
           </Button>
