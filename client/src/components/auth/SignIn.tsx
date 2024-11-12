@@ -2,10 +2,18 @@ import { FormEvent } from 'react';
 import { useAppDispatch, useAppSelector } from '../../redux/hooks';
 import { signIn } from '../../redux/thunkActions';
 import type { LoginCredentials } from '../../types/auth.types';
+import { 
+  Box, 
+  Container, 
+  TextField, 
+  Button, 
+  Typography,
+  Stack
+} from '@mui/material';
 
 export default function SignIn() {
   const dispatch = useAppDispatch();
-  const { error, isLoading } = useAppSelector((state) => state.auth);
+  const { error, status } = useAppSelector((state) => state.auth);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -18,13 +26,50 @@ export default function SignIn() {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      {error && <div style={{ color: 'red' }}>{error}</div>}
-      <input type="email" name="email" required placeholder="Email" />
-      <input type="password" name="password" required placeholder="Password" />
-      <button type="submit" disabled={isLoading}>
-        {isLoading ? 'Загрузка...' : 'Войти'}
-      </button>
-    </form>
+    <Container maxWidth="xs">
+      <Box sx={{ 
+        mt: 8, 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center' 
+      }}>
+        <Typography component="h1" variant="h5">
+          Вход в систему
+        </Typography>
+        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
+          <Stack spacing={2}>
+            {error && (
+              <Typography color="error">
+                {error}
+              </Typography>
+            )}
+            <TextField
+              required
+              fullWidth
+              name="email"
+              label="Email"
+              type="email"
+              autoFocus
+            />
+            <TextField
+              required
+              fullWidth
+              name="password"
+              label="Пароль"
+              type="password"
+            />
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              disabled={status === 'loading'}
+              sx={{ mt: 2 }}
+            >
+              {status === 'loading' ? 'Загрузка...' : 'Войти'}
+            </Button>
+          </Stack>
+        </Box>
+      </Box>
+    </Container>
   );
 } 

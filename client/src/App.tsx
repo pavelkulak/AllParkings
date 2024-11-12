@@ -45,9 +45,14 @@ function App() {
         {
           path: '/parking-constructor',
           element: (
-            
+            <ProtectedRoute 
+              isAllowed={!!user} 
+              allowedRoles={['owner', 'admin']}
+              user={user}
+              redirectPath="/"
+            >
               <ParkingConstructor />
-            
+            </ProtectedRoute>
           ),
         },
       ],

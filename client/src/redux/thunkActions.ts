@@ -28,7 +28,11 @@ export const signUp = createAsyncThunk<AuthResponse, RegisterCredentials>(
 
 export const signOut = createAsyncThunk<void, void>(
   'auth/signOut',
-  async () => {
-    await axiosInstance.post('auth/signout');
+  async (_, { rejectWithValue }) => {
+    try {
+      await axiosInstance.post('auth/signout');
+    } catch (error) {
+      return rejectWithValue('Ошибка при выходе из системы');
+    }
   }
 ); 
