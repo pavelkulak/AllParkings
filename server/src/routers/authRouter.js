@@ -60,7 +60,8 @@ authRouter.post('/signup', async (req, res) => {
             patronymic: newUser.patronymic,
             phone: newUser.phone,
             email: newUser.email,
-            role: newUser.role
+            role: newUser.role,
+            avatar: newUser.avatar
         };
 
         // Генерируем токены
@@ -103,7 +104,8 @@ authRouter.post('/signin', async (req, res) => {
             patronymic: foundUser.patronymic,
             phone: foundUser.phone,
             email: foundUser.email,
-            role: foundUser.role
+            role: foundUser.role,
+            avatar: foundUser.avatar
         };
 
         console.log('User data being sent:', user);

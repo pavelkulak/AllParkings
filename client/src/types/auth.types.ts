@@ -6,6 +6,7 @@ export interface IUser {
   phone: number;
   email: string;
   role: 'user' | 'owner' | 'admin';
+  avatar?: string;
 }
 
 export interface AuthState {
