@@ -6,6 +6,8 @@ import { refreshToken, signOut } from "./redux/thunkActions";
 import SignIn from "./components/auth/SignIn";
 import SignUp from "./components/auth/SignUp";
 import ProtectedRoute from "./components/HOC/ProtectedRoute";
+import ParkingConstructor from "./components/constructor/ParkingConstructor";
+
 
 function App() {
   const dispatch = useAppDispatch();
@@ -39,6 +41,14 @@ function App() {
         {
           path: '/signup',
           element: user ? <Navigate to="/" replace /> : <SignUp />,
+        },
+        {
+          path: '/parking-constructor',
+          element: (
+            
+              <ParkingConstructor />
+            
+          ),
         },
       ],
     },
