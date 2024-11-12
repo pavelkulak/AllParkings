@@ -20,6 +20,9 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 import RotateRightIcon from '@mui/icons-material/RotateRight';
 import styled from '@emotion/styled';
+import { useParams } from 'react-router-dom';
+import { useAppDispatch } from '../../redux/hooks';
+import { saveSpacesConfiguration } from '../../redux/parkingThunks';
 
 interface ParkingSpace {
     id: number;
@@ -87,6 +90,8 @@ const ParkingSpot = styled(Paper)<{ rotation: number }>`
 `;
 
 export default function ParkingConstructor() {
+  const dispatch = useAppDispatch();
+  const { parkingId } = useParams();
   const [spaces, setSpaces] = useState<ParkingSpace[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [currentSpace, setCurrentSpace] = useState<ParkingSpace | null>(null);
@@ -195,29 +200,26 @@ export default function ParkingConstructor() {
 
   const handleGridSizeChange = (newSize: keyof typeof GRID_SIZES) => {
     setGridSize(newSize);
-    
-    // Проверяем и корректируем позиции всех мест
-    const updatedSpaces = spaces.map(space => {
-      const maxX = GRID_SIZES[newSize].width - (space.rotation === 90 ? 80 : 40);
-      const maxY = GRID_SIZES[newSize].height - (space.rotation === 90 ? 40 : 80);
-      
-      return {
-        ...space,
-        x: Math.min(space.x, maxX),
-        y: Math.min(space.y, maxY)
-      };
-    });
-    
-    setSpaces(updatedSpaces);
-    
+    // Проверяем, не выходит ли текущее количество мест за новый лимит
     if (spaces.length > GRID_SIZES[newSize].maxSpaces) {
       alert(`Текущее количество мест (${spaces.length}) превышает лимит для выбранного размера поля (${GRID_SIZES[newSize].maxSpaces}). Удалите лишние места.`);
     }
   };
 
-  const handleSaveConfiguration = () => {
-    console.log('Конфигурация парковки:', spaces);
-    // Здесь будет логика сохранения в базу данных
+  const handleSaveConfiguration = async () => {
+    if (!parkingId) return;
+    
+    try {
+      await dispatch(saveSpacesConfiguration({
+        parkingId,
+        spaces
+      })).unwrap();
+      
+      alert('Конфигурация парковки успешно сохранена');
+    } catch (error) {
+      console.error('Ошибка при сохранении конфигурации:', error);
+      alert('Ошибка при сохранении конфигурации парковки');
+    }
   };
 
   return (
@@ -252,18 +254,18 @@ export default function ParkingConstructor() {
 >
         {spaces.map((space) => (
        <Draggable
-       key={space.id}
-       grid={[20, 20]}
-       position={{ x: space.x, y: space.y }}
-       onStart={handleDragStart}
-       onStop={(e, data) => handleDragStop(space.id, data.x, data.y)}
-       bounds={{
-         left: 0,
-         top: 0,
-         right: GRID_SIZES[gridSize].width - (space.rotation === 90 ? 80 : 40),
-         bottom: GRID_SIZES[gridSize].height - (space.rotation === 90 ? 40 : 80)
-       }}
-     >
+  key={space.id}
+  grid={[20, 20]}
+  position={{ x: space.x, y: space.y }}
+  onStart={handleDragStart}
+  onStop={(e, data) => handleDragStop(space.id, data.x, data.y)}
+  bounds={{
+    left: 0,
+    top: 0,
+    right: GRID_SIZES[gridSize].width - (space.rotation === 90 ? 80 : 40),
+    bottom: GRID_SIZES[gridSize].height - (space.rotation === 90 ? 40 : 80)
+  }}
+>
         <ParkingSpotWrapper>
         <ParkingSpot
   rotation={space.rotation}
