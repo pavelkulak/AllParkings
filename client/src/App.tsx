@@ -6,6 +6,7 @@ import { refreshToken, signOut } from "./redux/thunkActions";
 import SignIn from "./components/auth/SignIn";
 import SignUp from "./components/auth/SignUp";
 import ProtectedRoute from "./components/HOC/ProtectedRoute";
+import "./App.css";
 
 function App() {
   const dispatch = useAppDispatch();

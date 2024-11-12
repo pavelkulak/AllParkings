@@ -9,7 +9,6 @@ const cors = require('cors');
 const { PORT } = process.env;
 
 const tokensRouter = require('./routers/token.router');
-const keyWordsRouter = require('./routers/keyword.router');
 const authRouter = require('./routers/authRouter');
 
 const corsConfig = {
