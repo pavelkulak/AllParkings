@@ -9,7 +9,7 @@ import ProtectedRoute from "./components/HOC/ProtectedRoute";
 import "./App.css";
 import ParkingConstructor from "./components/constructor/ParkingConstructor";
 import CreateParkingForm from "./components/parking/CreateParkingForm";
-
+import ProfilePage from "./components/pages/ProfilePage";
 
 
 function App() {
@@ -44,6 +44,10 @@ function App() {
         {
           path: '/signup',
           element: user ? <Navigate to="/" replace /> : <SignUp />,
+        },
+        {
+          path: '/profile',
+          element: <ProfilePage />,
         },
         {
           path: '/parking-constructor',

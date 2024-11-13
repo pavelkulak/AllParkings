@@ -1,7 +1,27 @@
-import { Link } from 'react-router-dom';
-import { IUser } from '../../types/auth.types';
-import { Box, AppBar, Toolbar, Typography, Button, Container } from '@mui/material';
+import { Link } from "react-router-dom";
+import { IUser } from "../../types/auth.types";
+import {
+  Box,
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  Container,
+  Avatar,
+  ListItemIcon,
+  Menu,
+  MenuItem,
+} from "@mui/material";
 import logo from "../../img/logo.svg";
+import TopicIcon from "@mui/icons-material/MenuBook";
+import LogoutIcon from "@mui/icons-material/Logout";
+import AddIcon from "@mui/icons-material/Add";
+import NoteAddIcon from "@mui/icons-material/NoteAdd";
+import iconHolder from "../../img/icon-holder.svg";
+import { useTheme } from "@mui/material/styles";
+import { useState } from "react";
+
+
 
 interface NavBarProps {
   user: IUser | null;
@@ -9,6 +29,22 @@ interface NavBarProps {
 }
 
 export default function NavBar({ user, handleSignOut }: NavBarProps) {
+
+  function handleMenuOpen(event: MouseEvent<HTMLDivElement, MouseEvent>): void {
+    throw new Error("Function not implemented.");
+  }
+
+  function handleMenuClose(
+    event: {},
+    reason: "backdropClick" | "escapeKeyDown"
+  ): void {
+    throw new Error("Function not implemented.");
+  }
+
+ 
+
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const theme = useTheme();
   return (
     <AppBar position="static" sx={{ fontFamily: "Merriweather" }}>
       <Toolbar disableGutters>
@@ -62,12 +98,130 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
         >
           {user ? (
             <>
-              <Typography sx={{ alignSelf: "center" }}>
-                {user.username}
-              </Typography>
-              <Button color="inherit" onClick={handleSignOut}>
-                Выйти
-              </Button>
+              <Avatar
+                alt={user.name}
+                src={
+                  user.img
+                    ? `${import.meta.env.VITE_TARGET}${user.img}`
+                    : iconHolder
+                }
+                sx={{
+                  mr: 2,
+                  border: `1px solid ${theme.palette.grey[500]}`,
+                  bgcolor: "white",
+                  width: 60,
+                  height: 60,
+                  cursor: "pointer",
+                }}
+                onClick={handleMenuOpen}
+              />
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleMenuClose}
+                anchorOrigin={{
+                  vertical: "top",
+                  horizontal: "right",
+                }}
+                transformOrigin={{
+                  vertical: "bottom",
+                  horizontal: "right",
+                }}
+              >
+                <MenuItem
+                  sx={{
+                    cursor: "default",
+                    opacity: 1,
+
+                    backgroundColor: "transparent", // Устанавливаем фоновый цвет по умолчанию
+                    "&:hover": {
+                      backgroundColor: "transparent", // Убираем фон при наведении
+                    },
+                    "&:active": {
+                      backgroundColor: "transparent", // Убираем фон при активации
+                    },
+                    "&:focus": {
+                      backgroundColor: "transparent", // Убираем фон при фокусе
+                    },
+                    "&.Mui-selected": {
+                      backgroundColor: "transparent", // Убираем фон для выбранного состояния
+                    },
+                    "&.Mui-disabled": {
+                      opacity: 1, // Устанавливаем непрозрачность для отключенного состояния
+                    },
+                  }}
+                  disableRipple
+                >
+                  <Avatar
+                    alt={user.name}
+                    src={
+                      user.img
+                        ? `${import.meta.env.VITE_TARGET}${user.img}`
+                        : iconHolder
+                    }
+                    sx={{ width: 40, height: 40, mr: 1 }}
+                  />
+                  <Typography variant="body1">{user.name}</Typography>
+                </MenuItem>
+
+                <Box
+                  sx={{
+                    width: "100%", // или установите фиксированную ширину
+                    height: "3px", // Высота линии
+                    backgroundColor: "secondary.main", // Цвет линии
+                    margin: "4px 0", // Отступы сверху и снизу
+                  }}
+                />
+
+                <MenuItem component={Link} to="/menu" onClick={handleMenuClose}>
+                  <ListItemIcon>
+                    <TopicIcon fontSize="small" />
+                  </ListItemIcon>
+                  Главное меню
+                </MenuItem>
+
+                <Box
+                  sx={{
+                    width: "100%", // или установите фиксированную ширину
+                    height: "3px", // Высота линии
+                    backgroundColor: "#d1d1d1", // Цвет линии
+                    margin: "4px 0", // Отступы сверху и снизу
+                  }}
+                />
+
+                {user.isAdmin && (
+                  <>
+                    <MenuItem
+                      component={Link}
+                      to="/topics/create"
+                      onClick={handleMenuClose}
+                    >
+                      <ListItemIcon>
+                        <AddIcon fontSize="small" />
+                      </ListItemIcon>
+                      Новая тема
+                    </MenuItem>
+
+                    <MenuItem
+                      component={Link}
+                      to="/cards/create"
+                      onClick={handleMenuClose}
+                    >
+                      <ListItemIcon>
+                        <NoteAddIcon fontSize="small" />
+                      </ListItemIcon>
+                      Новый вопрос
+                    </MenuItem>
+                  </>
+                )}
+
+                <MenuItem onClick={handleSignOut}>
+                  <ListItemIcon>
+                    <LogoutIcon fontSize="small" />
+                  </ListItemIcon>
+                  Выход
+                </MenuItem>
+              </Menu>
             </>
           ) : (
             <>
