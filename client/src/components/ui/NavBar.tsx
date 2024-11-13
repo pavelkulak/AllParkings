@@ -97,12 +97,12 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
                 src={
                   user.avatar
                     ? `${import.meta.env.VITE_TARGET}${user.avatar}`
-                    : iconHolder
+                    : user?.name.charAt(0).toUpperCase() || undefined
                 }
                 sx={{
                   mr: 2,
                   border: `1px solid ${theme.palette.grey[500]}`,
-                  bgcolor: "white",
+                  bgcolor: "lightblue",
                   width: 60,
                   height: 60,
                   cursor: "pointer",
