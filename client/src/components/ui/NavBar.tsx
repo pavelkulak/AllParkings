@@ -88,7 +88,7 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
           sx={{
             display: { xs: "flex", sm: "flex" },
             alignItems: "center",
-            padding: "10px 20px",
+            padding: "10px 20px",            
           }}
         >
           {user ? (
@@ -104,8 +104,8 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
                   mr: 2,
                   border: `1px solid ${theme.palette.grey[500]}`,
                   bgcolor: "lightblue",
-                  width: 60,
-                  height: 60,
+                  width: 50,
+                  height: 50,
                   cursor: "pointer",
                 }}
                 onClick={handleMenuOpen}
@@ -122,6 +122,7 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
                   vertical: "top",
                   horizontal: "left",
                 }}
+                sx={{margin:1.2}}
               >
                 <MenuItem
                   sx={{
@@ -154,7 +155,7 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
                         ? `${import.meta.env.VITE_TARGET}${user.avatar}`
                         : iconHolder
                     }
-                    sx={{ width: 40, height: 40, mr: 1 }}
+                    sx={{ width: 40, height: 40, mr: 3 }}
                   />
                   <Typography variant="body1">{user.name}</Typography>
                 </MenuItem>

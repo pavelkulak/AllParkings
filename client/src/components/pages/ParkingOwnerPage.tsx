@@ -101,6 +101,9 @@ export default function ParkingOwnerPage() {
             <MenuItem value="false">Не работает</MenuItem>
           </Select>
           <Button fullWidth variant="outlined" size="small">
+            Добавить парковочные места
+          </Button>
+          <Button fullWidth variant="outlined" size="small">
             Статистика
           </Button>
           <Button fullWidth variant="outlined" size="small">
