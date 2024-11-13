@@ -30,18 +30,24 @@ interface NavBarProps {
 
 export default function NavBar({ user, handleSignOut }: NavBarProps) {
 
-  function handleMenuOpen(event: MouseEvent<HTMLDivElement, MouseEvent>): void {
-    throw new Error("Function not implemented.");
-  }
+  // function handleMenuOpen(event: MouseEvent<HTMLDivElement, MouseEvent>): void {
+  //   throw new Error("Function not implemented.");
+  // }
 
-  function handleMenuClose(
-    event: {},
-    reason: "backdropClick" | "escapeKeyDown"
-  ): void {
-    throw new Error("Function not implemented.");
-  }
+  // function handleMenuClose(
+  //   event: {},
+  //   reason: "backdropClick" | "escapeKeyDown"
+  // ): void {
+  //   throw new Error("Function not implemented.");
+  // }
 
- 
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const theme = useTheme();
