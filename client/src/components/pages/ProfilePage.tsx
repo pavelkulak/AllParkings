@@ -1,4 +1,4 @@
-import { useAppSelector } from '../../redux/hooks';
+import { useAppDispatch, useAppSelector } from '../../redux/hooks';
 import {
   Box,
   Typography,
@@ -9,15 +9,14 @@ import {
   ListItemText,
 } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
-import { useState, useRef } from 'react';
-import { useDispatch } from 'react-redux';
-import { updateUserAvatar } from '../../redux/slices/authSlice';
+import { useState, useRef, useEffect } from 'react';
+import { updateAvatar } from '../../redux/thunkActions';
 
 export default function ProfilePage() {
   const { user } = useAppSelector((state) => state.auth);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const fullName = `
   ${user?.surname || ''} 
@@ -37,9 +36,13 @@ export default function ProfilePage() {
     formData.append('avatar', file);
     
     setUploading(true);
-    dispatch(updateUserAvatar(formData));
-    setUploading(false);
+    dispatch(updateAvatar(formData)).finally(() => {
+      setUploading(false);
+    });
   };
+
+  useEffect(() => {
+  }, [user?.avatar]);
 
   return (
     <Box
@@ -73,7 +76,7 @@ export default function ProfilePage() {
             }}
           >
             <Avatar
-              src={user?.avatar ? `${import.meta.env.VITE_API_URL}${user.avatar}` : undefined}
+              src={user?.avatar ? `${import.meta.env.VITE_TARGET}${user.avatar}` : undefined}
               sx={{
                 width: 120,
                 height: 120,
