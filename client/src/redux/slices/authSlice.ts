@@ -17,9 +17,6 @@ const authSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
-    updateUserAvatar: (state, action: PayloadAction<FormData>) => {
-      updateAvatar(action.payload);
-    },
   },
   extraReducers: (builder) => {
     builder
@@ -88,7 +85,9 @@ const authSlice = createSlice({
       })
       // Update Avatar
       .addCase(updateAvatar.fulfilled, (state, action) => {
-        state.user = action.payload.user;
+        if (state.user) {
+          state.user.avatar = action.payload.user.avatar;
+        }
         state.accessToken = action.payload.accessToken;
         setAccessToken(action.payload.accessToken);
       })
@@ -98,5 +97,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { clearError, updateUserAvatar } = authSlice.actions;
+export const { clearError } = authSlice.actions;
 export default authSlice.reducer;

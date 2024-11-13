@@ -8,7 +8,7 @@ const generateToken = require('../utils/generateToken');
 const { cookieConfig } = require('../configs/cookieConfig');
 
 // Создаем папку для изображений, если её нет
-const uploadDir = path.join(__dirname, '..', 'img');
+const uploadDir = path.join(__dirname, '../../img')
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
@@ -38,10 +38,22 @@ const upload = multer({
 uploadRouter.post('/avatar', verifyAccessToken, upload.single('avatar'), async (req, res) => {
   try {
     const userId = res.locals.user.id;
+
+    // Получаем текущего пользователя
+    const currentUser = await User.findByPk(userId);
+
+    // Если у пользователя уже есть аватар, удаляем его
+    if (currentUser.avatar) {
+      const oldAvatarPath = path.join(uploadDir, path.basename(currentUser.avatar));
+      if (fs.existsSync(oldAvatarPath)) {
+        fs.unlinkSync(oldAvatarPath);
+      }
+    }
+
     const oldPath = path.join(uploadDir, req.file.filename);
     const newFileName = `avatar_${userId}${path.extname(req.file.originalname)}`;
     const newPath = path.join(uploadDir, newFileName);
-    
+
     fs.renameSync(oldPath, newPath);
     const avatarPath = `/api/img/${newFileName}`;
 
