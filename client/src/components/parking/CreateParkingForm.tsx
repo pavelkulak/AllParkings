@@ -27,6 +27,7 @@ export default function CreateParkingForm() {
 
   const [parkingData, setParkingData] = useState({
     name: '',
+    description: '',
     location: {
       address: '',
       coordinates: {
@@ -183,6 +184,17 @@ export default function CreateParkingForm() {
               value={parkingData.name}
               onChange={handleChange}
               autoFocus
+            />
+
+            <TextField
+              fullWidth
+              multiline
+              rows={4}
+              name="description"
+              label="Описание парковки"
+              value={parkingData.description}
+              onChange={handleChange}
+              helperText="Укажите особенности парковки, режим работы и другую полезную информацию"
             />
 
             <Tabs

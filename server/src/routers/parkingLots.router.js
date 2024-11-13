@@ -21,15 +21,16 @@ parkingLotsRouter.get('/all', async (req, res) => {
 parkingLotsRouter.post('/', verifyAccessToken, async (req, res) => {
   try {
     const { user } = res.locals;
-    const { name, location, price_per_hour } = req.body;
+    const { name, description, location, price_per_hour } = req.body;
 
     if (!name || !location || !price_per_hour) {
-      return res.status(400).json({ error: 'Все поля обязательны для заполнения' });
+      return res.status(400).json({ error: 'Все обязательные поля должны быть заполнены' });
     }
 
     const parkingLot = await ParkingLot.create({
       owner_id: user.id,
       name,
+      description: description || '',
       location: {
         address: location.address,
         coordinates: {
