@@ -16,6 +16,7 @@ import logo from "../../img/logo.svg";
 import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
 import AccountBoxIcon from "@mui/icons-material/AccountBox";
+import LocalParkingIcon from "@mui/icons-material/LocalParking";
 import iconHolder from "../../img/icon-holder.svg";
 import { useTheme } from "@mui/material/styles";
 import { useState } from "react";
@@ -103,8 +104,8 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
                   mr: 2,
                   border: `1px solid ${theme.palette.grey[500]}`,
                   bgcolor: "lightblue",
-                  width: 60,
-                  height: 60,
+                  width: 50,
+                  height: 50,
                   cursor: "pointer",
                 }}
                 onClick={handleMenuOpen}
@@ -121,6 +122,7 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
                   vertical: "top",
                   horizontal: "left",
                 }}
+                sx={{ margin: 1.2 }}
               >
                 <MenuItem
                   sx={{
@@ -151,9 +153,9 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
                     src={
                       user.avatar
                         ? `${import.meta.env.VITE_TARGET}${user.avatar}`
-                        : iconHolder
+                        : user?.name.charAt(0).toUpperCase() || undefined
                     }
-                    sx={{ width: 40, height: 40, mr: 1 }}
+                    sx={{ width: 40, height: 40, mr: 3 }}
                   />
                   <Typography variant="body1">{user.name}</Typography>
                 </MenuItem>
@@ -177,6 +179,19 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
                   </ListItemIcon>
                   Профиль
                 </MenuItem>
+
+                {user.role === "owner" && (
+                  <MenuItem
+                    component={Link}
+                    to="/myparking"
+                    onClick={handleMenuClose}
+                  >
+                    <ListItemIcon>
+                      <LocalParkingIcon fontSize="small" />
+                    </ListItemIcon>
+                    Моя парковка
+                  </MenuItem>
+                )}
 
                 <MenuItem
                   component={Link}
@@ -246,3 +261,5 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
     </AppBar>
   );
 }
+                
+              
