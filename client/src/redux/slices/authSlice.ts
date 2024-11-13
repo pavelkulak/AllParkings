@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { AuthState } from '../../types/auth.types';
 import { setAccessToken } from '../../services/axiosInstance';
-import { refreshToken, signIn, signUp, signOut } from '../../redux/thunkActions';
+import { refreshToken, signIn, signUp, signOut, updateAvatar } from '../../redux/thunkActions';
 
 const initialState: AuthState = {
   user: null,
@@ -17,10 +17,8 @@ const authSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
-    updateUserAvatar: (state, action: PayloadAction<string>) => {
-      if (state.user) {
-        state.user.avatar = action.payload;
-      }
+    updateUserAvatar: (state, action: PayloadAction<FormData>) => {
+      updateAvatar(action.payload);
     },
   },
   extraReducers: (builder) => {
@@ -87,6 +85,14 @@ const authSlice = createSlice({
       .addCase(signOut.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload as string;
+      })
+      // Update Avatar
+      .addCase(updateAvatar.fulfilled, (state, action) => {
+        state.user = action.payload.user;
+        state.accessToken = action.payload.accessToken;
+      })
+      .addCase(updateAvatar.rejected, (state) => {
+        state.error = 'Ошибка при загрузке аватара';
       });
   },
 });

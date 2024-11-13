@@ -40,4 +40,16 @@ export const signOut = createAsyncThunk<void, void>(
       return rejectWithValue('Ошибка при выходе из системы');
     }
   }
+);
+
+export const updateAvatar = createAsyncThunk<AuthResponse, FormData>(
+  'auth/updateAvatar',
+  async (formData, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.post<AuthResponse>('/upload/avatar', formData);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue('Ошибка при загрузке аватара');
+    }
+  }
 ); 

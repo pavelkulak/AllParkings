@@ -26,7 +26,7 @@ app.use(morgan('dev'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-app.use('/img', express.static(path.join(__dirname, 'img')));
+app.use('/api/img', express.static(path.join(__dirname, 'img')));
 
 app.use('/api/auth', authRouter);
 

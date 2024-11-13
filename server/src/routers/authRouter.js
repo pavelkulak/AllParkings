@@ -42,7 +42,8 @@ authRouter.post('/signup', async (req, res) => {
                 patronymic: patronymic || null,
                 phone,
                 role,
-                password: hashedPassword
+                password: hashedPassword,
+                avatar: null
             }
         });
 
