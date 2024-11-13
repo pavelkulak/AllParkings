@@ -11,6 +11,7 @@ import ParkingConstructor from "./components/constructor/ParkingConstructor";
 import CreateParkingForm from "./components/parking/CreateParkingForm";
 import ProfilePage from "./components/pages/ProfilePage";
 import { ParkingMap } from './components/parking/ParkingMap';
+import ParkingOwnerPage from "./components/pages/ParkingOwnerPage";
 
 
 function App() {
@@ -27,11 +28,11 @@ function App() {
 
   const routes = [
     {
-      path: '/',
+      path: "/",
       element: <Root />,
       children: [
         {
-          path: '/',
+          path: "/",
           element: (
             <ProtectedRoute isAllowed={!!user} user={null}>
               <div>Защищенная страница</div>
@@ -39,23 +40,23 @@ function App() {
           ),
         },
         {
-          path: '/signin',
+          path: "/signin",
           element: user ? <Navigate to="/" replace /> : <SignIn />,
         },
         {
-          path: '/signup',
+          path: "/signup",
           element: user ? <Navigate to="/" replace /> : <SignUp />,
         },
         {
-          path: '/profile',
+          path: "/profile",
           element: <ProfilePage />,
         },
         {
-          path: '/parking-constructor',
+          path: "/parking-constructor",
           element: (
-            <ProtectedRoute 
-              isAllowed={!!user} 
-              allowedRoles={['owner', 'admin']}
+            <ProtectedRoute
+              isAllowed={!!user}
+              allowedRoles={["owner", "admin"]}
               user={user}
               redirectPath="/"
             >
@@ -64,11 +65,11 @@ function App() {
           ),
         },
         {
-          path: '/create-parking',
+          path: "/create-parking",
           element: (
-            <ProtectedRoute 
-              isAllowed={!!user} 
-              allowedRoles={['owner', 'admin']}
+            <ProtectedRoute
+              isAllowed={!!user}
+              allowedRoles={["owner", "admin"]}
               user={user}
               redirectPath="/"
             >
@@ -77,11 +78,11 @@ function App() {
           ),
         },
         {
-          path: '/parking-constructor/:parkingId',
+          path: "/parking-constructor/:parkingId",
           element: (
-            <ProtectedRoute 
-              isAllowed={!!user} 
-              allowedRoles={['owner', 'admin']}
+            <ProtectedRoute
+              isAllowed={!!user}
+              allowedRoles={["owner", "admin"]}
               user={user}
               redirectPath="/"
             >
@@ -90,8 +91,21 @@ function App() {
           ),
         },
         {
-          path: '/parkings/map',
+          path: "/parkings/map",
           element: <ParkingMap />,
+        },
+        {
+          path: "/myparking",
+          element: (
+            <ProtectedRoute
+              isAllowed={!!user}
+              allowedRoles={["owner"]}
+              user={user}
+              redirectPath="/"
+            >
+              <ParkingOwnerPage />
+            </ProtectedRoute>
+          ),
         },
       ],
     },
