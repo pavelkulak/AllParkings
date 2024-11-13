@@ -13,10 +13,9 @@ import {
   MenuItem,
 } from "@mui/material";
 import logo from "../../img/logo.svg";
-import TopicIcon from "@mui/icons-material/MenuBook";
+import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
-import AddIcon from "@mui/icons-material/Add";
-import NoteAddIcon from "@mui/icons-material/NoteAdd";
+import AccountBoxIcon from "@mui/icons-material/AccountBox";
 import iconHolder from "../../img/icon-holder.svg";
 import { useTheme } from "@mui/material/styles";
 import { useState } from "react";
@@ -29,17 +28,6 @@ interface NavBarProps {
 }
 
 export default function NavBar({ user, handleSignOut }: NavBarProps) {
-
-  // function handleMenuOpen(event: MouseEvent<HTMLDivElement, MouseEvent>): void {
-  //   throw new Error("Function not implemented.");
-  // }
-
-  // function handleMenuClose(
-  //   event: {},
-  //   reason: "backdropClick" | "escapeKeyDown"
-  // ): void {
-  //   throw new Error("Function not implemented.");
-  // }
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -126,12 +114,12 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
                 open={Boolean(anchorEl)}
                 onClose={handleMenuClose}
                 anchorOrigin={{
-                  vertical: "top",
-                  horizontal: "right",
+                  vertical: "bottom",
+                  horizontal: "left",
                 }}
                 transformOrigin={{
-                  vertical: "bottom",
-                  horizontal: "right",
+                  vertical: "top",
+                  horizontal: "left",
                 }}
               >
                 <MenuItem
@@ -161,8 +149,8 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
                   <Avatar
                     alt={user.name}
                     src={
-                      user.img
-                        ? `${import.meta.env.VITE_TARGET}${user.img}`
+                      user.avatar
+                        ? `${import.meta.env.VITE_TARGET}${user.avatar}`
                         : iconHolder
                     }
                     sx={{ width: 40, height: 40, mr: 1 }}
@@ -179,54 +167,36 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
                   }}
                 />
 
-                <MenuItem component={Link} to="/menu" onClick={handleMenuClose}>
+                <MenuItem
+                  component={Link}
+                  to="/profile"
+                  onClick={handleMenuClose}
+                >
                   <ListItemIcon>
-                    <TopicIcon fontSize="small" />
+                    <AccountBoxIcon fontSize="small" />
                   </ListItemIcon>
-                  Главное меню
+                  Профиль
                 </MenuItem>
 
-                <Box
-                  sx={{
-                    width: "100%", // или установите фиксированную ширину
-                    height: "3px", // Высота линии
-                    backgroundColor: "#d1d1d1", // Цвет линии
-                    margin: "4px 0", // Отступы сверху и снизу
-                  }}
-                />
+                <MenuItem
+                  component={Link}
+                  to="/settings"
+                  onClick={handleMenuClose}
+                >
+                  <ListItemIcon>
+                    <SettingsIcon fontSize="small" />
+                  </ListItemIcon>
+                  Настройки
+                </MenuItem>
 
-                {user.isAdmin && (
-                  <>
-                    <MenuItem
-                      component={Link}
-                      to="/topics/create"
-                      onClick={handleMenuClose}
-                    >
-                      <ListItemIcon>
-                        <AddIcon fontSize="small" />
-                      </ListItemIcon>
-                      Новая тема
-                    </MenuItem>
-
-                    <MenuItem
-                      component={Link}
-                      to="/cards/create"
-                      onClick={handleMenuClose}
-                    >
-                      <ListItemIcon>
-                        <NoteAddIcon fontSize="small" />
-                      </ListItemIcon>
-                      Новый вопрос
-                    </MenuItem>
-                  </>
+                {user && (
+                  <MenuItem onClick={handleSignOut} sx={{ color: "red" }}>
+                    <ListItemIcon sx={{ color: "red" }}>
+                      <LogoutIcon fontSize="small" />
+                    </ListItemIcon>
+                    Выход
+                  </MenuItem>
                 )}
-
-                <MenuItem onClick={handleSignOut}>
-                  <ListItemIcon>
-                    <LogoutIcon fontSize="small" />
-                  </ListItemIcon>
-                  Выход
-                </MenuItem>
               </Menu>
             </>
           ) : (
