@@ -16,6 +16,7 @@ import logo from "../../img/logo.svg";
 import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
 import AccountBoxIcon from "@mui/icons-material/AccountBox";
+import LocalParkingIcon from "@mui/icons-material/LocalParking";
 import iconHolder from "../../img/icon-holder.svg";
 import { useTheme } from "@mui/material/styles";
 import { useState } from "react";
@@ -178,6 +179,19 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
                   Профиль
                 </MenuItem>
 
+                {user.role === "owner" && (
+                  <MenuItem
+                    component={Link}
+                    to="/myparking"
+                    onClick={handleMenuClose}
+                  >
+                    <ListItemIcon>
+                      <LocalParkingIcon fontSize="small" />
+                    </ListItemIcon>
+                    Моя парковка
+                  </MenuItem>
+                )}
+
                 <MenuItem
                   component={Link}
                   to="/settings"
@@ -246,3 +260,5 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
     </AppBar>
   );
 }
+                
+              
