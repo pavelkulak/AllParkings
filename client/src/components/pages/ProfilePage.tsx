@@ -4,25 +4,22 @@ import {
   Typography,
   Avatar,
   Button,
-  List,
-  ListItem,
-  ListItemText,
+  TextField,
 } from '@mui/material';
-import { Add as AddIcon } from '@mui/icons-material';
-import { useState, useRef, useEffect } from 'react';
-import { updateAvatar } from '../../redux/thunkActions';
+import { useState, useRef } from 'react';
+import { updateAvatar, updateUserProfile } from '../../redux/thunkActions';
 
 export default function ProfilePage() {
   const { user } = useAppSelector((state) => state.auth);
   const [uploading, setUploading] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [isEditingPhone, setIsEditingPhone] = useState(false);
+  const [surname, setSurname] = useState(user?.surname || '');
+  const [name, setName] = useState(user?.name || '');
+  const [patronymic, setPatronymic] = useState(user?.patronymic || '');
+  const [phone, setPhone] = useState(user?.phone || '');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dispatch = useAppDispatch();
-
-  const fullName = `
-  ${user?.surname || ''} 
-  ${user?.name || ''} 
-  ${user?.patronymic || ''}`
-  .trim();
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
@@ -41,8 +38,15 @@ export default function ProfilePage() {
     });
   };
 
-  useEffect(() => {
-  }, [user?.avatar]);
+  const handleSaveName = () => {
+    dispatch(updateUserProfile({ surname, name, patronymic }));
+    setIsEditingName(false);
+  };
+
+  const handleSavePhone = () => {
+    dispatch(updateUserProfile({ phone }));
+    setIsEditingPhone(false);
+  };
 
   return (
     <Box
@@ -107,8 +111,8 @@ export default function ProfilePage() {
           </Box>
 
           <Box sx={{ flex: 1 }}>
-            <Typography variant='body1' sx={{ mb: 2 }}>
-              <strong>Номер телефона:</strong> {user?.phone || ' Error'}
+            <Typography variant='body1' sx={{ mb: 2, color: 'grey' }}>
+              {user?.email || ' Error'}
             </Typography>
 
             <Typography
@@ -116,11 +120,40 @@ export default function ProfilePage() {
               sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}
             >
               <span>
-                <strong>Имя:</strong> {fullName || ' Error'}
+                <strong>Имя:</strong> 
+                {isEditingName ? (
+                  <>
+                    <TextField
+                      value={surname}
+                      onChange={(e) => setSurname(e.target.value)}
+                      size="small"
+                      label="Фамилия"
+                    />
+                    <TextField
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      size="small"
+                      label="Имя"
+                    />
+                    <TextField
+                      value={patronymic}
+                      onChange={(e) => setPatronymic(e.target.value)}
+                      size="small"
+                      label="Отчество"
+                    />
+                    <Button variant='text' color='primary' size='small' onClick={handleSaveName}>
+                      сохранить
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    {`${surname} ${name} ${patronymic}`.trim() || ' Error'}
+                    <Button variant='text' color='primary' size='small' onClick={() => setIsEditingName(true)}>
+                      сменить имя
+                    </Button>
+                  </>
+                )}
               </span>
-              <Button variant='text' color='primary' size='small'>
-                сменить имя
-              </Button>
             </Typography>
 
             <Typography
@@ -128,38 +161,35 @@ export default function ProfilePage() {
               sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}
             >
               <span>
-                <strong>Почта:</strong> {user?.email || ' Error'}
+                <strong>Номер телефона:</strong> 
+                {isEditingPhone ? (
+                  <>
+                    <TextField
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      size="small"
+                    />
+                    <Button variant='text' color='primary' size='small' onClick={handleSavePhone}>
+                      сохранить
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    {phone || ' Error'}
+                    <Button variant='text' color='primary' size='small' onClick={() => setIsEditingPhone(true)}>
+                      сменить номер телефона
+                    </Button>
+                  </>
+                )}
               </span>
-              <Button variant='text' color='primary' size='small'>
-                сменить почту
-              </Button>
             </Typography>
 
-            <Typography
-              variant='body1'
-              sx={{ display: 'flex', justifyContent: 'space-between' }}
-            >
-              <span>
-                <strong>Пароль:</strong> ********
-              </span>
-              <Button variant='text' color='primary' size='small'>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <Button variant='text' color='error' size='small'>
                 сменить пароль
               </Button>
-            </Typography>
+            </Box>
           </Box>
-        </Box>
-
-        <Box sx={{ border: '1px solid #ddd', borderRadius: 3, p: 2, mt: 2 }}>
-          <List>
-            {['Избранное', 'История', 'Статистика'].map((text, index) => (
-              <ListItem key={index} secondaryAction={<AddIcon />}>
-                <ListItemText
-                  primary={text}
-                  primaryTypographyProps={{ fontWeight: 'bold' }}
-                />
-              </ListItem>
-            ))}
-          </List>
         </Box>
       </Box>
     </Box>
