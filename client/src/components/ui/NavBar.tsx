@@ -88,7 +88,7 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
           sx={{
             display: { xs: "flex", sm: "flex" },
             alignItems: "center",
-            padding: "10px 20px",            
+            padding: "10px 20px",
           }}
         >
           {user ? (
@@ -122,7 +122,7 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
                   vertical: "top",
                   horizontal: "left",
                 }}
-                sx={{margin:1.2}}
+                sx={{ margin: 1.2 }}
               >
                 <MenuItem
                   sx={{
@@ -153,7 +153,7 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
                     src={
                       user.avatar
                         ? `${import.meta.env.VITE_TARGET}${user.avatar}`
-                        : iconHolder
+                        : user?.name.charAt(0).toUpperCase() || undefined
                     }
                     sx={{ width: 40, height: 40, mr: 3 }}
                   />
