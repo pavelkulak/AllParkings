@@ -103,8 +103,8 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
                   mr: 2,
                   border: `1px solid ${theme.palette.grey[500]}`,
                   bgcolor: "lightblue",
-                  width: 60,
-                  height: 60,
+                  width: 50,
+                  height: 50,
                   cursor: "pointer",
                 }}
                 onClick={handleMenuOpen}
@@ -121,6 +121,7 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
                   vertical: "top",
                   horizontal: "left",
                 }}
+                sx={{margin:1.2, width:"1000px"}}
               >
                 <MenuItem
                   sx={{
