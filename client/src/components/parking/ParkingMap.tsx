@@ -3,6 +3,7 @@ import { load } from '@2gis/mapgl';
 import { Box, Container, Paper, Typography, CircularProgress } from '@mui/material';
 import { Parking } from '../../types/parking';
 import { LocationButton } from '../map/LocationButton';
+import { ParkingModal } from './ParkingModal';
 
 export const ParkingMap = () => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -14,6 +15,7 @@ export const ParkingMap = () => {
   const [mapglAPI, setMapglAPI] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [parkings, setParkings] = useState<Parking[]>([]);
+  const [selectedParking, setSelectedParking] = useState<Parking | null>(null);
 
   const createUserMarker = (mapglAPI: any, map: any, coords: [number, number]) => {
     if (userMarkerRef.current) {
@@ -176,15 +178,7 @@ export const ParkingMap = () => {
   }, [parkings]);
 
   const handleMarkerClick = (parking: Parking) => {
-    if (userMarkerRef.current && mapInstanceRef.current) {
-      const userCoords = userMarkerRef.current.getCoordinates();
-      const parkingCoords: [number, number] = [
-        parking.location.coordinates.lon,
-        parking.location.coordinates.lat
-      ];
-      
-      buildRoute(mapglAPI, mapInstanceRef.current, userCoords, parkingCoords);
-    }
+    setSelectedParking(parking);
   };
 
   return (
@@ -217,6 +211,11 @@ export const ParkingMap = () => {
           <Box ref={mapContainerRef} sx={{ height: 600, width: '100%' }} />
         </Box>
       </Paper>
+      <ParkingModal 
+        parking={selectedParking}
+        open={!!selectedParking}
+        onClose={() => setSelectedParking(null)}
+      />
     </Container>
   );
 };

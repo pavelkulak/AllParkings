@@ -104,4 +104,28 @@ parkingLotsRouter.post('/:id/spaces', verifyAccessToken, async (req, res) => {
   }
 });
 
+// Получение парковки с местами по ID (публичный эндпоинт)
+parkingLotsRouter.get('/:id/spaces', async (req, res) => {
+  try {
+    console.log('Fetching spaces for parking:', req.params.id);
+    const parkingLot = await ParkingLot.findByPk(req.params.id, {
+      include: [{
+        model: ParkingSpace,
+        attributes: ['id', 'space_number', 'is_free', 'location']
+      }]
+    });
+    
+    if (!parkingLot) {
+      console.log('Parking lot not found');
+      return res.status(404).json({ error: 'Парковка не найдена' });
+    }
+
+    console.log('Found parking lot:', parkingLot.toJSON());
+    res.json(parkingLot);
+  } catch (error) {
+    console.error('Error fetching parking spaces:', error);
+    res.status(500).json({ error: 'Ошибка при получении парковки' });
+  }
+});
+
 module.exports = parkingLotsRouter; 
