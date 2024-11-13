@@ -39,6 +39,12 @@ export default function CreateParkingForm() {
     status: 'pending' as const
   });
 
+  const [addressSuggestions, setAddressSuggestions] = useState<Array<{
+    name: string;
+    full_name: string;
+    coordinates: [number, number];
+  }>>([]);
+
   const mapContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -118,7 +124,7 @@ export default function CreateParkingForm() {
             }
           }));
         } catch (error) {
-          console.error('Ошибка при получении адреса:', error);
+          console.error('Оибка при получении адреса:', error);
         }
       });
 
@@ -137,6 +143,67 @@ export default function CreateParkingForm() {
         ? { location: { ...prev.location, address: value } }
         : { [name]: value })
     }));
+  };
+
+  const handleAddressInput = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    console.log('Input value:', value);
+    handleChange(e);
+
+    if (value.length < 3) {
+      console.log('Input too short, clearing suggestions');
+      setAddressSuggestions([]);
+      return;
+    }
+
+    try {
+      // const url = `https://catalog.api.2gis.com/3.0/items/geocode?q=${encodeURIComponent(value)}&fields=items.point,items.full_name&key=${import.meta.env.VITE_2GIS_API_KEY}`;
+      console.log('Fetching suggestions from:', url);
+
+      const response = await fetch(url);
+      console.log('Response status:', response.status);
+      
+      const data = await response.json();
+      console.log('API Response:', data);
+      
+      if (!data.result || !data.result.items) {
+        console.log('No items in response');
+        return;
+      }
+
+      const suggestions = data.result.items
+        .filter((item: any) => item.point && item.full_name)
+        .map((item: any) => ({
+          name: item.name || '',
+          full_name: item.full_name,
+          coordinates: [item.point.lon, item.point.lat]
+        }));
+      
+      console.log('Processed suggestions:', suggestions);
+      setAddressSuggestions(suggestions);
+    } catch (error) {
+      console.error('Error fetching suggestions:', error);
+    }
+  };
+
+  const handleSuggestionSelect = (suggestion: typeof addressSuggestions[0]) => {
+    console.log('Selected suggestion:', suggestion);
+    setParkingData(prev => ({
+      ...prev,
+      location: {
+        address: suggestion.full_name,
+        coordinates: {
+          lat: suggestion.coordinates[1],
+          lon: suggestion.coordinates[0]
+        }
+      }
+    }));
+    setAddressSuggestions([]);
+    
+    if (map && marker) {
+      console.log('Moving marker to:', suggestion.coordinates);
+      marker.setCoordinates(suggestion.coordinates);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -220,14 +287,43 @@ export default function CreateParkingForm() {
                 />
               </>
             ) : (
-              <TextField
-                required
-                fullWidth
-                name="address"
-                label="Адрес парковки"
-                value={parkingData.location.address}
-                onChange={handleChange}
-              />
+              <Box sx={{ position: 'relative' }}>
+                <TextField
+                  required
+                  fullWidth
+                  name="address"
+                  label="Адрес парковки"
+                  value={parkingData.location.address}
+                  onChange={handleAddressInput}
+                  autoComplete="off"
+                />
+                {addressSuggestions.length > 0 && (
+                  <Paper
+                    sx={{
+                      position: 'absolute',
+                      width: '100%',
+                      maxHeight: 200,
+                      overflow: 'auto',
+                      zIndex: 1000,
+                      mt: 1
+                    }}
+                  >
+                    {addressSuggestions.map((suggestion, index) => (
+                      <Box
+                        key={index}
+                        sx={{
+                          p: 1,
+                          cursor: 'pointer',
+                          '&:hover': { bgcolor: 'action.hover' }
+                        }}
+                        onClick={() => handleSuggestionSelect(suggestion)}
+                      >
+                        <Typography variant="body2">{suggestion.full_name}</Typography>
+                      </Box>
+                    ))}
+                  </Paper>
+                )}
+              </Box>
             )}
 
             <TextField
