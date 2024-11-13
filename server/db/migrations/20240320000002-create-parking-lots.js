@@ -50,6 +50,11 @@ module.exports = {
         type: Sequelize.BIGINT,
         defaultValue: 0
       },
+      description: {
+        type: Sequelize.TEXT,
+        allowNull: true,
+        defaultValue: ''
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
