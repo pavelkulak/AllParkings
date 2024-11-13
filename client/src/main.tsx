@@ -26,11 +26,11 @@ const theme = createTheme({
 
 
 createRoot(rootElement).render(
-  <StrictMode>
+  // <StrictMode>
     <ThemeProvider theme={theme}>
       <Provider store={store}>
         <App />
       </Provider>
     </ThemeProvider>
-  </StrictMode>
+  // </StrictMode>
 );
