@@ -10,6 +10,7 @@ import "./App.css";
 import ParkingConstructor from "./components/constructor/ParkingConstructor";
 import CreateParkingForm from "./components/parking/CreateParkingForm";
 import ProfilePage from "./components/pages/ProfilePage";
+import { ParkingMap } from './components/parking/ParkingMap';
 
 
 function App() {
@@ -87,6 +88,10 @@ function App() {
               <ParkingConstructor />
             </ProtectedRoute>
           ),
+        },
+        {
+          path: '/parkings/map',
+          element: <ParkingMap />,
         },
       ],
     },

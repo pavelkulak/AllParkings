@@ -2,6 +2,21 @@ const parkingLotsRouter = require('express').Router();
 const { ParkingLot, ParkingSpace } = require('../../db/models');
 const { verifyAccessToken } = require('../middleware/verifyToken');
 
+// Получение всех активных парковок (публичный эндпоинт)
+parkingLotsRouter.get('/all', async (req, res) => {
+  try {
+    const parkings = await ParkingLot.findAll({
+      where: {
+        status: 'active'
+      }
+    });
+    res.json(parkings);
+  } catch (error) {
+    console.error('Ошибка при получении парковок:', error);
+    res.status(500).json({ error: 'Ошибка при получении парковок' });
+  }
+});
+
 // Создание парковки (первый этап)
 parkingLotsRouter.post('/', verifyAccessToken, async (req, res) => {
   try {
@@ -15,7 +30,13 @@ parkingLotsRouter.post('/', verifyAccessToken, async (req, res) => {
     const parkingLot = await ParkingLot.create({
       owner_id: user.id,
       name,
-      location,
+      location: {
+        address: location.address,
+        coordinates: {
+          lat: location.coordinates.lat,
+          lon: location.coordinates.lon
+        }
+      },
       capacity: 0,
       price_per_hour,
       status: 'pending'
