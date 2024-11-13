@@ -1,6 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { AuthResponse, LoginCredentials, RegisterCredentials } from '../types/auth.types';
 import axiosInstance from '../services/axiosInstance';
+import { IUser } from '../types/auth.types';
 
 export const refreshToken = createAsyncThunk<AuthResponse, void>(
   'auth/refreshToken',
@@ -50,6 +51,19 @@ export const updateAvatar = createAsyncThunk<AuthResponse, FormData>(
       return response.data;
     } catch (error) {
       return rejectWithValue('Ошибка при загрузке аватара');
+    }
+  }
+);
+
+export const updateUserProfile = createAsyncThunk<AuthResponse, Partial<IUser>>(
+  'auth/updateUserProfile',
+  async (userData, { rejectWithValue }) => {
+    try {
+      console.log('userData', userData);
+      const response = await axiosInstance.put<AuthResponse>('/auth/profile', userData);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue('Ошибка при обновлении профиля');
     }
   }
 ); 

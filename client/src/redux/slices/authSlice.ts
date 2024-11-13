@@ -1,7 +1,7 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
 import type { AuthState } from '../../types/auth.types';
 import { setAccessToken } from '../../services/axiosInstance';
-import { refreshToken, signIn, signUp, signOut, updateAvatar } from '../../redux/thunkActions';
+import { refreshToken, signIn, signUp, signOut, updateAvatar, updateUserProfile } from '../../redux/thunkActions';
 
 const initialState: AuthState = {
   user: null,
@@ -20,7 +20,6 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Refresh Token
       .addCase(refreshToken.pending, (state) => {
         state.status = 'loading';
         state.error = null;
@@ -38,7 +37,6 @@ const authSlice = createSlice({
         state.accessToken = '';
         setAccessToken('');
       })
-      // Sign In
       .addCase(signIn.pending, (state) => {
         state.status = 'loading';
         state.error = null;
@@ -53,7 +51,6 @@ const authSlice = createSlice({
         state.status = 'failed';
         state.error = action.error.message ?? 'Unknown error';
       })
-      // Sign Up
       .addCase(signUp.pending, (state) => {
         state.status = 'loading';
         state.error = null;
@@ -68,7 +65,6 @@ const authSlice = createSlice({
         state.status = 'failed';
         state.error = action.error.message ?? 'Unknown error';
       })
-      // Sign Out
       .addCase(signOut.pending, (state) => {
         state.status = 'loading';
       })
@@ -83,7 +79,6 @@ const authSlice = createSlice({
         state.status = 'failed';
         state.error = action.payload as string;
       })
-      // Update Avatar
       .addCase(updateAvatar.fulfilled, (state, action) => {
         if (state.user) {
           state.user.avatar = action.payload.user.avatar;
@@ -93,6 +88,16 @@ const authSlice = createSlice({
       })
       .addCase(updateAvatar.rejected, (state) => {
         state.error = 'Ошибка при загрузке аватара';
+      })
+      .addCase(updateUserProfile.fulfilled, (state, action) => {
+        if (state.user) {
+          state.user = { ...state.user, ...action.payload.user };
+        }
+        state.accessToken = action.payload.accessToken;
+        setAccessToken(action.payload.accessToken);
+      })
+      .addCase(updateUserProfile.rejected, (state) => {
+        state.error = 'Ошибка при обновлении профиля';
       });
   },
 });
