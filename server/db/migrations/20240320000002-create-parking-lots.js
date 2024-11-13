@@ -24,8 +24,15 @@ module.exports = {
         allowNull: false
       },
       location: {
-        type: Sequelize.STRING,
-        allowNull: false
+        type: Sequelize.JSON,
+        allowNull: false,
+        defaultValue: {
+          address: '',
+          coordinates: {
+            lat: 0,
+            lon: 0
+          }
+        }
       },
       capacity: {
         type: Sequelize.BIGINT,
