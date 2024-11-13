@@ -1,4 +1,3 @@
-export interface IUser { 
   isAdmin: any;
   id: number;
   name: string;
