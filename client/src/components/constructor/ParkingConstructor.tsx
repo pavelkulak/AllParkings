@@ -24,7 +24,7 @@ import { useParams } from 'react-router-dom';
 import { useAppDispatch } from '../../redux/hooks';
 import { saveSpacesConfiguration } from '../../redux/parkingThunks';
 
-interface ParkingSpace {
+export interface ParkingSpace {
     id: number;
     number: string;
     x: number;
@@ -34,19 +34,19 @@ interface ParkingSpace {
     height: 100; // фиксированная высота
   }
 
-interface GridSize {
+export interface GridSize {
   width: number;
   height: number;
   maxSpaces: number;
 }  
 
-const GRID_SIZES: Record<string, GridSize> = {
+export const GRID_SIZES: Record<string, GridSize> = {
     small: { width: 600, height: 400, maxSpaces: 20 },
     medium: { width: 800, height: 600, maxSpaces: 40 },
     large: { width: 1000, height: 800, maxSpaces: 50 }
   };
 
-  const ConstructorGrid = styled(Box)`
+  export const ConstructorGrid = styled(Box)`
   border: 1px solid #ccc;
   position: relative;
   background-size: 20px 20px;
