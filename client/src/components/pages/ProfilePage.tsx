@@ -120,9 +120,9 @@ export default function ProfilePage() {
               sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}
             >
               <span>
-                <strong>Имя:</strong> 
+                <strong>ФИО: </strong> 
                 {isEditingName ? (
-                  <>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <TextField
                       value={surname}
                       onChange={(e) => setSurname(e.target.value)}
@@ -144,7 +144,7 @@ export default function ProfilePage() {
                     <Button variant='text' color='primary' size='small' onClick={handleSaveName}>
                       сохранить
                     </Button>
-                  </>
+                  </Box>
                 ) : (
                   <>
                     {`${surname} ${name} ${patronymic}`.trim() || ' Error'}
@@ -161,9 +161,9 @@ export default function ProfilePage() {
               sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}
             >
               <span>
-                <strong>Номер телефона:</strong> 
+                <strong>Номер телефона: </strong> 
                 {isEditingPhone ? (
-                  <>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <TextField
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
@@ -172,7 +172,7 @@ export default function ProfilePage() {
                     <Button variant='text' color='primary' size='small' onClick={handleSavePhone}>
                       сохранить
                     </Button>
-                  </>
+                  </Box>
                 ) : (
                   <>
                     {phone || ' Error'}
