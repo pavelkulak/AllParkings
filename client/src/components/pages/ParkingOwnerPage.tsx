@@ -19,6 +19,7 @@ import { Add as AddIcon } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 import Autocomplete from "@mui/material/Autocomplete";
 import ParkingConstructor from "../constructor/ParkingConstructor";
+import { Link } from "react-router-dom";
 
 interface IParkingOption {
   label: string;
@@ -151,10 +152,22 @@ export default function ParkingOwnerPage() {
               <ParkingConstructor />
             </Box>
           </Modal>
-          <Button fullWidth variant="outlined" size="small">
+          <Button
+            fullWidth
+            variant="outlined"
+            size="small"
+            component={Link}
+            to="/errorpage"
+          >
             Статистика
           </Button>
-          <Button fullWidth variant="outlined" size="small">
+          <Button
+            fullWidth
+            variant="outlined"
+            size="small"
+            component={Link}
+            to="/errorpage"
+          >
             Посмотреть отзывы
           </Button>
           <Button fullWidth variant="contained" size="small" type="submit">

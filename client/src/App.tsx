@@ -12,6 +12,7 @@ import CreateParkingForm from "./components/parking/CreateParkingForm";
 import ProfilePage from "./components/pages/ProfilePage";
 import { ParkingMap } from './components/parking/ParkingMap';
 import ParkingOwnerPage from "./components/pages/ParkingOwnerPage";
+import ErrorPage from "./components/pages/ErrorPage";
 
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
     {
       path: "/",
       element: <Root />,
+      errorElement: <ErrorPage />,
       children: [
         {
           path: "/",
