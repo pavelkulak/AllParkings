@@ -107,8 +107,8 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
               <Avatar
                 alt={user.name}
                 src={
-                  user.img
-                    ? `${import.meta.env.VITE_TARGET}${user.img}`
+                  user.avatar
+                    ? `${import.meta.env.VITE_TARGET}${user.avatar}`
                     : iconHolder
                 }
                 sx={{
