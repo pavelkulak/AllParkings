@@ -3,7 +3,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const { User } = require('../../db/models');
-const { verifyRefreshToken, verifyAccessToken } = require('../middleware/verifyToken');
+const { verifyAccessToken } = require('../middleware/verifyToken');
 const generateToken = require('../utils/generateToken');
 const { cookieConfig } = require('../configs/cookieConfig');
 
@@ -43,7 +43,7 @@ uploadRouter.post('/avatar', verifyAccessToken, upload.single('avatar'), async (
     const newPath = path.join(uploadDir, newFileName);
     
     fs.renameSync(oldPath, newPath);
-    const avatarPath = `/img/${newFileName}`;
+    const avatarPath = `/api/img/${newFileName}`;
 
     // Обновляем пользователя в БД
     await User.update(

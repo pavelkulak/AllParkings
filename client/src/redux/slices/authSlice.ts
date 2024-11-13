@@ -90,6 +90,7 @@ const authSlice = createSlice({
       .addCase(updateAvatar.fulfilled, (state, action) => {
         state.user = action.payload.user;
         state.accessToken = action.payload.accessToken;
+        setAccessToken(action.payload.accessToken);
       })
       .addCase(updateAvatar.rejected, (state) => {
         state.error = 'Ошибка при загрузке аватара';

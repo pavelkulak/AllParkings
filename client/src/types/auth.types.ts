@@ -1,5 +1,4 @@
 export interface IUser {
-  img: any;
   isAdmin: any;
   id: number;
   name: string;
