@@ -50,6 +50,11 @@ module.exports = (sequelize, DataTypes) => {
     average_rating: {
       type: DataTypes.BIGINT,
       defaultValue: 0
+    },
+    description: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      defaultValue: ''
     }
   }, {
     sequelize,

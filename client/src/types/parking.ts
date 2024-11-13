@@ -1,6 +1,7 @@
 export interface Parking {
   id: string;
   name: string;
+  description: string;
   location: {
     address: string;
     coordinates: {
