@@ -7,23 +7,45 @@ import {
   List,
   ListItem,
   ListItemText,
-  TextField, Container,
+  TextField,
+  Container,
   InputLabel,
   MenuItem,
   Select,
   Stack,
+  Modal,
 } from "@mui/material";
 import { Add as AddIcon } from "@mui/icons-material";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Autocomplete from "@mui/material/Autocomplete";
 import ParkingConstructor from "../constructor/ParkingConstructor";
 
-export default function ParkingOwnerPage() {
-  const { user } = useAppSelector((state) => state.auth);
- 
-  const dispatch = useAppDispatch();
+interface IParkingOption {
+  label: string;
+  value: number | string;
+}
 
-  
+export default function ParkingOwnerPage() {
+  const dispatch = useAppDispatch();
+  const { user } = useAppSelector((state) => state.auth);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleOpen = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleClose = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleDeleteClick = () => {
+    if (window.confirm("Вы уверены, что хотите удалить?")) {
+      // Логика удаления здесь
+      console.log("Удаление подтверждено");
+    }
+  };
+
   return (
     <Box
       sx={{
@@ -37,7 +59,7 @@ export default function ParkingOwnerPage() {
         disablePortal
         sx={{ width: 300 }}
         renderInput={(params) => <TextField {...params} label="Парковка" />}
-        options={[]}
+        options={[] as IParkingOption[]}
       />
 
       <Container
@@ -100,21 +122,58 @@ export default function ParkingOwnerPage() {
             <MenuItem value="true">Работает</MenuItem>
             <MenuItem value="false">Не работает</MenuItem>
           </Select>
-          <Button fullWidth variant="outlined" size="small">
+          <Button
+            fullWidth
+            variant="outlined"
+            size="small"
+            onClick={handleOpen}
+          >
             Добавить парковочные места
           </Button>
+          <Modal
+            open={isModalOpen}
+            onClose={handleClose}
+            aria-labelledby="modal-modal-title"
+            aria-describedby="modal-modal-description"
+          >
+            <Box
+              sx={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                width: "60%",
+                bgcolor: "background.paper",
+                boxShadow: 24,
+                p: 4,
+              }}
+            >
+              <ParkingConstructor />
+            </Box>
+          </Modal>
           <Button fullWidth variant="outlined" size="small">
             Статистика
           </Button>
           <Button fullWidth variant="outlined" size="small">
             Посмотреть отзывы
           </Button>
-          <Button type="submit" fullWidth variant="contained">
+          <Button fullWidth variant="contained" size="small" type="submit">
             Сохранить изменения
           </Button>
-          {/* <ParkingConstructor /> */}
+          <Button
+            fullWidth
+            variant="contained"
+            size="small"
+            color="error"
+            type="submit"
+            onClick={handleDeleteClick}
+          >
+            Удалить
+          </Button>
         </Box>
       </Container>
     </Box>
   );
 }
+
+
