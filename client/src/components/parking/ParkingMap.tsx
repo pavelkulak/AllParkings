@@ -1,67 +1,185 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useMemo, useState } from 'react';
 import { load } from '@2gis/mapgl';
-import { Box, Container, Paper, Typography } from '@mui/material';
+import { Box, Container, Paper, Typography, CircularProgress } from '@mui/material';
 import { Parking } from '../../types/parking';
+import { LocationButton } from '../map/LocationButton';
+import { ParkingModal } from './ParkingModal';
 
 export const ParkingMap = () => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
+  const userMarkerRef = useRef<any>(null);
+  const routeRef = useRef<any>(null);
   const isInitializedRef = useRef(false);
+  const [mapglAPI, setMapglAPI] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [parkings, setParkings] = useState<Parking[]>([]);
+  const [selectedParking, setSelectedParking] = useState<Parking | null>(null);
+
+  const createUserMarker = (mapglAPI: any, map: any, coords: [number, number]) => {
+    if (userMarkerRef.current) {
+      userMarkerRef.current.destroy();
+      userMarkerRef.current = null;
+    }
+
+    try {
+      const marker = new mapglAPI.Marker(map, {
+        coordinates: coords,
+        label: {
+          text: 'Вы здесь',
+          offset: [0, -60],
+          relativeAnchor: [0.5, 0],
+        }
+      });
+      
+      userMarkerRef.current = marker;
+      
+      map.setCenter(coords);
+      map.setZoom(15);
+
+      return marker;
+    } catch (error) {
+      console.error('Ошибка при создании маркера:', error);
+      return null;
+    }
+  };
+
+  const buildRoute = async (mapglAPI: any, map: any, from: [number, number], to: [number, number]) => {
+    if (routeRef.current) {
+      routeRef.current.destroy();
+    }
+
+    try {
+      const directions = new mapglAPI.Directions(map, {
+        directionsApiKey: import.meta.env.VITE_2GIS_API_KEY,
+      });
+
+      const route = await directions.carRoute({
+        points: [from, to],
+      });
+
+      routeRef.current = new mapglAPI.Polyline(map, {
+        coordinates: route.geometry.coordinates,
+        width: 5,
+        color: '#4285f4',
+      });
+    } catch (error) {
+      console.error('Ошибка построения маршрута:', error);
+    }
+  };
+
+  // Функция получения местоположения
+  const getCurrentPosition = (): Promise<[number, number]> => {
+    return new Promise((resolve, reject) => {
+      if ('geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const coords: [number, number] = [
+              position.coords.longitude,
+              position.coords.latitude
+            ];
+            resolve(coords);
+          },
+          (error) => {
+            console.error('Ошибка получения геолокации:', error);
+            reject(error);
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 5000,
+            maximumAge: 0
+          }
+        );
+      } else {
+        reject(new Error('Геолокация недоступна'));
+      }
+    });
+  };
 
   useEffect(() => {
-    const initMap = async () => {
+    const fetchParkings = async () => {
       try {
-        if (isInitializedRef.current || mapInstanceRef.current || !mapContainerRef.current) {
-          return;
-        }
-
-        isInitializedRef.current = true;
-
         const response = await fetch('http://localhost:3000/api/parking-lots/all');
         if (!response.ok) {
           throw new Error('Ошибка при загрузке парковок');
         }
-        const parkings = await response.json();
+        const data = await response.json();
+        setParkings(data);
+      } catch (error) {
+        console.error('Ошибка:', error);
+      }
+    };
 
+    fetchParkings();
+  }, []);
+
+  useEffect(() => {
+    const initializeMap = async () => {
+      try {
+        setIsLoading(true);
+        
+        console.log('Получаем местоположение...');
+        const userCoords = await getCurrentPosition();
+        console.log('Получены координаты:', userCoords);
+
+        console.log('Загружаем API карты...');
         const mapglAPI = await load();
+        setMapglAPI(mapglAPI);
+        console.log('API карты загружен');
+
+        if (!mapContainerRef.current) return;
+
         const map = new mapglAPI.Map(mapContainerRef.current, {
-          center: [82.920430, 55.030199],
-          zoom: 13,
+          center: userCoords,
+          zoom: 15,
           key: import.meta.env.VITE_2GIS_API_KEY
         });
 
         mapInstanceRef.current = map;
+        isInitializedRef.current = true;
 
+        // Создаем маркер пользователя
+        createUserMarker(mapglAPI, map, userCoords);
+        
+        // Добавляем маркеры парковок
         parkings.forEach((parking: Parking) => {
           const marker = new mapglAPI.Marker(map, {
             coordinates: [parking.location.coordinates.lon, parking.location.coordinates.lat],
             label: {
-              text: `${parking.price_per_hour}₽/час`,
-              offset: [0, -60],
-              relativeAnchor: [0.5, 0],
-            },
+              text: `${parking.price_per_hour} руб/час`,
+            }
           });
+
+          marker.on('click', () => handleMarkerClick(parking));
           markersRef.current.push(marker);
         });
 
-      } catch (err) {
-        console.error('Ошибка:', err);
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Ошибка при инициализации:', error);
+        setIsLoading(false);
       }
     };
 
-    initMap();
+    initializeMap();
 
     return () => {
       if (mapInstanceRef.current) {
+        if (userMarkerRef.current) {
+          userMarkerRef.current.destroy();
+        }
         markersRef.current.forEach(marker => marker.destroy());
         mapInstanceRef.current.destroy();
         mapInstanceRef.current = null;
-        markersRef.current = [];
         isInitializedRef.current = false;
       }
     };
-  }, []);
+  }, [parkings]);
+
+  const handleMarkerClick = (parking: Parking) => {
+    setSelectedParking(parking);
+  };
 
   return (
     <Container maxWidth="lg">
@@ -69,8 +187,35 @@ export const ParkingMap = () => {
         <Typography variant="h5" component="h1" gutterBottom>
           Карта парковок
         </Typography>
-        <Box ref={mapContainerRef} sx={{ height: 600, width: '100%' }} />
+        <Box sx={{ position: 'relative' }}>
+          {isLoading && (
+            <Box sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: 'rgba(255, 255, 255, 0.8)',
+              zIndex: 2,
+            }}>
+              <CircularProgress />
+            </Box>
+          )}
+          <LocationButton onLocationFound={(coords) => {
+            if (!mapInstanceRef.current || !mapglAPI) return;
+            createUserMarker(mapglAPI, mapInstanceRef.current, coords);
+          }} />
+          <Box ref={mapContainerRef} sx={{ height: 600, width: '100%' }} />
+        </Box>
       </Paper>
+      <ParkingModal 
+        parking={selectedParking}
+        open={!!selectedParking}
+        onClose={() => setSelectedParking(null)}
+      />
     </Container>
   );
 };
