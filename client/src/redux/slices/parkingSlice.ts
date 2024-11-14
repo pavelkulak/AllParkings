@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { ParkingState } from '../../types/parking.types';
-import { createParking, getOwnerParkings } from '../parkingThunks';
+import { createParking, getMyParkings, getOwnerParkings } from '../parkingThunks';
 
 const initialState: ParkingState = {
   parkingLots: [],
@@ -39,6 +39,17 @@ const parkingSlice = createSlice({
         state.parkingLots = action.payload;
       })
       .addCase(getOwnerParkings.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.error.message || 'Ошибка при получении парковок';
+      })
+      .addCase(getMyParkings.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(getMyParkings.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.parkingLots = action.payload;
+      })
+      .addCase(getMyParkings.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.error.message || 'Ошибка при получении парковок';
       });

@@ -126,4 +126,22 @@ parkingLotsRouter.get('/:id/spaces', async (req, res) => {
   }
 });
 
+
+//Получение всех парковок для текущего владельца
+parkingLotsRouter.get("/myparking", async (req, res) => {
+  try {
+    const { user } = res.locals;
+    const parkings = await ParkingLot.findAll({
+      where: {
+        owner_id: user.id,
+      },
+    });
+    res.json(parkings);
+  } catch (error) {
+    console.error("Ошибка при получении парковок владельца:", error);
+    res.status(500).json({ error: "Ошибка при получении парковок владельца" });
+  }
+});
+
+
 module.exports = parkingLotsRouter; 

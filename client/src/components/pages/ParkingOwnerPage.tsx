@@ -26,7 +26,6 @@ import ParkingConstructor from "../constructor/ParkingConstructor";
 import { Link, useNavigate } from "react-router-dom";
 import { load } from "@2gis/mapgl";
 import { createParking } from "../../redux/parkingThunks";
-import { Parking } from "../../types/parking";
 import { LocationButton } from "../map/LocationButton";
 
 interface IParkingOption {
@@ -46,8 +45,8 @@ export default function ParkingOwnerPage() {
  const [marker, setMarker] = useState<any>(null);
 
  const [parkingData, setParkingData] = useState({
-   name: "",
-   description: "",
+   name: '',
+   description: '',
    location: {
      address: "",
      coordinates: {

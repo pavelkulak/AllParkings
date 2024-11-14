@@ -53,3 +53,13 @@ export const saveSpacesConfiguration = createAsyncThunk<ParkingSpace[], { parkin
     return response.data;
   }
 ); 
+
+export const getMyParkings = createAsyncThunk<ParkingLot[]>(
+  "parking/getMyParkings",
+  async () => {
+    const response = await axiosInstance.get<ParkingLot[]>(
+      "/parking-lots/myparking"
+    );
+    return response.data;
+  }
+);
