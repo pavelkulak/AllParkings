@@ -10,22 +10,13 @@ import {
   ListItemIcon,
   Menu,
   MenuItem,
-  Modal,
-  FormControlLabel,
-  IconButton,
-  Checkbox,
 } from '@mui/material';
 import logo from '../../img/logo.svg';
-import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import LocalParkingIcon from '@mui/icons-material/LocalParking';
 import { useTheme } from '@mui/material/styles';
 import { useState } from 'react';
-import CloseIcon from '@mui/icons-material/Close';
-import LightModeSharpIcon from '@mui/icons-material/LightModeSharp';
-import DarkModeSharpIcon from '@mui/icons-material/DarkModeSharp';
-import { Switch } from '@mui/material';
 
 interface NavBarProps {
   user: IUser | null;
@@ -43,16 +34,6 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const theme = useTheme();
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-
-  const handleSettingsOpen = () => {
-    setIsSettingsOpen(true);
-    handleMenuClose();
-  };
-
-  const handleSettingsClose = () => {
-    setIsSettingsOpen(false);
-  };
 
   return (
     <AppBar position='static' sx={{ fontFamily: 'Merriweather' }}>
@@ -206,13 +187,6 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
                   </MenuItem>
                 )}
 
-                <MenuItem onClick={handleSettingsOpen}>
-                  <ListItemIcon>
-                    <SettingsIcon fontSize='small' />
-                  </ListItemIcon>
-                  Настройки
-                </MenuItem>
-
                 {user && (
                   <MenuItem onClick={handleSignOut} sx={{ color: 'red' }}>
                     <ListItemIcon sx={{ color: 'red' }}>
@@ -267,75 +241,6 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
           )}
         </Box>
       </Toolbar>
-      <Modal
-        open={isSettingsOpen}
-        onClose={handleSettingsClose}
-        aria-labelledby="settings-modal-title"
-      >
-        <Box
-          sx={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: '40%',
-            height: '70%',
-            bgcolor: 'background.paper',
-            borderRadius: 2,
-            boxShadow: 24,
-            p: 4,
-            display: 'flex',
-            flexDirection: 'column',
-          }}
-        >
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
-            <Typography variant="h6">Настройки</Typography>
-            <IconButton onClick={handleSettingsClose} size="small">
-              <CloseIcon />
-            </IconButton>
-          </Box>
-          
-          <Box sx={{ flex: 1 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 4 }}>
-              <LightModeSharpIcon />
-              <Typography variant="body2">Light</Typography>
-              <Switch />
-              <DarkModeSharpIcon />
-              <Typography variant="body2">Dark</Typography>
-            </Box>
-
-            <FormControlLabel
-              control={<Checkbox />}
-              label="Скрывать мои комментарии"
-            />
-          </Box>
-
-          <Box 
-            sx={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center',
-              pt: 2,
-              mt: 'auto',
-              borderTop: '1px solid #ddd'
-            }}
-          >
-            <Button 
-              color="error" 
-              sx={{ textTransform: 'none' }}
-            >
-              Удалить аккаунт
-            </Button>
-            <Button 
-              variant="contained"
-              onClick={handleSettingsClose}
-              sx={{ minWidth: 100 }}
-            >
-              Сохранить
-            </Button>
-          </Box>
-        </Box>
-      </Modal>
     </AppBar>
   );
 }
