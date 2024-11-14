@@ -1,0 +1,49 @@
+import { createSlice } from '@reduxjs/toolkit';
+import type { ParkingState } from '../../types/parking.types';
+import { createParking, getOwnerParkings } from '../parkingThunks';
+
+const initialState: ParkingState = {
+  parkingLots: [],
+  currentParkingLot: null,
+  status: 'idle',
+  error: null
+};
+
+const parkingSlice = createSlice({
+  name: 'parking',
+  initialState,
+  reducers: {
+    clearParkingError: (state) => {
+      state.error = null;
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(createParking.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(createParking.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.parkingLots.push(action.payload);
+        state.currentParkingLot = action.payload;
+      })
+      .addCase(createParking.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.error.message || 'Ошибка при создании парковки';
+      })
+      .addCase(getOwnerParkings.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(getOwnerParkings.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.parkingLots = action.payload;
+      })
+      .addCase(getOwnerParkings.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.error.message || 'Ошибка при получении парковок';
+      });
+  },
+});
+
+export const { clearParkingError } = parkingSlice.actions;
+export default parkingSlice.reducer; 
