@@ -92,13 +92,13 @@ export default function ProfilePage() {
     return '';
   };
 
-  const handleNewPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleNewPasswordChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const password = e.target.value;
     setNewPassword(password);
     setNewPasswordError(validatePassword(password));
   };
 
-  const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const confirmPass = e.target.value;
     setConfirmPassword(confirmPass);
     setConfirmPasswordError(confirmPass !== newPassword ? 'Пароли должны совпадать' : '');
