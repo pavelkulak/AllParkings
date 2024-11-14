@@ -2,10 +2,14 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { ParkingLot, CreateParkingSpacesPayload, ParkingSpace, Entrance } from '../types/parking.types';
 import axiosInstance from '../services/axiosInstance';
 
-export const createParking = createAsyncThunk<ParkingLot, Partial<ParkingLot>>(
+export const createParking = createAsyncThunk(
   'parking/create',
-  async (parkingData) => {
-    const response = await axiosInstance.post<ParkingLot>('/parking-lots', parkingData);
+  async (parkingData: FormData) => {
+    const response = await axiosInstance.post('/parking-lots', parkingData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     return response.data;
   }
 );

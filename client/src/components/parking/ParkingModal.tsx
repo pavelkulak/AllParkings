@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, Box, Typography, Button, Rating, Stack, CircularProgress } from '@mui/material';
+import { Dialog, DialogContent, Box, Typography, Button, Rating, Stack, CircularProgress, DialogTitle, IconButton } from '@mui/material';
 import { Parking } from '../../types/parking';
 import { ParkingSpace } from '../../types/parking';
 import { ConstructorGrid } from '../constructor/ParkingConstructor';
 import { GRID_SIZES } from '../constructor/ParkingConstructor';
 import { BookingDialog } from './BookingDialog';
+import CloseIcon from '@mui/icons-material/Close';
+import { Star, StarBorder } from '@mui/icons-material';
+import { ReviewList } from '../reviews/ReviewList';
 
 interface ParkingModalProps {
   parking: Parking | null;
@@ -14,9 +17,12 @@ interface ParkingModalProps {
 
 export const ParkingModal = ({ parking, open, onClose }: ParkingModalProps) => {
   const [showSpaces, setShowSpaces] = useState(false);
+  const [showReviews, setShowReviews] = useState(false);
   const [spaces, setSpaces] = useState<ParkingSpace[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedSpace, setSelectedSpace] = useState<ParkingSpace | null>(null);
+
+  const BASE_IMG_URL = 'http://localhost:3000/api/img/parking/';
 
   const fetchParkingSpaces = async (parkingId: number) => {
     try {
@@ -49,32 +55,68 @@ export const ParkingModal = ({ parking, open, onClose }: ParkingModalProps) => {
     }
   };
 
+  const handleShowReviews = () => {
+    setShowReviews(true);
+    setShowSpaces(false);
+  };
+
   if (!parking) return null;
 
   return (
-    <Dialog 
-      open={open} 
-      onClose={onClose} 
-      maxWidth={showSpaces ? "md" : "sm"} 
-      fullWidth
-    >
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+      <DialogTitle>
+        {parking.name}
+        <IconButton
+          aria-label="close"
+          onClick={onClose}
+          sx={{ position: 'absolute', right: 8, top: 8 }}
+        >
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
       <DialogContent>
-        {!showSpaces ? (
+        {parking.img ? (
+          <Box
+            component="img"
+            src={`${BASE_IMG_URL}${parking.img}`}
+            alt={parking.name}
+            sx={{
+              width: '100%',
+              height: 200,
+              objectFit: 'cover',
+              borderRadius: 1,
+              mb: 2
+            }}
+          />
+        ) : (
+          <Box
+            sx={{
+              width: '100%',
+              height: 200,
+              bgcolor: 'grey.200',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              mb: 2
+            }}
+          >
+            <Typography color="text.secondary">
+              Изображение отсутствует
+            </Typography>
+          </Box>
+        )}
+        {showReviews ? (
+          <Stack spacing={2}>
+            <Button onClick={() => setShowReviews(false)}>
+              Назад
+            </Button>
+            <ReviewList parkingId={parking.id} />
+          </Stack>
+        ) : !showSpaces ? (
           <Stack spacing={2}>
             <Typography variant="h5" component="h2">
               {parking.name}
             </Typography>
-
-            <Box sx={{ 
-              width: '100%', 
-              height: 200, 
-              bgcolor: 'grey.200',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <Typography color="text.secondary">Фото пока недоступно</Typography>
-            </Box>
 
             <Typography variant="h6" color="primary">
               {parking.price_per_hour} руб/час
@@ -85,10 +127,23 @@ export const ParkingModal = ({ parking, open, onClose }: ParkingModalProps) => {
             </Typography>
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Rating value={0} readOnly />
+              <Rating 
+                value={Number(parking.average_rating) || 0}
+                readOnly 
+                precision={0.5}
+                icon={<Star style={{ color: '#faaf00' }} />}
+                emptyIcon={<StarBorder style={{ color: '#faaf00', opacity: 0.55 }} />}
+              />
               <Typography variant="body2" color="text.secondary">
-                Пока нет отзывов
+                {parking.average_rating ? `${parking.average_rating} из 5` : 'Нет оценок'}
               </Typography>
+              <Button 
+                variant="text" 
+                onClick={handleShowReviews}
+                sx={{ ml: 1 }}
+              >
+                Смотреть отзывы
+              </Button>
             </Box>
 
             <Stack direction="row" spacing={2}>

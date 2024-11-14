@@ -48,13 +48,18 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: 'pending'
     },
     average_rating: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.DECIMAL(2, 1),
+      allowNull: false,
       defaultValue: 0
     },
     description: {
       type: DataTypes.TEXT,
       allowNull: true,
       defaultValue: ''
+    },
+    img: {
+      type: DataTypes.STRING,
+      allowNull: true
     }
   }, {
     sequelize,

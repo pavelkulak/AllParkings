@@ -11,13 +11,13 @@ import {
   Typography,
   Stack,
   Paper,
-  FormControlLabel,
-  Switch,
   Tabs,
   Tab,
   CircularProgress
 } from '@mui/material';
 import { LocationButton } from '../map/LocationButton';
+import { FileUploader } from '../common/FileUploader';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
 export default function CreateParkingForm() {
   const dispatch = useAppDispatch();
@@ -51,6 +51,7 @@ export default function CreateParkingForm() {
   const userMarkerRef = useRef<any>(null);
   const [mapglAPI, setMapglAPI] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [files, setFiles] = useState<File[]>([]);
 
   useEffect(() => {
     if (addressMethod === 'map' && !map) {
@@ -277,6 +278,14 @@ export default function CreateParkingForm() {
     }
   };
 
+  const handleFilesChange = (newFiles: File[]) => {
+    setFiles(newFiles);
+    setParkingData(prev => ({
+      ...prev,
+      images: newFiles
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
@@ -287,11 +296,18 @@ export default function CreateParkingForm() {
     }
 
     try {
-      const result = await dispatch(createParking({
-        ...parkingData,
-        price_per_hour: Number(parkingData.price_per_hour)
-      })).unwrap();
-      
+      const formData = new FormData();
+      formData.append('name', parkingData.name);
+      formData.append('description', parkingData.description);
+      formData.append('location', JSON.stringify(parkingData.location));
+      formData.append('price_per_hour', parkingData.price_per_hour.toString());
+      formData.append('status', parkingData.status);
+
+      if (files.length > 0) {
+        formData.append('img', files[0]);
+      }
+
+      const result = await dispatch(createParking(formData)).unwrap();
       navigate(`/parking-constructor/${result.id}`);
     } catch (err: any) {
       setError(err.response?.data?.error || 'Ошибка при создании парковки');
@@ -334,6 +350,56 @@ export default function CreateParkingForm() {
               onChange={handleChange}
               helperText="Укажите особенности парковки, режим работы и другую полезную информацию"
             />
+
+            <Box sx={{ mt: 2 }}>
+              <FileUploader
+                files={files}
+                onFilesChange={handleFilesChange}
+                maxFiles={5}
+                acceptedFileTypes={['image/jpeg', 'image/png']}
+                maxFileSize={5 * 1024 * 1024}
+              >
+                <Box
+                  sx={{
+                    border: '2px dashed #ccc',
+                    borderRadius: 2,
+                    p: 3,
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                    '&:hover': {
+                      borderColor: 'primary.main',
+                      bgcolor: 'rgba(0, 0, 0, 0.04)'
+                    }
+                  }}
+                >
+                  <CloudUploadIcon sx={{ fontSize: 48, color: 'text.secondary' }} />
+                  <Typography variant="h6" sx={{ mt: 2 }}>
+                    Перетащите фотографии сюда или кликните для выбора
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Поддерживаются JPG, PNG. Максимальный размер файла: 5MB
+                  </Typography>
+                </Box>
+              </FileUploader>
+              
+              {files.length > 0 && (
+                <Box sx={{ display: 'flex', gap: 1, mt: 2, flexWrap: 'wrap' }}>
+                  {files.map((file, index) => (
+                    <Box
+                      key={index}
+                      component="img"
+                      src={URL.createObjectURL(file)}
+                      sx={{
+                        width: 100,
+                        height: 100,
+                        objectFit: 'cover',
+                        borderRadius: 1
+                      }}
+                    />
+                  ))}
+                </Box>
+              )}
+            </Box>
 
             <Tabs
               value={addressMethod}
