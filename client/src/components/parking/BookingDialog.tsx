@@ -80,6 +80,16 @@ export const BookingDialog = ({ open, onClose, spaceId, pricePerHour, onSuccess 
               setStartTime(newValue);
             }}
             minDateTime={dayjs()}
+            format="DD.MM.YYYY HH:mm"
+            ampm={false}
+            slotProps={{
+              textField: {
+                fullWidth: true,
+              },
+              actionBar: {
+                actions: ['clear', 'today', 'accept'],
+              },
+            }}
           />
 
           <DateTimePicker
@@ -90,6 +100,16 @@ export const BookingDialog = ({ open, onClose, spaceId, pricePerHour, onSuccess 
               setEndTime(newValue);
             }}
             minDateTime={startTime || dayjs()}
+            format="DD.MM.YYYY HH:mm"
+            ampm={false}
+            slotProps={{
+              textField: {
+                fullWidth: true,
+              },
+              actionBar: {
+                actions: ['clear', 'today', 'accept'],
+              },
+            }}
           />
 
           <Typography variant="h6">

@@ -6,6 +6,8 @@ import { ThemeProvider, createTheme } from "@mui/material/styles";
 import App from './App'
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { ruRU } from '@mui/x-date-pickers/locales';
+import 'dayjs/locale/ru';
 
 
 const rootElement = document.getElementById('root')
@@ -23,13 +25,13 @@ const theme = createTheme({
       main: "#42a5f5", // Вторичный цвет
     },
   },
-});
+}, ruRU);
 
 
 
 createRoot(rootElement).render(
   <ThemeProvider theme={theme}>
-    <LocalizationProvider dateAdapter={AdapterDayjs}>
+    <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ru">
       <Provider store={store}>
         <App />
       </Provider>
