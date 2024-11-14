@@ -2,6 +2,7 @@ import { useAppSelector, useAppDispatch } from '../../redux/hooks';
 import { signOut } from '../../redux/thunkActions';
 
 import NavBar from './NavBar';
+import Footer from "./Footer";
 import { Outlet } from 'react-router-dom';
 
 
@@ -21,7 +22,8 @@ export default function Root() {
   return (
     <>
       <NavBar user={user} handleSignOut={handleSignOut} />
-      <Outlet />
+        <Outlet />
+      <Footer/>
     </>
   );
 }
