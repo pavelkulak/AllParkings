@@ -4,6 +4,7 @@ import { Parking } from '../../types/parking';
 import { ParkingSpace } from '../../types/parking';
 import { ConstructorGrid } from '../constructor/ParkingConstructor';
 import { GRID_SIZES } from '../constructor/ParkingConstructor';
+import { BookingDialog } from './BookingDialog';
 
 interface ParkingModalProps {
   parking: Parking | null;
@@ -15,6 +16,7 @@ export const ParkingModal = ({ parking, open, onClose }: ParkingModalProps) => {
   const [showSpaces, setShowSpaces] = useState(false);
   const [spaces, setSpaces] = useState<ParkingSpace[]>([]);
   const [loading, setLoading] = useState(false);
+  const [selectedSpace, setSelectedSpace] = useState<ParkingSpace | null>(null);
 
   const fetchParkingSpaces = async (parkingId: number) => {
     try {
@@ -38,6 +40,14 @@ export const ParkingModal = ({ parking, open, onClose }: ParkingModalProps) => {
       fetchParkingSpaces(parking.id);
     }
   }, [showSpaces, parking]);
+
+  const handleBookingSuccess = () => {
+    console.log('Бронирование успешно завершено');
+    setSelectedSpace(null);
+    if (parking) {
+      fetchParkingSpaces(parking.id);
+    }
+  };
 
   if (!parking) return null;
 
@@ -170,7 +180,8 @@ export const ParkingModal = ({ parking, open, onClose }: ParkingModalProps) => {
                       }}
                       onClick={() => {
                         if (space.is_free) {
-                          console.log('Attempting to book space:', space);
+                          console.log('Selected space for booking:', space);
+                          setSelectedSpace(space);
                         }
                       }}
                     >
@@ -186,6 +197,15 @@ export const ParkingModal = ({ parking, open, onClose }: ParkingModalProps) => {
                   );
                 })}
               </ConstructorGrid>
+            )}
+            {selectedSpace && parking && (
+              <BookingDialog
+                open={!!selectedSpace}
+                onClose={() => setSelectedSpace(null)}
+                spaceId={selectedSpace.id}
+                pricePerHour={parking.price_per_hour}
+                onSuccess={handleBookingSuccess}
+              />
             )}
           </Stack>
         )}

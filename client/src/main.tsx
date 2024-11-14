@@ -4,6 +4,8 @@ import { Provider } from 'react-redux'
 import { store } from './redux/store'
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import App from './App'
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 
 
 const rootElement = document.getElementById('root')
@@ -26,11 +28,11 @@ const theme = createTheme({
 
 
 createRoot(rootElement).render(
-  // <StrictMode>
-    <ThemeProvider theme={theme}>
+  <ThemeProvider theme={theme}>
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Provider store={store}>
         <App />
       </Provider>
-    </ThemeProvider>
-  // </StrictMode>
+    </LocalizationProvider>
+  </ThemeProvider>
 );
