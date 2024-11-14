@@ -132,3 +132,5 @@ dist
 # Image files
 src/img/*
 !src/img/.gitkeep
+src/img/parking/*
+!src/img/parking/.gitkeep
