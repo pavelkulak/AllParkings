@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { AuthState } from '../../types/auth.types';
 import { setAccessToken } from '../../services/axiosInstance';
-import { refreshToken, signIn, signUp, signOut, updateAvatar, updateUserProfile } from '../../redux/thunkActions';
+import { refreshToken, signIn, signUp, signOut, updateAvatar, updateUserProfile, changePassword } from '../../redux/thunkActions';
 
 const initialState: AuthState = {
   user: null,
@@ -98,6 +98,18 @@ const authSlice = createSlice({
       })
       .addCase(updateUserProfile.rejected, (state) => {
         state.error = 'Ошибка при обновлении профиля';
+      })
+      .addCase(changePassword.pending, (state) => {
+        state.status = 'loading';
+        state.error = null;
+      })
+      .addCase(changePassword.fulfilled, (state) => {
+        state.status = 'succeeded';
+        state.error = null;
+      })
+      .addCase(changePassword.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload as string;
       });
   },
 });

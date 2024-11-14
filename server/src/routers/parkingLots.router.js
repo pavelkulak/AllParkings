@@ -1,6 +1,33 @@
 const parkingLotsRouter = require('express').Router();
 const { ParkingLot, ParkingSpace } = require('../../db/models');
 const { verifyAccessToken } = require('../middleware/verifyToken');
+const multer = require('multer');
+const path = require('path');
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, path.join(__dirname, '../../img/parking'));
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['image/jpeg', 'image/png'];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Недопустимый формат файла. Разрешены только JPEG и PNG'));
+    }
+  }
+});
 
 // Получение всех активных парковок (публичный эндпоинт)
 parkingLotsRouter.get('/all', async (req, res) => {
@@ -18,7 +45,7 @@ parkingLotsRouter.get('/all', async (req, res) => {
 });
 
 // Создание парковки (первый этап)
-parkingLotsRouter.post('/', verifyAccessToken, async (req, res) => {
+parkingLotsRouter.post('/', verifyAccessToken, upload.single('img'), async (req, res) => {
   try {
     const { user } = res.locals;
     const { name, description, location, price_per_hour } = req.body;
@@ -31,16 +58,11 @@ parkingLotsRouter.post('/', verifyAccessToken, async (req, res) => {
       owner_id: user.id,
       name,
       description: description || '',
-      location: {
-        address: location.address,
-        coordinates: {
-          lat: location.coordinates.lat,
-          lon: location.coordinates.lon
-        }
-      },
+      location: JSON.parse(location),
       capacity: 0,
       price_per_hour,
-      status: 'pending'
+      status: 'pending',
+      img: req.file ? req.file.filename : null // Сохраняем только имя файла
     });
 
     res.status(201).json(parkingLot);
@@ -88,6 +110,7 @@ parkingLotsRouter.post('/:id/spaces', verifyAccessToken, async (req, res) => {
         parking_id: parkingLot.id,
         space_number: space.space_number,
         location: space.location,
+        entrance: space.entrance,
         is_free: true
       })
     ));
@@ -103,5 +126,44 @@ parkingLotsRouter.post('/:id/spaces', verifyAccessToken, async (req, res) => {
     res.status(500).json({ error: 'Ошибка при добавлении мест' });
   }
 });
+
+// Получение парковки с местами по ID (публичный эндпоинт)
+parkingLotsRouter.get('/:id/spaces', async (req, res) => {
+  try {
+    const parkingLot = await ParkingLot.findByPk(req.params.id, {
+      include: [{
+        model: ParkingSpace,
+        attributes: ['id', 'space_number', 'is_free', 'location', 'entrance']
+      }]
+    });
+    
+    if (!parkingLot) {
+      return res.status(404).json({ error: 'Парковка не найдена' });
+    }
+
+    res.json(parkingLot);
+  } catch (error) {
+    console.error('Error fetching parking spaces:', error);
+    res.status(500).json({ error: 'Ошибка при получении парковки' });
+  }
+});
+
+
+//Получение всех парковок для текущего владельца
+parkingLotsRouter.get("/myparking", async (req, res) => {
+  try {
+    const { user } = res.locals;
+    const parkings = await ParkingLot.findAll({
+      where: {
+        owner_id: user.id,
+      },
+    });
+    res.json(parkings);
+  } catch (error) {
+    console.error("Ошибка при получении парковок владельца:", error);
+    res.status(500).json({ error: "Ошибка при получении парковок владельца" });
+  }
+});
+
 
 module.exports = parkingLotsRouter; 
