@@ -1,9 +1,12 @@
 import { useAppDispatch, useAppSelector } from '../../redux/hooks';
-import { Box, Typography, Avatar, Button, TextField } from '@mui/material';
+import { Box, Typography, Avatar, Button, TextField, Switch } from '@mui/material';
 import { useState, useRef, useEffect } from 'react';
 import { updateAvatar, updateUserProfile, changePassword } from '../../redux/thunkActions';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { IconButton, InputAdornment } from '@mui/material';
+import LightModeSharpIcon from '@mui/icons-material/LightModeSharp';
+import DarkModeSharpIcon from '@mui/icons-material/DarkModeSharp';
+import { useTheme } from '@mui/material/styles';
 
 export default function ProfilePage() {
   const { user } = useAppSelector((state) => state.auth);
@@ -22,6 +25,19 @@ export default function ProfilePage() {
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dispatch = useAppDispatch();
+  const [activeTab, setActiveTab] = useState('settings');
+
+  const theme = useTheme();
+  // Изменение темы на будущее
+  // const toggleTheme = () => {
+  // };
+
+  // Удаление аккаунта на будущее
+  // const handleDeleteAccount = () => {
+  //   if (window.confirm('Вы уверены, что хотите удалить свой аккаунт? Это действие необратимо.')) {
+  //     alert('Аккаунт удален');
+  //   }
+  // };
 
   useEffect(() => {
     setIsChanged(
@@ -113,6 +129,18 @@ export default function ProfilePage() {
         mt: 4,
       }}
     >
+      <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+        <Button onClick={() => setActiveTab('settings')} variant={activeTab === 'settings' ? 'contained' : 'outlined'}>
+          Настройки
+        </Button>
+        <Button onClick={() => setActiveTab('favorites')} variant={activeTab === 'favorites' ? 'contained' : 'outlined'}>
+          Избранное
+        </Button>
+        <Button onClick={() => setActiveTab('history')} variant={activeTab === 'history' ? 'contained' : 'outlined'}>
+          История
+        </Button>
+      </Box>
+
       <Box sx={{ display: 'flex', width: '80%', flexDirection: 'column' }}>
         <Box
           sx={{
@@ -356,6 +384,66 @@ export default function ProfilePage() {
             </Button>
           </Box>
         </Box>
+
+        {activeTab === 'settings' && (
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              border: '1px solid #ddd',
+              borderRadius: 3,
+              p: 3,
+              mt: 2,
+            }}
+          >
+            <Typography variant='h6'>Настройки</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <LightModeSharpIcon />
+              <Typography variant="body2">Light</Typography>
+              <Switch
+                // checked={theme.palette.mode === 'dark'}
+                // onChange={toggleTheme}
+                color="default"
+              />
+              <DarkModeSharpIcon />
+              <Typography variant="body2">Dark</Typography>
+            </Box>
+            <Button
+              variant='contained'
+              color='error'
+              // onClick={handleDeleteAccount}
+            >
+              Удалить аккаунт
+            </Button>
+          </Box>
+        )}
+
+        {activeTab === 'favorites' && (
+          <Box
+            sx={{
+              border: '1px solid #ddd',
+              borderRadius: 3,
+              p: 3,
+              mt: 2,
+            }}
+          >
+            <Typography variant='h6'>Здесь будет избранное</Typography>
+          </Box>
+        )}
+
+        {activeTab === 'history' && (
+          <Box
+            sx={{
+              border: '1px solid #ddd',
+              borderRadius: 3,
+              p: 3,
+              mt: 2,
+            }}
+          >
+            <Typography variant='h6'>Здесь будет история</Typography>
+          </Box>
+        )}
       </Box>
     </Box>
   );
