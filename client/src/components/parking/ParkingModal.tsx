@@ -6,6 +6,8 @@ import { ConstructorGrid } from '../constructor/ParkingConstructor';
 import { GRID_SIZES } from '../constructor/ParkingConstructor';
 import { BookingDialog } from './BookingDialog';
 import CloseIcon from '@mui/icons-material/Close';
+import { Star, StarBorder } from '@mui/icons-material';
+import { ReviewList } from '../reviews/ReviewList';
 
 interface ParkingModalProps {
   parking: Parking | null;
@@ -103,7 +105,14 @@ export const ParkingModal = ({ parking, open, onClose }: ParkingModalProps) => {
             </Typography>
           </Box>
         )}
-        {!showSpaces ? (
+        {showReviews ? (
+          <Stack spacing={2}>
+            <Button onClick={() => setShowReviews(false)}>
+              Назад
+            </Button>
+            <ReviewList parkingId={parking.id} />
+          </Stack>
+        ) : !showSpaces ? (
           <Stack spacing={2}>
             <Typography variant="h5" component="h2">
               {parking.name}
