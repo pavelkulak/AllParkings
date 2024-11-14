@@ -4,6 +4,10 @@ import { Provider } from 'react-redux'
 import { store } from './redux/store'
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import App from './App'
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { ruRU } from '@mui/x-date-pickers/locales';
+import 'dayjs/locale/ru';
 
 
 const rootElement = document.getElementById('root')
@@ -21,16 +25,16 @@ const theme = createTheme({
       main: "#42a5f5", // Вторичный цвет
     },
   },
-});
+}, ruRU);
 
 
 
 createRoot(rootElement).render(
-  // <StrictMode>
-    <ThemeProvider theme={theme}>
+  <ThemeProvider theme={theme}>
+    <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ru">
       <Provider store={store}>
         <App />
       </Provider>
-    </ThemeProvider>
-  // </StrictMode>
+    </LocalizationProvider>
+  </ThemeProvider>
 );
