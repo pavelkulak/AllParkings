@@ -128,7 +128,7 @@ export default function ParkingOwnerPage() {
             size="small"
             onClick={handleOpen}
           >
-            Добавить парковочные места
+            Добавить новую парковку          
           </Button>
           <Modal
             open={isModalOpen}
