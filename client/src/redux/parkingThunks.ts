@@ -5,7 +5,7 @@ import axiosInstance from '../services/axiosInstance';
 export const createParking = createAsyncThunk(
   'parking/create',
   async (parkingData: FormData) => {
-    const response = await axiosInstance.post('/api/parking-lots', parkingData, {
+    const response = await axiosInstance.post('/parking-lots', parkingData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },

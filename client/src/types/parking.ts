@@ -12,4 +12,5 @@ export interface Parking {
   price_per_hour: number;
   status: 'pending' | 'active' | 'inactive';
   average_rating: number;
+  img?: string;
 } 
