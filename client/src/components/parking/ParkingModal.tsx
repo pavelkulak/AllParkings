@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, Box, Typography, Button, Rating, Stack, CircularProgress } from '@mui/material';
+import { Dialog, DialogContent, Box, Typography, Button, Rating, Stack, CircularProgress, DialogTitle, IconButton } from '@mui/material';
 import { Parking } from '../../types/parking';
 import { ParkingSpace } from '../../types/parking';
 import { ConstructorGrid } from '../constructor/ParkingConstructor';
 import { GRID_SIZES } from '../constructor/ParkingConstructor';
 import { BookingDialog } from './BookingDialog';
+import CloseIcon from '@mui/icons-material/Close';
 
 interface ParkingModalProps {
   parking: Parking | null;
@@ -17,6 +18,8 @@ export const ParkingModal = ({ parking, open, onClose }: ParkingModalProps) => {
   const [spaces, setSpaces] = useState<ParkingSpace[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedSpace, setSelectedSpace] = useState<ParkingSpace | null>(null);
+
+  const BASE_IMG_URL = 'http://localhost:3000/api/img/parking/';
 
   const fetchParkingSpaces = async (parkingId: number) => {
     try {
@@ -52,29 +55,53 @@ export const ParkingModal = ({ parking, open, onClose }: ParkingModalProps) => {
   if (!parking) return null;
 
   return (
-    <Dialog 
-      open={open} 
-      onClose={onClose} 
-      maxWidth={showSpaces ? "md" : "sm"} 
-      fullWidth
-    >
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+      <DialogTitle>
+        {parking.name}
+        <IconButton
+          aria-label="close"
+          onClick={onClose}
+          sx={{ position: 'absolute', right: 8, top: 8 }}
+        >
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
       <DialogContent>
+        {parking.img ? (
+          <Box
+            component="img"
+            src={`${BASE_IMG_URL}${parking.img}`}
+            alt={parking.name}
+            sx={{
+              width: '100%',
+              height: 200,
+              objectFit: 'cover',
+              borderRadius: 1,
+              mb: 2
+            }}
+          />
+        ) : (
+          <Box
+            sx={{
+              width: '100%',
+              height: 200,
+              bgcolor: 'grey.200',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              mb: 2
+            }}
+          >
+            <Typography color="text.secondary">
+              Изображение отсутствует
+            </Typography>
+          </Box>
+        )}
         {!showSpaces ? (
           <Stack spacing={2}>
             <Typography variant="h5" component="h2">
               {parking.name}
             </Typography>
-
-            <Box sx={{ 
-              width: '100%', 
-              height: 200, 
-              bgcolor: 'grey.200',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <Typography color="text.secondary">Фото пока недоступно</Typography>
-            </Box>
 
             <Typography variant="h6" color="primary">
               {parking.price_per_hour} руб/час
