@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, Box, Typography, Button, Rating, Stack, CircularProgress } from '@mui/material';
 import { Parking } from '../../types/parking';
-import { ParkingSpace } from '../../types/parking.types';
+import { ParkingSpace } from '../../types/parking';
 import { ConstructorGrid } from '../constructor/ParkingConstructor';
 import { GRID_SIZES } from '../constructor/ParkingConstructor';
 
@@ -114,11 +114,38 @@ export const ParkingModal = ({ parking, open, onClose }: ParkingModalProps) => {
                 }}
               >
                 {spaces.map((space) => {
-                  console.log('Rendering space:', space);
                   const location = typeof space.location === 'string' 
                     ? JSON.parse(space.location) 
                     : space.location;
                   
+                  if (space.id === spaces[0].id) {
+                    const entranceData = typeof space.entrance === 'string' 
+                      ? JSON.parse(space.entrance) 
+                      : space.entrance;
+                    
+                    return (
+                      <Box
+                        key={`entrance-${space.id}`}
+                        sx={{
+                          position: 'absolute',
+                          left: entranceData.x,
+                          top: entranceData.y,
+                          width: entranceData.width || 40,
+                          height: entranceData.height || 40,
+                          bgcolor: 'warning.main',
+                          border: '1px solid',
+                          borderColor: 'grey.300',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'white'
+                        }}
+                      >
+                        <Typography>Вход</Typography>
+                      </Box>
+                    );
+                  }
+
                   return (
                     <Box
                       key={space.id}
@@ -126,13 +153,17 @@ export const ParkingModal = ({ parking, open, onClose }: ParkingModalProps) => {
                         position: 'absolute',
                         left: location.x,
                         top: location.y,
-                        width: space.width || 40,
-                        height: space.height || 80,
+                        width: 40,
+                        height: 80,
                         transform: `rotate(${location.rotation}deg)`,
-                        bgcolor: space.is_free ? 'success.main' : 'error.main',
-                        border: '1px solid',
-                        borderColor: 'grey.300',
+                        bgcolor: space.is_free ? 'rgba(3, 197, 3, 0.2)' : 'rgba(211, 47, 47, 0.2)',
+                        border: '2px solid',
+                        borderRadius: 4,
+                        borderColor: space.is_free ? '#03c503' : '#d32f2f',
                         cursor: space.is_free ? 'pointer' : 'not-allowed',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
                         '&:hover': {
                           opacity: space.is_free ? 0.8 : 1
                         }
@@ -145,11 +176,8 @@ export const ParkingModal = ({ parking, open, onClose }: ParkingModalProps) => {
                     >
                       <Typography
                         sx={{
-                          position: 'absolute',
-                          top: '50%',
-                          left: '50%',
-                          transform: 'translate(-50%, -50%)',
-                          color: 'white'
+                          color: 'black',
+                          fontSize: '0.8rem'
                         }}
                       >
                         {space.space_number}
