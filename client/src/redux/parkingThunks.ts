@@ -1,5 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import type { ParkingLot, CreateParkingSpacesPayload, ParkingSpace } from '../types/parking.types';
+import type { ParkingLot, CreateParkingSpacesPayload, ParkingSpace, Entrance } from '../types/parking.types';
 import axiosInstance from '../services/axiosInstance';
 
 export const createParking = createAsyncThunk<ParkingLot, Partial<ParkingLot>>(
@@ -37,13 +37,13 @@ export const getOwnerParkings = createAsyncThunk<ParkingLot[]>(
   }
 );
 
-export const saveSpacesConfiguration = createAsyncThunk<ParkingSpace[], { parkingId: string; spaces: ParkingSpace[] }>(
+export const saveSpacesConfiguration = createAsyncThunk<ParkingSpace[], { parkingId: string; spaces: ParkingSpace[]; entrance: Entrance }>(
   'parking/saveSpaces',
-  async ({ parkingId, spaces }) => {
+  async ({ parkingId, spaces, entrance }) => {
     const formattedSpaces = spaces.map(space => ({
       space_number: space.number,
       location: JSON.stringify({ x: space.x, y: space.y, rotation: space.rotation }),
-      coordinates: JSON.stringify({ width: space.width, height: space.height })
+      entrance: JSON.stringify(entrance)
     }));
 
     const response = await axiosInstance.post<ParkingSpace[]>(
