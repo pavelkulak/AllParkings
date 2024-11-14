@@ -36,6 +36,11 @@ module.exports = (sequelize, DataTypes) => {
         width: 40,
         height: 80
       }
+    },
+    entrance: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      defaultValue: null
     }
   }, {
     sequelize,

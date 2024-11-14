@@ -156,4 +156,30 @@ authRouter.put('/profile', verifyAccessToken, async (req, res) => {
   }
 });
 
+authRouter.put('/change-password', verifyAccessToken, async (req, res) => {
+  try {
+    const userId = res.locals.user.id;
+    const { currentPassword, newPassword } = req.body;
+
+    const user = await User.findByPk(userId);
+    
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isPasswordValid) {
+      return res.status(400).json({ error: 'Неверный текущий пароль' });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    
+    await User.update(
+      { password: hashedPassword },
+      { where: { id: userId } }
+    );
+
+    res.json({ message: 'Пароль успешно изменен' });
+  } catch (error) {
+    console.error('Ошибка при изменении пароля:', error);
+    res.status(500).json({ error: 'Ошибка при изменении пароля' });
+  }
+});
+
 module.exports = authRouter;
