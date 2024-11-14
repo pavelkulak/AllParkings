@@ -47,8 +47,9 @@ module.exports = {
         defaultValue: 'pending'
       },
       average_rating: {
-        type: Sequelize.BIGINT,
-        defaultValue: 0
+        type: Sequelize.DECIMAL(2, 1),
+        defaultValue: 0,
+        allowNull: false
       },
       description: {
         type: Sequelize.TEXT,

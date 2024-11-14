@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, Box, Typography, Button, Rating, Stack, CircularProgress } from '@mui/material';
+import { Star, StarBorder } from '@mui/icons-material';
 import { Parking } from '../../types/parking';
 import { ParkingSpace } from '../../types/parking';
 import { ConstructorGrid } from '../constructor/ParkingConstructor';
 import { GRID_SIZES } from '../constructor/ParkingConstructor';
 import { BookingDialog } from './BookingDialog';
+import { ReviewList } from '../reviews/ReviewList';
 
 interface ParkingModalProps {
   parking: Parking | null;
@@ -14,6 +16,7 @@ interface ParkingModalProps {
 
 export const ParkingModal = ({ parking, open, onClose }: ParkingModalProps) => {
   const [showSpaces, setShowSpaces] = useState(false);
+  const [showReviews, setShowReviews] = useState(false);
   const [spaces, setSpaces] = useState<ParkingSpace[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedSpace, setSelectedSpace] = useState<ParkingSpace | null>(null);
@@ -49,17 +52,29 @@ export const ParkingModal = ({ parking, open, onClose }: ParkingModalProps) => {
     }
   };
 
+  const handleShowReviews = () => {
+    setShowReviews(true);
+    setShowSpaces(false);
+  };
+
   if (!parking) return null;
 
   return (
     <Dialog 
       open={open} 
       onClose={onClose} 
-      maxWidth={showSpaces ? "md" : "sm"} 
+      maxWidth={showSpaces || showReviews ? "md" : "sm"} 
       fullWidth
     >
       <DialogContent>
-        {!showSpaces ? (
+        {showReviews ? (
+          <Stack spacing={2}>
+            <Button onClick={() => setShowReviews(false)}>
+              Назад
+            </Button>
+            <ReviewList parkingId={Number(parking.id)} />
+          </Stack>
+        ) : !showSpaces ? (
           <Stack spacing={2}>
             <Typography variant="h5" component="h2">
               {parking.name}
@@ -85,10 +100,23 @@ export const ParkingModal = ({ parking, open, onClose }: ParkingModalProps) => {
             </Typography>
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Rating value={0} readOnly />
+              <Rating 
+                value={Number(parking.average_rating) || 0}
+                readOnly 
+                precision={0.5}
+                icon={<Star style={{ color: '#faaf00' }} />}
+                emptyIcon={<StarBorder style={{ color: '#faaf00', opacity: 0.55 }} />}
+              />
               <Typography variant="body2" color="text.secondary">
-                Пока нет отзывов
+                {parking.average_rating ? `${parking.average_rating} из 5` : 'Нет оценок'}
               </Typography>
+              <Button 
+                variant="text" 
+                onClick={handleShowReviews}
+                sx={{ ml: 1 }}
+              >
+                Смотреть отзывы
+              </Button>
             </Box>
 
             <Stack direction="row" spacing={2}>

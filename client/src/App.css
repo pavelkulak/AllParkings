@@ -13,10 +13,18 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-img, picture, video, canvas, svg {
+img, picture, video, canvas, svg:not(.MuiRating-icon svg) {
   display: block;
   max-width: 100%;
 }
+
+/* Добавим специальные стили для иконок рейтинга */
+.MuiRating-icon svg {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+}
+
 input, button, textarea, select {
   font: inherit;
 }

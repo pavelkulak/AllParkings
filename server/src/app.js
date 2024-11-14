@@ -15,6 +15,8 @@ const parkingLotsRouter = require('./routers/parkingLots.router');
 
 const bookingsRouter = require('./routers/bookingsRouter');
 
+const reviewsRouter = require('./routers/reviewsRouter');
+
 const uploadRouter = require('./routers/upload.router');
 
 const corsConfig = {
@@ -37,6 +39,8 @@ app.use('/api/tokens', tokensRouter);
 app.use('/api/parking-lots', parkingLotsRouter);
 
 app.use('/api/bookings', bookingsRouter);
+
+app.use('/api/reviews', reviewsRouter);
 
 app.use('/api/upload', uploadRouter);
 
