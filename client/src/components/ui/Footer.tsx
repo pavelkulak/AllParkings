@@ -6,7 +6,14 @@ function Footer() {
   return (
     <Box
       component="footer"
-      sx={{ bgcolor: "primary.main", color: "white", p: 2, mt: 4 }}
+      sx={{
+        position: "fixed",
+        bottom: 0,
+        width: "100%",
+        backgroundColor: "primary.main",
+        color: "white",
+        padding: 0,
+      }}
     >
       <Container maxWidth="lg">
         <Box
@@ -106,7 +113,11 @@ function Footer() {
           </Box>
         </Box>
 
-        <Typography variant="body2" textAlign="center" sx={{ mt: 2 }}>
+        <Typography
+          variant="body2"
+          textAlign="center"
+          sx={{ p: 2, mt: "auto" }}
+        >
           © {new Date().getFullYear()} Все права защищены!
         </Typography>
       </Container>
