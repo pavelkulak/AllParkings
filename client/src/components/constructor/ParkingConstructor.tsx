@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Draggable from 'react-draggable';
 import { 
   Box, 
@@ -24,7 +24,14 @@ import { useParams } from 'react-router-dom';
 import { useAppDispatch } from '../../redux/hooks';
 import { saveSpacesConfiguration } from '../../redux/parkingThunks';
 
-interface ParkingSpace {
+export interface Entrance {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface ParkingSpace {
     id: number;
     number: string;
     x: number;
@@ -34,19 +41,19 @@ interface ParkingSpace {
     height: 100; // фиксированная высота
   }
 
-interface GridSize {
+export interface GridSize {
   width: number;
   height: number;
   maxSpaces: number;
 }  
 
-const GRID_SIZES: Record<string, GridSize> = {
+export const GRID_SIZES: Record<string, GridSize> = {
     small: { width: 600, height: 400, maxSpaces: 20 },
     medium: { width: 800, height: 600, maxSpaces: 40 },
     large: { width: 1000, height: 800, maxSpaces: 50 }
   };
 
-  const ConstructorGrid = styled(Box)`
+  export const ConstructorGrid = styled(Box)`
   border: 1px solid #ccc;
   position: relative;
   background-size: 20px 20px;
@@ -93,10 +100,33 @@ export default function ParkingConstructor() {
   const dispatch = useAppDispatch();
   const { parkingId } = useParams();
   const [spaces, setSpaces] = useState<ParkingSpace[]>([]);
+  const [entrance, setEntrance] = useState<Entrance | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [currentSpace, setCurrentSpace] = useState<ParkingSpace | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [gridSize, setGridSize] = useState<keyof typeof GRID_SIZES>('medium');
+
+  useEffect(() => {
+    const centerX = Math.round((GRID_SIZES[gridSize].width - 40) / 2 / 20) * 20;
+    const centerY = Math.round((GRID_SIZES[gridSize].height - 40) / 2 / 20) * 20;
+    
+    setEntrance({
+      x: centerX,
+      y: centerY,
+      width: 40,
+      height: 40
+    });
+  }, []);
+
+  const handleEntranceDragStop = (x: number, y: number) => {
+    const maxX = GRID_SIZES[gridSize].width - 40;
+    const maxY = GRID_SIZES[gridSize].height - 40;
+    
+    const newX = Math.min(Math.max(0, Math.round(x / 20) * 20), maxX);
+    const newY = Math.min(Math.max(0, Math.round(y / 20) * 20), maxY);
+    
+    setEntrance(prev => prev ? { ...prev, x: newX, y: newY } : null);
+  };
 
   const handleAddSpace = () => {
     if (spaces.length >= GRID_SIZES[gridSize].maxSpaces) {
@@ -207,12 +237,13 @@ export default function ParkingConstructor() {
   };
 
   const handleSaveConfiguration = async () => {
-    if (!parkingId) return;
+    if (!parkingId || !entrance) return;
     
     try {
       await dispatch(saveSpacesConfiguration({
         parkingId,
-        spaces
+        spaces,
+        entrance
       })).unwrap();
       
       alert('Конфигурация парковки успешно сохранена');
@@ -252,6 +283,37 @@ export default function ParkingConstructor() {
     transition: 'width 0.3s ease, height 0.3s ease'
   }}
 >
+        {entrance && (
+          <Draggable
+            grid={[20, 20]}
+            position={{ x: entrance.x, y: entrance.y }}
+            onStop={(e, data) => handleEntranceDragStop(data.x, data.y)}
+            bounds={{
+              left: 0,
+              top: 0,
+              right: GRID_SIZES[gridSize].width - 40,
+              bottom: GRID_SIZES[gridSize].height - 40
+            }}
+          >
+            <Box
+              sx={{
+                position: 'absolute',
+                width: '40px',
+                height: '40px',
+                bgcolor: 'warning.main',
+                border: '1px solid',
+                borderColor: 'grey.300',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'move',
+                color: 'white'
+              }}
+            >
+              <Typography>Вход</Typography>
+            </Box>
+          </Draggable>
+        )}
         {spaces.map((space) => (
        <Draggable
   key={space.id}

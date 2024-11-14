@@ -11,11 +11,13 @@ import {
   Typography,
   Stack,
   Paper,
-  FormControlLabel,
-  Switch,
   Tabs,
-  Tab
+  Tab,
+  CircularProgress
 } from '@mui/material';
+import { LocationButton } from '../map/LocationButton';
+import { FileUploader } from '../common/FileUploader';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
 export default function CreateParkingForm() {
   const dispatch = useAppDispatch();
@@ -46,6 +48,10 @@ export default function CreateParkingForm() {
   }>>([]);
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
+  const userMarkerRef = useRef<any>(null);
+  const [mapglAPI, setMapglAPI] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [files, setFiles] = useState<File[]>([]);
 
   useEffect(() => {
     if (addressMethod === 'map' && !map) {
@@ -58,53 +64,117 @@ export default function CreateParkingForm() {
     };
   }, [addressMethod]);
 
+  const getCurrentPosition = (): Promise<[number, number]> => {
+    return new Promise((resolve, reject) => {
+      if ('geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const coords: [number, number] = [
+              position.coords.longitude,
+              position.coords.latitude
+            ];
+            resolve(coords);
+          },
+          (error) => {
+            console.error('Ошибка получения геолокации:', error);
+            reject(error);
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 5000,
+            maximumAge: 0
+          }
+        );
+      } else {
+        reject(new Error('Геолокация недоступна'));
+      }
+    });
+  };
+
+  const createUserMarker = (mapglAPI: any, map: any, coords: [number, number]) => {
+    if (userMarkerRef.current) {
+      userMarkerRef.current.destroy();
+      userMarkerRef.current = null;
+    }
+
+    try {
+      const marker = new mapglAPI.Marker(map, {
+        coordinates: coords,
+        label: {
+          text: 'Вы здесь',
+          offset: [0, -60],
+          relativeAnchor: [0.5, 0],
+        }
+      });
+      
+      userMarkerRef.current = marker;
+      map.setCenter(coords);
+      map.setZoom(15);
+
+      return marker;
+    } catch (error) {
+      console.error('Ошибка при создании маркера:', error);
+      return null;
+    }
+  };
+
   const initMap = async () => {
     try {
+      setIsLoading(true);
       const mapglAPI = await load();
-      const defaultCenter = [82.920430, 55.030199];
+      setMapglAPI(mapglAPI);
       
       if (!mapContainerRef.current) return;
 
-      // Загружаем существующие парковки
-      const response = await fetch('http://localhost:3000/api/parking-lots/all');
-      if (!response.ok) {
-        throw new Error('Ошибка при загрузке парковок');
-      }
-      const existingParkings = await response.json();
+      const userCoords = await getCurrentPosition();
       
       const mapInstance = new mapglAPI.Map(mapContainerRef.current, {
-        center: defaultCenter,
-        zoom: 13,
+        center: userCoords,
+        zoom: 15,
         key: import.meta.env.VITE_2GIS_API_KEY
       });
 
-      // Добавляем маркеры существующих парковок
-      existingParkings.forEach((parking: Parking) => {
-        new mapglAPI.Marker(mapInstance, {
-          coordinates: [parking.location.coordinates.lon, parking.location.coordinates.lat],
-          label: {
-            text: `${parking.price_per_hour} руб/час`,
-            offset: [0, -60],
-            relativeAnchor: [0.5, 0],
-          },
-          icon: {
-            color: '#808080', // Серый цвет для существующих парковок
-          }
-        });
-      });
+      // Создаем маркер пользователя
+      createUserMarker(mapglAPI, mapInstance, userCoords);
 
-      // Маркер для новой парковки
-      const markerInstance = new mapglAPI.Marker(mapInstance, {
-        coordinates: defaultCenter,
+      // Загружаем существующие парковки
+      try {
+        const response = await fetch('http://localhost:3000/api/parking-lots/all');
+        if (!response.ok) {
+          throw new Error('Ошибка при загрузке парковок');
+        }
+        const existingParkings = await response.json();
+        
+        // Добавляем маркеры существующих парковок
+        existingParkings.forEach((parking: Parking) => {
+          new mapglAPI.Marker(mapInstance, {
+            coordinates: [parking.location.coordinates.lon, parking.location.coordinates.lat],
+            label: {
+              text: `${parking.price_per_hour}₽/час`,
+              offset: [0, -60],
+              relativeAnchor: [0.5, 0],
+            }
+          });
+        });
+      } catch (error) {
+        console.error('Ошибка при загрузке существующих парковок:', error);
+      }
+
+      // Создаем маркер для новой парковки
+      const parkingMarker = new mapglAPI.Marker(mapInstance, {
+        coordinates: userCoords,
         draggable: true,
-        icon: {
-          color: '#1976d2', // Синий цвет для нового маркера
+        label: {
+          text: 'Новая парковка',
+          offset: [0, -60],
+          relativeAnchor: [0.5, 0],
         }
       });
 
+      // Обработчик клика по карте
       mapInstance.on('click', async (e: any) => {
         const coordinates = e.lngLat;
-        markerInstance.setCoordinates(coordinates);
+        parkingMarker.setCoordinates(coordinates);
 
         try {
           const response = await fetch(
@@ -124,14 +194,16 @@ export default function CreateParkingForm() {
             }
           }));
         } catch (error) {
-          console.error('Оибка при получении адреса:', error);
+          console.error('Ошибка при получении адреса:', error);
         }
       });
 
       setMap(mapInstance);
-      setMarker(markerInstance);
+      setMarker(parkingMarker);
+      setIsLoading(false);
     } catch (error) {
       console.error('Ошибка при инициализации карты:', error);
+      setIsLoading(false);
     }
   };
 
@@ -206,6 +278,14 @@ export default function CreateParkingForm() {
     }
   };
 
+  const handleFilesChange = (newFiles: File[]) => {
+    setFiles(newFiles);
+    setParkingData(prev => ({
+      ...prev,
+      images: newFiles
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
@@ -216,11 +296,18 @@ export default function CreateParkingForm() {
     }
 
     try {
-      const result = await dispatch(createParking({
-        ...parkingData,
-        price_per_hour: Number(parkingData.price_per_hour)
-      })).unwrap();
-      
+      const formData = new FormData();
+      formData.append('name', parkingData.name);
+      formData.append('description', parkingData.description);
+      formData.append('location', JSON.stringify(parkingData.location));
+      formData.append('price_per_hour', parkingData.price_per_hour.toString());
+      formData.append('status', parkingData.status);
+
+      if (files.length > 0) {
+        formData.append('img', files[0]);
+      }
+
+      const result = await dispatch(createParking(formData)).unwrap();
       navigate(`/parking-constructor/${result.id}`);
     } catch (err: any) {
       setError(err.response?.data?.error || 'Ошибка при создании парковки');
@@ -264,6 +351,56 @@ export default function CreateParkingForm() {
               helperText="Укажите особенности парковки, режим работы и другую полезную информацию"
             />
 
+            <Box sx={{ mt: 2 }}>
+              <FileUploader
+                files={files}
+                onFilesChange={handleFilesChange}
+                maxFiles={5}
+                acceptedFileTypes={['image/jpeg', 'image/png']}
+                maxFileSize={5 * 1024 * 1024}
+              >
+                <Box
+                  sx={{
+                    border: '2px dashed #ccc',
+                    borderRadius: 2,
+                    p: 3,
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                    '&:hover': {
+                      borderColor: 'primary.main',
+                      bgcolor: 'rgba(0, 0, 0, 0.04)'
+                    }
+                  }}
+                >
+                  <CloudUploadIcon sx={{ fontSize: 48, color: 'text.secondary' }} />
+                  <Typography variant="h6" sx={{ mt: 2 }}>
+                    Перетащите фотографии сюда или кликните для выбора
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Поддерживаются JPG, PNG. Максимальный размер файла: 5MB
+                  </Typography>
+                </Box>
+              </FileUploader>
+              
+              {files.length > 0 && (
+                <Box sx={{ display: 'flex', gap: 1, mt: 2, flexWrap: 'wrap' }}>
+                  {files.map((file, index) => (
+                    <Box
+                      key={index}
+                      component="img"
+                      src={URL.createObjectURL(file)}
+                      sx={{
+                        width: 100,
+                        height: 100,
+                        objectFit: 'cover',
+                        borderRadius: 1
+                      }}
+                    />
+                  ))}
+                </Box>
+              )}
+            </Box>
+
             <Tabs
               value={addressMethod}
               onChange={(_, value) => setAddressMethod(value)}
@@ -274,18 +411,38 @@ export default function CreateParkingForm() {
             </Tabs>
 
             {addressMethod === 'map' ? (
-              <>
+              <Box sx={{ position: 'relative' }}>
+                {isLoading && (
+                  <Box sx={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    zIndex: 2,
+                  }}>
+                    <CircularProgress />
+                  </Box>
+                )}
                 <Box 
                   ref={mapContainerRef}
                   sx={{ height: 400, width: '100%', mb: 2 }} 
                 />
+                <LocationButton onLocationFound={(coords) => {
+                  if (!map || !mapglAPI) return;
+                  createUserMarker(mapglAPI, map, coords);
+                }} />
                 <TextField
                   fullWidth
                   label="Выбранный адрес"
                   value={parkingData.location.address}
                   disabled
                 />
-              </>
+              </Box>
             ) : (
               <Box sx={{ position: 'relative' }}>
                 <TextField
