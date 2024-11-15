@@ -1,5 +1,10 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import type { ParkingLot, CreateParkingSpacesPayload, ParkingSpace, Entrance } from '../types/parking.types';
+import type {
+  ParkingLot,
+  CreateParkingSpacesPayload,
+  ParkingSpace,
+  Entrance,
+} from "../types/parking.types";
 import axiosInstance from '../services/axiosInstance';
 
 export const createParking = createAsyncThunk(
@@ -68,6 +73,50 @@ export const getMyParkings = createAsyncThunk<ParkingLot[]>(
   async () => {
     const response = await axiosInstance.get<ParkingLot[]>(
       `/parking-lots/myparking/`
+    );
+    return response.data;
+  }
+);
+
+
+export const updateMyParkings = createAsyncThunk<
+  ParkingLot[]  
+>(
+  "parking/updateMyParkings",
+  async ({ id, name, description, location, price_per_hour, status }) => {
+    // Проверяем и подготавливаем данные локации
+    const locationData = {
+      address: location?.address || "",
+      coordinates: {
+        lat: location?.coordinates?.lat || null,
+        lon: location?.coordinates?.lon || null,
+      },
+    };
+
+    const locationJson = JSON.stringify(locationData);
+
+    // Подготавливаем данные для запроса
+    const requestData = {
+      name: name || "",
+      description: description || "",
+      location: locationJson,
+      price_per_hour: price_per_hour || 0,
+      ...(status && { status }), // Добавляем status только если он определён
+    };
+
+    const response = await axiosInstance.patch<ParkingLot[]>(
+      `/parking-lots/myparking/update/${id}`,
+      requestData
+    );
+    return response.data;
+  }
+);
+
+export const deleteMyParkings = createAsyncThunk<ParkingLot[], string>(
+  "parking/deleteMyParkings",
+  async (id) => {
+    const response = await axiosInstance.delete<ParkingLot[]>(
+      `/parking-lots/myparking/delete/${id}`
     );
     return response.data;
   }

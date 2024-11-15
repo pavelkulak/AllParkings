@@ -55,13 +55,42 @@ parkingLotsRouter.get("/myparking", verifyAccessToken, async (req, res) => {
         owner_id: user.id,
       },
     });
-    console.log("🚀 parkings:", parkings);
+   
     res.json(parkings);
   } catch (error) {
     console.error("Ошибка при получении парковок владельца:", error);
     res.status(500).json({ error: "Ошибка при получении парковок владельца" });
   }
 });
+
+
+//Обновление данных текущей парковки владельца
+parkingLotsRouter.patch("/myparking/update/:id", verifyAccessToken, async (req, res) => {
+  try {
+    const { user } = res.locals;
+    const { id } = req.params.id;
+    const { nameReq, descriptionReq, locationReq, price_per_hourReq } = req.body;
+    const parkings = await ParkingLot.update(
+      {
+        name: nameReq,
+        description: descriptionReq,
+        location: JSON.parse(locationReq),       
+        price_per_hour: price_per_hourReq,
+      },
+      {
+        where: {
+          id: id,
+        },
+      }
+    );
+    
+    res.json(parkings);
+  } catch (error) {
+    console.error("Ошибка при обновлении парковок владельца:", error);
+    res.status(500).json({ error: "Ошибка при обновлении парковок владельца" });
+  }
+});
+
 
 // Создание парковки (первый этап)
 parkingLotsRouter.post('/', verifyAccessToken, upload.single('img'), async (req, res) => {
@@ -187,6 +216,26 @@ parkingLotsRouter.get('/:id/spaces', async (req, res) => {
   } catch (error) {
     console.error('Error fetching parking spaces:', error);
     res.status(500).json({ error: 'Ошибка при получении парковки' });
+  }
+});
+
+//Удаление парковки
+parkingLotsRouter.delete("/myparking/delete/:id", verifyAccessToken, async (req, res) => {
+  try {
+    const { user } = res.locals;
+    const { id } = req.params.id;
+    const parkings = await ParkingLot.delete(
+      {
+        where: {
+          id: id,
+        },
+      }
+    );
+    
+    res.json(parkings);
+  } catch (error) {
+    console.error("Ошибка при удалении парковки:", error);
+    res.status(500).json({ error: "Ошибка при удалении парковки" });
   }
 });
 

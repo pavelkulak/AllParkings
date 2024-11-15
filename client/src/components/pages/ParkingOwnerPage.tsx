@@ -19,13 +19,18 @@ import {
   Tab,
   Tabs,
 } from "@mui/material";
-import { Add as AddIcon } from "@mui/icons-material";
+import { Add as AddIcon, Description } from "@mui/icons-material";
 import { useEffect, useRef, useState } from "react";
 import Autocomplete from "@mui/material/Autocomplete";
 import ParkingConstructor from "../constructor/ParkingConstructor";
 import { Link, useNavigate } from "react-router-dom";
 import { load } from "@2gis/mapgl";
-import { createParking, getMyParkings } from "../../redux/parkingThunks";
+import {
+  createParking,
+  getMyParkings,
+  updateMyParkings,
+  deleteMyParkings,
+} from "../../redux/parkingThunks";
 import { Parking } from "../../types/parking";
 import { LocationButton } from "../map/LocationButton";
 
@@ -71,6 +76,39 @@ export default function ParkingOwnerPage() {
     }
   }, [parkingLots]); // Обновляем данные когда parkingLots изменяется
 
+  const handleDeleteClick = async () => {
+    if (!selectedParking) return;
+
+    if (window.confirm("Вы уверены, что хотите удалить эту парковку?")) {
+      try {
+        await dispatch(deleteMyParkings()).unwrap();
+
+        // Очищаем выбранную парковку
+        setSelectedParking(null);
+        setParkingData({
+          name: "",
+          description: "",
+          location: {
+            address: "",
+            coordinates: {
+              lat: null,
+              lon: null,
+            },
+          },
+          price_per_hour: "",
+          status: "pending" as const,
+        });
+
+        // Обновляем список парковок
+        dispatch(getMyParkings());
+      } catch (error) {
+        console.error("Ошибка при удалении парковки:", error);
+        setError("Ошибка при удалении парковки");
+      }
+    }
+  };
+
+
   const [selectedParking, setSelectedParking] = useState<Parking | null>(null);
 
   const handleParkingChange = (
@@ -110,6 +148,34 @@ export default function ParkingOwnerPage() {
     }
   };
 
+  const handleSaveChanges = async () => {
+    if (!selectedParking) return;
+
+    try {
+      await dispatch(
+        updateMyParkings({
+          id: selectedParking.id,
+          name: parkingData.name,
+          description: parkingData.description,
+          location: {
+            address: parkingData.location.address,
+            coordinates: {
+              lat: parkingData.location.coordinates.lat,
+              lon: parkingData.location.coordinates.lon,
+            },
+          },
+          price_per_hour: Number(parkingData.price_per_hour),
+          status: parkingData.status,
+        })
+      ).unwrap();
+
+      // Обновляем список парковок после успешного сохранения
+      dispatch(getMyParkings());
+    } catch (error) {
+      console.error("Ошибка при сохранении изменений:", error);
+      setError("Ошибка при сохранении изменений");
+    }
+  };
   const [addressSuggestions, setAddressSuggestions] = useState<
     Array<{
       name: string;
@@ -389,13 +455,6 @@ export default function ParkingOwnerPage() {
     }
   };
 
-  const handleDeleteClick = () => {
-    if (window.confirm("Вы уверены, что хотите удалить?")) {
-      // Логика удаления здесь
-      console.log("Удаление подтверждено");
-    }
-  };
-
   return (
     <Box
       sx={{
@@ -606,7 +665,12 @@ export default function ParkingOwnerPage() {
             >
               Посмотреть отзывы
             </Button>
-            <Button fullWidth variant="contained" size="small" type="submit">
+            <Button
+              fullWidth
+              variant="contained"
+              size="small"
+              onClick={handleSaveChanges} // Меняем onChange на onClick
+            >
               Сохранить изменения
             </Button>
             <Button
@@ -614,7 +678,6 @@ export default function ParkingOwnerPage() {
               variant="contained"
               size="small"
               color="error"
-              type="submit"
               onClick={handleDeleteClick}
             >
               Удалить
