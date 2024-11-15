@@ -7,6 +7,9 @@ import { IconButton, InputAdornment } from '@mui/material';
 import LightModeSharpIcon from '@mui/icons-material/LightModeSharp';
 import DarkModeSharpIcon from '@mui/icons-material/DarkModeSharp';
 import { useTheme } from '@mui/material/styles';
+import InfoIcon from '@mui/icons-material/Info';
+import { Tooltip } from '@mui/material';
+import InputMask from 'react-input-mask';
 
 export default function ProfilePage() {
   const { user } = useAppSelector((state) => state.auth);
@@ -39,12 +42,27 @@ export default function ProfilePage() {
   //   }
   // };
 
+  // Добавим функцию проверки валидности полей
+  const isFieldsValid = () => {
+    // Проверка ФИО на минимальную длину
+    const isSurnameValid = surname.length >= 2;
+    const isNameValid = name.length >= 2;
+    // Отчество опционально, проверяем только если оно заполнено
+    const isPatronymicValid = !patronymic || patronymic.length >= 2;
+    // Проверка телефона на заполненность (не должен содержать символ маски '_')
+    const isPhoneValid = phone && !phone.includes('_');
+
+    return isSurnameValid && isNameValid && isPatronymicValid && isPhoneValid;
+  };
+
+  // Обновим useEffect для отслеживания изменений
   useEffect(() => {
     setIsChanged(
-      surname !== user?.surname ||
-        name !== user?.name ||
-        patronymic !== user?.patronymic ||
-        phone !== user?.phone,
+      (surname !== user?.surname ||
+      name !== user?.name ||
+      patronymic !== user?.patronymic ||
+      phone !== user?.phone) &&
+      isFieldsValid() // Добавляем проверку валидности
     );
   }, [surname, name, patronymic, phone, user]);
 
@@ -65,8 +83,27 @@ export default function ProfilePage() {
     });
   };
 
+  // Функция для очистки номера телефона от форматирования
+  const cleanPhoneNumber = (phone: string) => {
+    // Оставляем только цифры, включая 7 в начале
+    return phone.replace(/\D/g, '');
+  };
+
+  // Обновляем функцию сохранения
   const handleSaveChanges = () => {
-    dispatch(updateUserProfile({ surname, name, patronymic, phone }));
+    if (surnameError || nameError || patronymicError || phoneError) {
+      return;
+    }
+    
+    // Очищаем телефон от форматирования перед отправкой
+    const cleanedPhone = cleanPhoneNumber(phone);
+    
+    dispatch(updateUserProfile({ 
+      surname, 
+      name, 
+      patronymic, 
+      phone: cleanedPhone // Теперь будет в формате "79951000000"
+    }));
   };
 
   const handleChangePassword = () => {
@@ -119,6 +156,54 @@ export default function ProfilePage() {
     setConfirmPassword(confirmPass);
     setConfirmPasswordError(confirmPass !== newPassword ? 'Пароли должны совпадать' : '');
   };
+
+  const [surnameError, setSurnameError] = useState('');
+  const [nameError, setNameError] = useState('');
+  const [patronymicError, setPatronymicError] = useState('');
+  const [phoneError, setPhoneError] = useState('');
+
+  const validateName = (value: string, fieldName: string) => {
+    if (value && value.length < 2) {
+      return `${fieldName} должно содержать минимум 2 буквы`;
+    }
+    if (value && !/^[а-яА-ЯёЁa-zA-Z]+$/.test(value)) {
+      return `${fieldName} должно содержать только буквы`;
+    }
+    return '';
+  };
+
+  const handleSurnameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSurname(value);
+    setSurnameError(validateName(value, 'Фамилия'));
+  };
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setName(value);
+    setNameError(validateName(value, 'Имя'));
+  };
+
+  const handlePatronymicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setPatronymic(value);
+    setPatronymicError(value ? validateName(value, 'Отчество') : '');
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setPhone(value);
+    setPhoneError(value.includes('_') ? 'Введите полный номер телефона' : '');
+  };
+
+  // При получении данных с сервера форматируем телефон
+  useEffect(() => {
+    if (user?.phone) {
+      // Форматируем телефон при загрузке
+      const formattedPhone = user.phone.toString().replace(/(\d)(\d{3})(\d{3})(\d{2})(\d{2})/, '+$1 $2 $3 $4 $5');
+      setPhone(formattedPhone);
+    }
+  }, [user]);
 
   return (
     <Box
@@ -216,48 +301,115 @@ export default function ProfilePage() {
               {user?.email || ' Error'}
             </Typography>
 
-            <Box sx={{ mb: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%', mb: 2 }}>
+              <Box sx={{ 
+                width: '28px', 
+                display: 'flex', 
+                justifyContent: 'center',
+                visibility: surnameError ? 'visible' : 'hidden'
+              }}>
+                <Tooltip title={surnameError} arrow>
+                  <InfoIcon 
+                    color="error" 
+                    sx={{ fontSize: '24px', cursor: 'pointer' }} 
+                  />
+                </Tooltip>
+              </Box>
               <TextField
                 fullWidth
                 value={surname}
-                onChange={(e) => setSurname(e.target.value)}
+                onChange={handleSurnameChange}
                 size='small'
                 label='Фамилия'
                 variant='standard'
                 required
+                error={!!surnameError}
               />
             </Box>
-            <Box sx={{ mb: 2 }}>
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%', mb: 2 }}>
+              <Box sx={{ 
+                width: '28px', 
+                display: 'flex', 
+                justifyContent: 'center',
+                visibility: nameError ? 'visible' : 'hidden'
+              }}>
+                <Tooltip title={nameError} arrow>
+                  <InfoIcon 
+                    color="error" 
+                    sx={{ fontSize: '24px', cursor: 'pointer' }} 
+                  />
+                </Tooltip>
+              </Box>
               <TextField
                 fullWidth
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={handleNameChange}
                 size='small'
                 label='Имя'
                 variant='standard'
                 required
+                error={!!nameError}
               />
             </Box>
-            <Box sx={{ mb: 2 }}>
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%', mb: 2 }}>
+              <Box sx={{ 
+                width: '28px', 
+                display: 'flex', 
+                justifyContent: 'center',
+                visibility: patronymicError ? 'visible' : 'hidden'
+              }}>
+                <Tooltip title={patronymicError} arrow>
+                  <InfoIcon 
+                    color="error" 
+                    sx={{ fontSize: '24px', cursor: 'pointer' }} 
+                  />
+                </Tooltip>
+              </Box>
               <TextField
                 fullWidth
                 value={patronymic}
-                onChange={(e) => setPatronymic(e.target.value)}
+                onChange={handlePatronymicChange}
                 size='small'
                 label='Отчество'
                 variant='standard'
+                error={!!patronymicError}
               />
             </Box>
-            <Box sx={{ mb: 2 }}>
-              <TextField
-                fullWidth
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%', mb: 2 }}>
+              <Box sx={{ 
+                width: '28px', 
+                display: 'flex', 
+                justifyContent: 'center',
+                visibility: phoneError ? 'visible' : 'hidden'
+              }}>
+                <Tooltip title={phoneError} arrow>
+                  <InfoIcon 
+                    color="error" 
+                    sx={{ fontSize: '24px', cursor: 'pointer' }} 
+                  />
+                </Tooltip>
+              </Box>
+              <InputMask
+                mask="+7 999 999 99 99"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                size='small'
-                label='Номер телефона'
-                variant='standard'
-                required
-              />
+                onChange={handlePhoneChange}
+                maskChar="_"
+              >
+                {(inputProps: any) => (
+                  <TextField
+                    {...inputProps}
+                    fullWidth
+                    size='small'
+                    label='Номер телефона'
+                    variant='standard'
+                    required
+                    error={!!phoneError}
+                  />
+                )}
+              </InputMask>
             </Box>
 
             <Box sx={{ display: 'flex', justifyContent: 'space-around' }}>
@@ -265,7 +417,7 @@ export default function ProfilePage() {
                 variant='contained'
                 color='primary'
                 size='medium'
-                disabled={!isChanged}
+                disabled={!isChanged || !isFieldsValid()}
                 onClick={handleSaveChanges}
               >
                 Сохранить изменения
@@ -280,7 +432,7 @@ export default function ProfilePage() {
               alignItems: 'center',
               justifyContent: 'center',
               borderLeft: '1px solid #ddd',
-              px: 5,
+              px: 1,
               minHeight: '100%',
               width: '25%',
             }}
@@ -288,7 +440,15 @@ export default function ProfilePage() {
             <Typography variant='h6' sx={{ mb: 3 }}>
               Смена пароля
             </Typography>
-            <Box sx={{ width: '100%', mb: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%', mb: 3 }}>
+              <Box sx={{ 
+                width: '28px', 
+                display: 'flex', 
+                justifyContent: 'center',
+                visibility: 'hidden'
+              }}>
+                <InfoIcon sx={{ fontSize: '24px' }} />
+              </Box>
               <TextField
                 fullWidth
                 type={showCurrentPassword ? 'text' : 'password'}
@@ -298,29 +458,37 @@ export default function ProfilePage() {
                 label='Ваш пароль'
                 variant='standard'
                 required
-                slotProps={{
-                  input: {
-                    endAdornment: (
-                      <InputAdornment position='end'>
-                        <IconButton
-                          onClick={() =>
-                            setShowCurrentPassword(!showCurrentPassword)
-                          }
-                          edge='end'
-                        >
-                          {showCurrentPassword ? (
-                            <VisibilityOff />
-                          ) : (
-                            <Visibility />
-                          )}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  },
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="start">
+                      <IconButton onClick={() => setShowCurrentPassword(!showCurrentPassword)} edge='end'>
+                        {showCurrentPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
                 }}
               />
             </Box>
-            <Box sx={{ width: '100%', mb: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%', mb: 3 }}>
+              <Box sx={{ 
+                width: '28px', 
+                display: 'flex', 
+                justifyContent: 'center',
+                visibility: newPasswordError ? 'visible' : 'hidden'
+              }}>
+                <Tooltip title={newPasswordError} arrow>
+                  <InfoIcon 
+                    color="error" 
+                    sx={{ 
+                      fontSize: '24px',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        opacity: 0.8
+                      }
+                    }} 
+                  />
+                </Tooltip>
+              </Box>
               <TextField
                 fullWidth
                 type={showNewPassword ? 'text' : 'password'}
@@ -331,26 +499,41 @@ export default function ProfilePage() {
                 variant='standard'
                 required
                 error={!!newPasswordError}
-                helperText={newPasswordError}
-                slotProps={{
-                  input: {
-                    endAdornment: (
-                      <InputAdornment position='end'>
-                        <IconButton
-                          onClick={() => setShowNewPassword(!showNewPassword)}
-                          edge='end'
-                        >
-                          {showNewPassword ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  },
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="start">
+                      <IconButton
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        edge='end'
+                      >
+                        {showNewPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
                 }}
               />
             </Box>
-            <Box sx={{ width: '100%', mb: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%', mb: 3 }}>
+              <Box sx={{ 
+                width: '28px', 
+                display: 'flex', 
+                justifyContent: 'center',
+                visibility: confirmPasswordError ? 'visible' : 'hidden'
+              }}>
+                <Tooltip title={confirmPasswordError} arrow>
+                  <InfoIcon 
+                    color="error" 
+                    sx={{ 
+                      fontSize: '24px',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        opacity: 0.8
+                      }
+                    }} 
+                  />
+                </Tooltip>
+              </Box>
               <TextField
-                sx={{ marginBottom: '35px' }}
                 fullWidth
                 type='password'
                 value={confirmPassword}
@@ -358,13 +541,8 @@ export default function ProfilePage() {
                 size='small'
                 label='Подтвердите пароль'
                 variant='standard'
-                onPaste={(e) => {
-                  e.preventDefault();
-                  alert('Вставка запрещена. Пожалуйста, введите пароль вручную.');
-                }}
                 required
                 error={!!confirmPasswordError}
-                helperText={confirmPasswordError}
               />
             </Box>
             <Button
@@ -410,7 +588,7 @@ export default function ProfilePage() {
               <Typography variant="body2">Dark</Typography>
             </Box>
             <Button
-              variant='contained'
+              variant='outlined'
               color='error'
               // onClick={handleDeleteAccount}
             >
@@ -448,3 +626,4 @@ export default function ProfilePage() {
     </Box>
   );
 }
+
