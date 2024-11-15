@@ -62,7 +62,7 @@ export const getMyParkings = createAsyncThunk<ParkingLot[]>(
   "parking/getMyParkings",
   async () => {
     const response = await axiosInstance.get<ParkingLot[]>(
-      "/parking-lots/myparking"
+      `/parking-lots/myparking/`
     );
     return response.data;
   }

@@ -25,7 +25,7 @@ import Autocomplete from "@mui/material/Autocomplete";
 import ParkingConstructor from "../constructor/ParkingConstructor";
 import { Link, useNavigate } from "react-router-dom";
 import { load } from "@2gis/mapgl";
-import { createParking } from "../../redux/parkingThunks";
+import { createParking, getMyParkings } from "../../redux/parkingThunks";
 import { LocationButton } from "../map/LocationButton";
 
 interface IParkingOption {
@@ -44,9 +44,21 @@ export default function ParkingOwnerPage() {
  const [map, setMap] = useState<any>(null);
  const [marker, setMarker] = useState<any>(null);
 
+  const { parkingLots } = useAppSelector((state) => state.parking);
+
+  console.log('1:', parkingLots);
+
+  useEffect(()=> {
+    dispatch(getMyParkings());
+    setParkingData(parkingLots);
+  },
+  [])
+
+  console.log('2', parkingLots);
+  
  const [parkingData, setParkingData] = useState({
-   name: '',
-   description: '',
+   name: "",
+   description: "",
    location: {
      address: "",
      coordinates: {

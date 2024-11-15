@@ -51,7 +51,7 @@ const parkingSlice = createSlice({
       })
       .addCase(getMyParkings.rejected, (state, action) => {
         state.status = 'failed';
-        state.error = action.error.message || 'Ошибка при получении парковок';
+        state.error = action.error.message || 'Ошибка при получении парковки владельца';
       });
   },
 });
