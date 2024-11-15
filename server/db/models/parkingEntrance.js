@@ -2,34 +2,35 @@
 const { Model } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
-  class ParkingConfiguration extends Model {
+  class ParkingEntrance extends Model {
     static associate(models) {
       this.belongsTo(models.ParkingLot, { foreignKey: 'parking_id' });
     }
   }
   
-  ParkingConfiguration.init({
+  ParkingEntrance.init({
     parking_id: {
       type: DataTypes.BIGINT,
-      allowNull: false
+      allowNull: false,
+      references: {
+        model: 'ParkingLots',
+        key: 'id'
+      }
     },
-    configuration: {
+    location: {
       type: DataTypes.JSON,
       allowNull: false,
       defaultValue: {
-        entrance: {
-          x: 0,
-          y: 0,
-          width: 40,
-          height: 40
-        },
-        spaces: []
+        x: 0,
+        y: 0,
+        width: 40,
+        height: 40
       }
     }
   }, {
     sequelize,
-    modelName: 'ParkingConfiguration',
+    modelName: 'ParkingEntrance',
   });
   
-  return ParkingConfiguration;
+  return ParkingEntrance;
 };
