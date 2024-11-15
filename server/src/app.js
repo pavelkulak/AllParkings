@@ -19,6 +19,8 @@ const reviewsRouter = require('./routers/reviewsRouter');
 
 const uploadRouter = require('./routers/upload.router');
 
+const favoritesRouter = require('./routers/favoritesRouter');
+
 const corsConfig = {
   origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
   credentials: true,
@@ -43,6 +45,8 @@ app.use('/api/bookings', bookingsRouter);
 app.use('/api/reviews', reviewsRouter);
 
 app.use('/api/upload', uploadRouter);
+
+app.use('/api/favorites', favoritesRouter);
 
 app.listen(PORT, () => {
   console.log(`Server started at ${PORT} port`);
