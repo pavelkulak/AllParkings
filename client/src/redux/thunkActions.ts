@@ -68,6 +68,18 @@ export const updateAvatar = createAsyncThunk<AuthResponse, FormData>(
   },
 );
 
+export const deleteAvatar = createAsyncThunk(
+  'auth/deleteAvatar',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.delete('/upload/avatar');
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Ошибка при удалении аватара');
+    }
+  }
+);
+
 export const updateUserProfile = createAsyncThunk<AuthResponse, Partial<IUser>>(
   'auth/updateUserProfile',
   async (userData, { rejectWithValue }) => {

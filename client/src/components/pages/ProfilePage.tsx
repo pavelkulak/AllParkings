@@ -1,7 +1,7 @@
 import { useAppDispatch, useAppSelector } from '../../redux/hooks';
 import { Box, Typography, Avatar, Button, TextField, Switch } from '@mui/material';
 import { useState, useRef, useEffect } from 'react';
-import { updateAvatar, updateUserProfile, changePassword } from '../../redux/thunkActions';
+import { updateAvatar, updateUserProfile, changePassword, deleteAvatar } from '../../redux/thunkActions';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { IconButton, InputAdornment } from '@mui/material';
 import LightModeSharpIcon from '@mui/icons-material/LightModeSharp';
@@ -57,12 +57,15 @@ export default function ProfilePage() {
 
   // Обновим useEffect для отслеживания изменений
   useEffect(() => {
+    const cleanedCurrentPhone = phone.replace(/\D/g, '');
+    const cleanedOriginalPhone = user?.phone?.toString() || '';
+
     setIsChanged(
       (surname !== user?.surname ||
       name !== user?.name ||
       patronymic !== user?.patronymic ||
-      phone !== user?.phone) &&
-      isFieldsValid() // Добавляем проверку валидности
+      cleanedCurrentPhone !== cleanedOriginalPhone) &&
+      isFieldsValid()
     );
   }, [surname, name, patronymic, phone, user]);
 
@@ -205,6 +208,19 @@ export default function ProfilePage() {
     }
   }, [user]);
 
+  const handleDeleteAvatar = () => {
+    if (window.confirm('Вы уверены, что хотите удалить аватар?')) {
+      dispatch(deleteAvatar())
+        .unwrap()
+        .then(() => {
+          // Можно добавить уведомление об успешном удалении
+        })
+        .catch((error) => {
+          alert(error || 'Ошибка при удалении аватара');
+        });
+    }
+  };
+
   return (
     <Box
       sx={{
@@ -289,9 +305,13 @@ export default function ProfilePage() {
                 sx={{
                   cursor: 'pointer',
                   mt: 1,
+                  '&:hover': {
+                    opacity: 0.8
+                  }
                 }}
+                onClick={handleDeleteAvatar}
               >
-                Удалить аватар (не создан)
+                Удалить аватар
               </Typography>
             )}
           </Box>
@@ -417,7 +437,7 @@ export default function ProfilePage() {
                 variant='contained'
                 color='primary'
                 size='medium'
-                disabled={!isChanged || !isFieldsValid()}
+                disabled={!isChanged}
                 onClick={handleSaveChanges}
               >
                 Сохранить изменения
