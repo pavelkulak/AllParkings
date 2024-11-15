@@ -9,6 +9,9 @@ import CloseIcon from '@mui/icons-material/Close';
 import { Star, StarBorder } from '@mui/icons-material';
 import { ReviewList } from '../reviews/ReviewList';
 import { ParkingEntrance } from '../../types/parking';
+import { useAppDispatch, useAppSelector } from '../../redux/hooks';
+import { addToFavorites, removeFromFavorites, getFavorites } from '../../redux/favoritesThunks';
+import { Favorite, FavoriteBorder } from '@mui/icons-material';
 
 interface ParkingModalProps {
   parking: Parking | null;
@@ -25,6 +28,36 @@ export const ParkingModal = ({ parking, open, onClose }: ParkingModalProps) => {
   const [selectedSpace, setSelectedSpace] = useState<ParkingSpace | null>(null);
 
   const BASE_IMG_URL = 'http://localhost:3000/api/img/parking/';
+
+  const dispatch = useAppDispatch();
+  const { user } = useAppSelector((state) => state.auth);
+  const { favorites } = useAppSelector((state) => state.favorites);
+
+  const isAuthenticated = !!user;
+
+  console.log('Auth state:', { isAuthenticated });
+
+  const isFavorite = favorites.some(fav => fav.id === parking?.id);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      dispatch(getFavorites());
+    }
+  }, [dispatch, isAuthenticated]);
+
+  const handleFavoriteClick = async () => {
+    if (!isAuthenticated || !parking) return;
+
+    try {
+      if (isFavorite) {
+        await dispatch(removeFromFavorites(parking.id)).unwrap();
+      } else {
+        await dispatch(addToFavorites(parking.id)).unwrap();
+      }
+    } catch (error) {
+      console.error('Ошибка при работе с избранным:', error);
+    }
+  };
 
   const fetchParkingSpaces = async (parkingId: number) => {
     console.log('Начало fetchParkingSpaces для parkingId:', parkingId);
@@ -86,14 +119,23 @@ export const ParkingModal = ({ parking, open, onClose }: ParkingModalProps) => {
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>
-        {parking.name}
-        <IconButton
-          aria-label="close"
-          onClick={onClose}
-          sx={{ position: 'absolute', right: 8, top: 8 }}
-        >
-          <CloseIcon />
-        </IconButton>
+        <Box display="flex" alignItems="center" justifyContent="space-between">
+          <Typography variant="h6">{parking.name}</Typography>
+          <Stack direction="row" spacing={1}>
+            {isAuthenticated && (
+              <IconButton onClick={handleFavoriteClick}>
+                {isFavorite ? (
+                  <Favorite color="error" />
+                ) : (
+                  <FavoriteBorder />
+                )}
+              </IconButton>
+            )}
+            <IconButton onClick={onClose}>
+              <CloseIcon />
+            </IconButton>
+          </Stack>
+        </Box>
       </DialogTitle>
       <DialogContent>
         {parking.img ? (

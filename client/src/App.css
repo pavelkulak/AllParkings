@@ -13,13 +13,14 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-img, picture, video, canvas, svg:not(.MuiRating-icon svg) {
+img, picture, video, canvas, svg:not(.MuiRating-icon svg):not(.MuiSvgIcon-root) {
   display: block;
   max-width: 100%;
 }
 
-/* Добавим специальные стили для иконок рейтинга */
-.MuiRating-icon svg {
+/* Добавим специальные стили для иконок Material-UI */
+.MuiRating-icon svg,
+.MuiSvgIcon-root {
   display: inline-block;
   width: 1em;
   height: 1em;
