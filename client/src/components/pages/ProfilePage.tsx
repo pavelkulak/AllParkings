@@ -646,7 +646,7 @@ export default function ProfilePage() {
             {status === 'succeeded' && favorites?.length > 0 && (
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
                 {favorites.map((favorite) => (
-                  <Card key={favorite.id} sx={{ width: 300, position: 'relative' }}>
+                  <Card key={favorite.id} sx={{ position: 'relative' }}>
                     <CardMedia
                       component="img"
                       height="140"
@@ -665,7 +665,12 @@ export default function ProfilePage() {
                         </Typography>
                       </Box>
                       <IconButton
-                        sx={{ position: 'absolute', top: 5, right: 5 }}
+                        sx={{
+                          position: 'absolute',
+                          bottom: 8,
+                          right: 8,
+                          color: 'red'  // или '#FF0000', или 'error.main' если используете тему Material UI
+                        }}
                         onClick={() => dispatch(removeFromFavorites(favorite.parking_id))}
                       >
                         <DeleteIcon />
