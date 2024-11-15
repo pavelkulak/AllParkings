@@ -49,7 +49,7 @@ parkingLotsRouter.get('/all', async (req, res) => {
 parkingLotsRouter.get("/myparking", verifyAccessToken, async (req, res) => {
   try {
     const { user } = res.locals;
-    console.log("🚀 user:", user)
+  
     const parkings = await ParkingLot.findAll({
       where: {
         owner_id: user.id,
