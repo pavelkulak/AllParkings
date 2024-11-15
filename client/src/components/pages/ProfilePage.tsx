@@ -1,7 +1,8 @@
 import { useAppDispatch, useAppSelector } from '../../redux/hooks';
-import { Box, Typography, Avatar, Button, TextField, Switch } from '@mui/material';
+import { Box, Typography, Avatar, Button, TextField, Switch, CircularProgress } from '@mui/material';
 import { useState, useRef, useEffect } from 'react';
 import { updateAvatar, updateUserProfile, changePassword, deleteAvatar } from '../../redux/thunkActions';
+import { getFavorites, removeFromFavorites } from '../../redux/favoritesThunks';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { IconButton, InputAdornment } from '@mui/material';
 import LightModeSharpIcon from '@mui/icons-material/LightModeSharp';
@@ -10,6 +11,8 @@ import { useTheme } from '@mui/material/styles';
 import InfoIcon from '@mui/icons-material/Info';
 import { Tooltip } from '@mui/material';
 import InputMask from 'react-input-mask';
+import { Card, CardContent, CardMedia, Rating } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 export default function ProfilePage() {
   const { user } = useAppSelector((state) => state.auth);
@@ -29,6 +32,7 @@ export default function ProfilePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dispatch = useAppDispatch();
   const [activeTab, setActiveTab] = useState('settings');
+  const { favorites, status } = useAppSelector((state) => state.favorites);
 
   const theme = useTheme();
   // Изменение темы на будущее
@@ -41,6 +45,8 @@ export default function ProfilePage() {
   //     alert('Аккаунт удален');
   //   }
   // };
+
+  console.log('favorites', favorites)
 
   // Добавим функцию проверки валидности полей
   const isFieldsValid = () => {
@@ -220,6 +226,12 @@ export default function ProfilePage() {
         });
     }
   };
+
+  useEffect(() => {
+    if (activeTab === 'favorites') {
+      dispatch(getFavorites());
+    }
+  }, [activeTab, dispatch]);
 
   return (
     <Box
@@ -626,7 +638,43 @@ export default function ProfilePage() {
               mt: 2,
             }}
           >
-            <Typography variant='h6'>Здесь будет избранное</Typography>
+            <Typography variant='h6' sx={{ mb: 2 }}>Избранные парковки</Typography>
+            {status === 'loading' && <CircularProgress />}
+            {status === 'succeeded' && favorites?.length === 0 && (
+              <Typography>У вас пока нет избранных парковок</Typography>
+            )}
+            {status === 'succeeded' && favorites?.length > 0 && (
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                {favorites.map((favorite) => (
+                  <Card key={favorite.id} sx={{ width: 300, position: 'relative' }}>
+                    <CardMedia
+                      component="img"
+                      height="140"
+                      image={favorite.ParkingLot?.img ? `${import.meta.env.VITE_API_URL}/img/parking/${favorite.ParkingLot.img}` : '/default-parking.jpg'}
+                      alt={favorite.ParkingLot?.name}
+                    />
+                    <CardContent>
+                      <Typography variant="h6" noWrap>{favorite.ParkingLot?.name}</Typography>
+                      <Typography variant="body2" color="text.secondary" noWrap>
+                        {favorite.ParkingLot?.location?.address}
+                      </Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Rating value={Number(favorite.ParkingLot?.average_rating) || 0} readOnly size="small" />
+                        <Typography variant="body2">
+                          {favorite.ParkingLot?.price_per_hour} ₽/час
+                        </Typography>
+                      </Box>
+                      <IconButton
+                        sx={{ position: 'absolute', top: 5, right: 5 }}
+                        onClick={() => dispatch(removeFromFavorites(favorite.parking_id))}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </CardContent>
+                  </Card>
+                ))}
+              </Box>
+            )}
           </Box>
         )}
 
