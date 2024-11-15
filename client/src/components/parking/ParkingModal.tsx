@@ -8,6 +8,7 @@ import { BookingDialog } from './BookingDialog';
 import CloseIcon from '@mui/icons-material/Close';
 import { Star, StarBorder } from '@mui/icons-material';
 import { ReviewList } from '../reviews/ReviewList';
+import { ParkingEntrance } from '../../types/parking';
 
 interface ParkingModalProps {
   parking: Parking | null;
@@ -19,30 +20,50 @@ export const ParkingModal = ({ parking, open, onClose }: ParkingModalProps) => {
   const [showSpaces, setShowSpaces] = useState(false);
   const [showReviews, setShowReviews] = useState(false);
   const [spaces, setSpaces] = useState<ParkingSpace[]>([]);
+  const [entrance, setEntrance] = useState<ParkingEntrance | null>(null);
   const [loading, setLoading] = useState(false);
   const [selectedSpace, setSelectedSpace] = useState<ParkingSpace | null>(null);
 
   const BASE_IMG_URL = 'http://localhost:3000/api/img/parking/';
 
   const fetchParkingSpaces = async (parkingId: number) => {
+    console.log('Начало fetchParkingSpaces для parkingId:', parkingId);
     try {
       setLoading(true);
-      console.log('Fetching spaces for parking:', parkingId);
+      console.log('Отправка запроса к API...');
+      
       const response = await fetch(`http://localhost:3000/api/parking-lots/${parkingId}/spaces`);
-      if (!response.ok) throw new Error('Ошибка загрузки мест');
+      console.log('Получен ответ от сервера:', response.status);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Ошибка от сервера:', errorData);
+        throw new Error('Ошибка загрузки мест');
+      }
+      
       const data = await response.json();
-      console.log('Received parking data:', data);
-      console.log('Parking spaces:', data.ParkingSpaces);
-      setSpaces(data.ParkingSpaces);
+      console.log('Полученные данные:', JSON.stringify(data, null, 2));
+      console.log('ParkingSpaces:', data.ParkingSpaces);
+      console.log('ParkingEntrance:', data.ParkingEntrance);
+      
+      setSpaces(data.ParkingSpaces || []);
+      console.log('Установлены места:', data.ParkingSpaces?.length || 0);
+      
+      setEntrance(data.ParkingEntrance || null);
+      console.log('Установлен вход:', data.ParkingEntrance ? 'да' : 'нет');
+      
     } catch (error) {
-      console.error('Ошибка:', error);
+      console.error('Ошибка при загрузке данных:', error);
     } finally {
       setLoading(false);
+      console.log('Загрузка завершена');
     }
   };
 
   useEffect(() => {
+    console.log('useEffect сработал:', { showSpaces, parkingId: parking?.id });
     if (showSpaces && parking) {
+      console.log('Начинаем загрузку данных для парковки:', parking.id);
       fetchParkingSpaces(parking.id);
     }
   }, [showSpaces, parking]);
@@ -203,38 +224,32 @@ export const ParkingModal = ({ parking, open, onClose }: ParkingModalProps) => {
                   height: GRID_SIZES.medium.height,
                 }}
               >
+                {entrance && (
+                  <Box
+                    key="entrance"
+                    sx={{
+                      position: 'absolute',
+                      left: JSON.parse(entrance.location).x,
+                      top: JSON.parse(entrance.location).y,
+                      width: 40,
+                      height: 40,
+                      bgcolor: 'warning.main',
+                      border: '1px solid',
+                      borderColor: 'grey.300',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'white'
+                    }}
+                  >
+                    <Typography>Вход</Typography>
+                  </Box>
+                )}
+
                 {spaces.map((space) => {
                   const location = typeof space.location === 'string' 
                     ? JSON.parse(space.location) 
                     : space.location;
-                  
-                  if (space.id === spaces[0].id) {
-                    const entranceData = typeof space.entrance === 'string' 
-                      ? JSON.parse(space.entrance) 
-                      : space.entrance;
-                    
-                    return (
-                      <Box
-                        key={`entrance-${space.id}`}
-                        sx={{
-                          position: 'absolute',
-                          left: entranceData.x,
-                          top: entranceData.y,
-                          width: entranceData.width || 40,
-                          height: entranceData.height || 40,
-                          bgcolor: 'warning.main',
-                          border: '1px solid',
-                          borderColor: 'grey.300',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: 'white'
-                        }}
-                      >
-                        <Typography>Вход</Typography>
-                      </Box>
-                    );
-                  }
 
                   return (
                     <Box
@@ -260,7 +275,6 @@ export const ParkingModal = ({ parking, open, onClose }: ParkingModalProps) => {
                       }}
                       onClick={() => {
                         if (space.is_free) {
-                          console.log('Selected space for booking:', space);
                           setSelectedSpace(space);
                         }
                       }}

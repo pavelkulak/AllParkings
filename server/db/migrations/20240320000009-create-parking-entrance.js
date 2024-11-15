@@ -2,7 +2,7 @@
 
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('ParkingConfigurations', {
+    await queryInterface.createTable('ParkingEntrances', {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -19,17 +19,14 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },
-      configuration: {
+      location: {
         type: Sequelize.JSON,
         allowNull: false,
         defaultValue: {
-          entrance: {
-            x: 0,
-            y: 0,
-            width: 40,
-            height: 40
-          },
-          spaces: []
+          x: 0,
+          y: 0,
+          width: 40,
+          height: 40
         }
       },
       createdAt: {
@@ -44,6 +41,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('ParkingConfigurations');
+    await queryInterface.dropTable('ParkingEntrances');
   }
 };
