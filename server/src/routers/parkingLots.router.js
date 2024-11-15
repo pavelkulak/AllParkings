@@ -1,8 +1,9 @@
 const parkingLotsRouter = require('express').Router();
-const { ParkingLot, ParkingSpace } = require('../../db/models');
+const { ParkingLot, ParkingSpace, ParkingEntrance } = require('../../db/models');
 const { verifyAccessToken } = require('../middleware/verifyToken');
 const multer = require('multer');
 const path = require('path');
+const { sequelize } = require('../../db/models');
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -100,30 +101,47 @@ parkingLotsRouter.post('/:id/spaces', verifyAccessToken, async (req, res) => {
       return res.status(404).json({ error: 'Парковка не найдена' });
     }
 
-    await ParkingSpace.destroy({
-      where: { parking_id: parkingLot.id }
-    });
+    // Транзакция для атомарной операции
+    const result = await sequelize.transaction(async (t) => {
+      // Удаляем старые места и вход
+      await ParkingSpace.destroy({
+        where: { parking_id: parkingLot.id },
+        transaction: t
+      });
+      
+      await ParkingEntrance.destroy({
+        where: { parking_id: parkingLot.id },
+        transaction: t
+      });
 
-    const { spaces } = req.body;
-    const createdSpaces = await Promise.all(spaces.map(space => 
-      ParkingSpace.create({
+      // Создаем новый вход
+      const entrance = await ParkingEntrance.create({
         parking_id: parkingLot.id,
-        space_number: space.space_number,
-        location: space.location,
-        entrance: space.entrance,
-        is_free: true
-      })
-    ));
+        location: req.body.entrance,
+      }, { transaction: t });
 
-    await parkingLot.update({ 
-      capacity: spaces.length,
-      status: 'active'
+      // Создаем новые места
+      const createdSpaces = await Promise.all(req.body.spaces.map(space => 
+        ParkingSpace.create({
+          parking_id: parkingLot.id,
+          space_number: space.space_number,
+          location: space.location,
+          is_free: true
+        }, { transaction: t })
+      ));
+
+      await parkingLot.update({ 
+        capacity: req.body.spaces.length,
+        status: 'active'
+      }, { transaction: t });
+
+      return { spaces: createdSpaces, entrance };
     });
 
-    res.status(201).json(createdSpaces);
+    res.status(201).json(result);
   } catch (error) {
-    console.error('Ошибка при добавлении мест:', error);
-    res.status(500).json({ error: 'Ошибка при добавлении мест' });
+    console.error('Ошибка при сохранении конфигурации:', error);
+    res.status(500).json({ error: 'Ошибка при сохранении конфигурации' });
   }
 });
 
@@ -131,10 +149,16 @@ parkingLotsRouter.post('/:id/spaces', verifyAccessToken, async (req, res) => {
 parkingLotsRouter.get('/:id/spaces', async (req, res) => {
   try {
     const parkingLot = await ParkingLot.findByPk(req.params.id, {
-      include: [{
-        model: ParkingSpace,
-        attributes: ['id', 'space_number', 'is_free', 'location', 'entrance']
-      }]
+      include: [
+        {
+          model: ParkingSpace,
+          attributes: ['id', 'space_number', 'is_free', 'location']
+        },
+        {
+          model: ParkingEntrance,
+          attributes: ['id', 'location']
+        }
+      ]
     });
     
     if (!parkingLot) {
