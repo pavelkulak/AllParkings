@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Dialog,
   DialogTitle,
@@ -6,12 +6,13 @@ import {
   DialogActions,
   Button,
   Stack,
-  Typography
+  Typography 
 } from '@mui/material';
 import { DateTimePicker } from '@mui/x-date-pickers';
 import { useAppDispatch } from '../../redux/hooks';
 import { createBooking } from '../../redux/bookingThunks';
 import dayjs from 'dayjs';
+import axiosInstance from '../../services/axiosInstance';
 
 interface BookingDialogProps {
   open: boolean;
@@ -26,8 +27,33 @@ export const BookingDialog = ({ open, onClose, spaceId, pricePerHour, onSuccess 
   const [startTime, setStartTime] = useState<dayjs.Dayjs | null>(null);
   const [endTime, setEndTime] = useState<dayjs.Dayjs | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [existingBookings, setExistingBookings] = useState<any[]>([]);
 
-  console.log('BookingDialog rendered with spaceId:', spaceId);
+  useEffect(() => {
+    if (open && spaceId) {
+      fetchExistingBookings();
+    }
+  }, [open, spaceId]);
+
+  const fetchExistingBookings = async () => {
+    try {
+      const response = await axiosInstance.get(`/bookings/space/${spaceId}`);
+      setExistingBookings(response.data);
+    } catch (error) {
+      console.error('Ошибка при получении бронирований:', error);
+    }
+  };
+
+  const isTimeSlotAvailable = (start: dayjs.Dayjs, end: dayjs.Dayjs) => {
+    return !existingBookings.some(booking => {
+      const bookingStart = dayjs(booking.start_time);
+      const bookingEnd = dayjs(booking.end_time);
+      return (
+        (start.isBefore(bookingEnd) && end.isAfter(bookingStart)) ||
+        (start.isSame(bookingStart) || end.isSame(bookingEnd))
+      );
+    });
+  };
 
   const calculatePrice = () => {
     if (!startTime || !endTime) return 0;
@@ -36,7 +62,6 @@ export const BookingDialog = ({ open, onClose, spaceId, pricePerHour, onSuccess 
   };
 
   const handleSubmit = async () => {
-    console.log('Attempting to create booking...');
     if (!startTime || !endTime) {
       setError('Пожалуйста, выберите время начала и окончания');
       return;
@@ -47,6 +72,11 @@ export const BookingDialog = ({ open, onClose, spaceId, pricePerHour, onSuccess 
       return;
     }
 
+    if (!isTimeSlotAvailable(startTime, endTime)) {
+      setError('Выбранное время уже занято');
+      return;
+    }
+
     try {
       await dispatch(createBooking({
         spaceId,
@@ -54,11 +84,9 @@ export const BookingDialog = ({ open, onClose, spaceId, pricePerHour, onSuccess 
         endTime: endTime.toISOString()
       })).unwrap();
       
-      console.log('Booking created successfully');
       onSuccess();
       onClose();
     } catch (error: any) {
-      console.error('Booking creation failed:', error);
       setError(error.message || 'Ошибка при создании бронирования');
     }
   };
@@ -75,40 +103,24 @@ export const BookingDialog = ({ open, onClose, spaceId, pricePerHour, onSuccess 
           <DateTimePicker
             label="Время начала"
             value={startTime}
-            onChange={(newValue) => {
-              console.log('Start time changed:', newValue);
-              setStartTime(newValue);
-            }}
+            onChange={setStartTime}
             minDateTime={dayjs()}
             format="DD.MM.YYYY HH:mm"
             ampm={false}
             slotProps={{
-              textField: {
-                fullWidth: true,
-              },
-              actionBar: {
-                actions: ['clear', 'today', 'accept'],
-              },
+              textField: { fullWidth: true }
             }}
           />
 
           <DateTimePicker
             label="Время окончания"
             value={endTime}
-            onChange={(newValue) => {
-              console.log('End time changed:', newValue);
-              setEndTime(newValue);
-            }}
+            onChange={setEndTime}
             minDateTime={startTime || dayjs()}
             format="DD.MM.YYYY HH:mm"
             ampm={false}
             slotProps={{
-              textField: {
-                fullWidth: true,
-              },
-              actionBar: {
-                actions: ['clear', 'today', 'accept'],
-              },
+              textField: { fullWidth: true }
             }}
           />
 
@@ -125,4 +137,4 @@ export const BookingDialog = ({ open, onClose, spaceId, pricePerHour, onSuccess 
       </DialogActions>
     </Dialog>
   );
-}; 
+};
