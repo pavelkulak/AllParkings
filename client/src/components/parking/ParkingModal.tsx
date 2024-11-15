@@ -217,7 +217,13 @@ export const ParkingModal = ({ parking, open, onClose }: ParkingModalProps) => {
               >
                 Бронь
               </Button>
-              <Button variant="outlined" fullWidth>
+              <Button 
+                variant="outlined" 
+                fullWidth
+                onClick={() => {
+                  onClose();
+                }}
+              >
                 Маршрут
               </Button>
             </Stack>

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useMemo, useState } from 'react';
 import { load } from '@2gis/mapgl';
+import { Directions } from '@2gis/mapgl-directions';
 import { Box, Container, Paper, Typography, CircularProgress } from '@mui/material';
 import { Parking } from '../../types/parking';
 import { LocationButton } from '../map/LocationButton';
@@ -49,16 +50,16 @@ export const ParkingMap = () => {
     if (routeRef.current) {
       routeRef.current.destroy();
     }
-
+  
     try {
-      const directions = new mapglAPI.Directions(map, {
+      const directions = new Directions(map, {
         directionsApiKey: import.meta.env.VITE_2GIS_API_KEY,
       });
-
+  
       const route = await directions.carRoute({
         points: [from, to],
       });
-
+  
       routeRef.current = new mapglAPI.Polyline(map, {
         coordinates: route.geometry.coordinates,
         width: 5,
@@ -177,8 +178,27 @@ export const ParkingMap = () => {
     };
   }, [parkings]);
 
-  const handleMarkerClick = (parking: Parking) => {
+  const handleMarkerClick = async (parking: Parking) => {
     setSelectedParking(parking);
+    
+    try {
+      const userCoords = await getCurrentPosition();
+      const parkingCoords: [number, number] = [
+        parking.location.coordinates.lon,
+        parking.location.coordinates.lat
+      ];
+      
+      if (mapglAPI && mapInstanceRef.current) {
+        await buildRoute(
+          mapglAPI, 
+          mapInstanceRef.current, 
+          userCoords, 
+          parkingCoords
+        );
+      }
+    } catch (error) {
+      console.error('Ошибка при построении маршрута:', error);
+    }
   };
 
   return (
