@@ -1,19 +1,22 @@
-import { useEffect } from "react";
-import { useAppDispatch, useAppSelector } from "./redux/hooks";
+import { useEffect } from 'react';
+import { useAppDispatch, useAppSelector } from './redux/hooks';
 import Root from './components/ui/Root';
-import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
-import { refreshToken } from "./redux/thunkActions";
-import SignIn from "./components/auth/SignIn";
-import SignUp from "./components/auth/SignUp";
-import ProtectedRoute from "./components/HOC/ProtectedRoute";
-import "./App.css";
-import ParkingConstructor from "./components/constructor/ParkingConstructor";
-import CreateParkingForm from "./components/parking/CreateParkingForm";
-import ProfilePage from "./components/pages/ProfilePage";
+import {
+  createBrowserRouter,
+  RouterProvider,
+  Navigate,
+} from 'react-router-dom';
+import { refreshToken } from './redux/thunkActions';
+import SignIn from './components/auth/SignIn';
+import SignUp from './components/auth/SignUp';
+import ProtectedRoute from './components/HOC/ProtectedRoute';
+import './App.css';
+import ParkingConstructor from './components/constructor/ParkingConstructor';
+import CreateParkingForm from './components/parking/CreateParkingForm';
+import ProfilePage from './components/pages/ProfilePage';
 import { ParkingMap } from './components/parking/ParkingMap';
-import ParkingOwnerPage from "./components/pages/ParkingOwnerPage";
-import ErrorPage from "./components/pages/ErrorPage";
-
+import ParkingOwnerPage from './components/pages/ParkingOwnerPage';
+import ErrorPage from './components/pages/ErrorPage';
 
 function App() {
   const dispatch = useAppDispatch();
@@ -29,12 +32,12 @@ function App() {
 
   const routes = [
     {
-      path: "/",
+      path: '/',
       element: <Root />,
       errorElement: <ErrorPage />,
       children: [
         {
-          path: "/",
+          path: '/',
           element: (
             <ProtectedRoute isAllowed={!!user} user={null}>
               <div>Защищенная страница</div>
@@ -42,68 +45,68 @@ function App() {
           ),
         },
         {
-          path: "/signin",
-          element: user ? <Navigate to="/" replace /> : <SignIn />,
+          path: '/signin',
+          element: user ? <Navigate to='/' replace /> : <SignIn />,
         },
         {
-          path: "/signup",
-          element: user ? <Navigate to="/" replace /> : <SignUp />,
+          path: '/signup',
+          element: user ? <Navigate to='/' replace /> : <SignUp />,
         },
         {
-          path: "/profile",
-          element: <ProfilePage />,
+          path: '/profile',
+          element: user ? <ProfilePage /> : <Navigate to='/' replace />,
         },
         {
-          path: "/parking-constructor",
+          path: '/parking-constructor',
           element: (
             <ProtectedRoute
               isAllowed={!!user}
-              allowedRoles={["owner", "admin"]}
+              allowedRoles={['owner', 'admin']}
               user={user}
-              redirectPath="/"
+              redirectPath='/'
             >
               <ParkingConstructor />
             </ProtectedRoute>
           ),
         },
         {
-          path: "/create-parking",
+          path: '/create-parking',
           element: (
             <ProtectedRoute
               isAllowed={!!user}
-              allowedRoles={["owner", "admin"]}
+              allowedRoles={['owner', 'admin']}
               user={user}
-              redirectPath="/"
+              redirectPath='/'
             >
               <CreateParkingForm />
             </ProtectedRoute>
           ),
         },
         {
-          path: "/parking-constructor/:parkingId",
+          path: '/parking-constructor/:parkingId',
           element: (
             <ProtectedRoute
               isAllowed={!!user}
-              allowedRoles={["owner", "admin"]}
+              allowedRoles={['owner', 'admin']}
               user={user}
-              redirectPath="/"
+              redirectPath='/'
             >
               <ParkingConstructor />
             </ProtectedRoute>
           ),
         },
         {
-          path: "/parkings/map",
+          path: '/parkings/map',
           element: <ParkingMap />,
         },
         {
-          path: "/myparking",
+          path: '/myparking',
           element: (
             <ProtectedRoute
               isAllowed={!!user}
-              allowedRoles={["owner"]}
+              allowedRoles={['owner']}
               user={user}
-              redirectPath="/"
+              redirectPath='/'
             >
               <ParkingOwnerPage />
             </ProtectedRoute>

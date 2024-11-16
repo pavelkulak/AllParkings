@@ -10,6 +10,7 @@ import {
   ListItemIcon,
   Menu,
   MenuItem,
+  Stack,
 } from '@mui/material';
 import logo from '../../img/logo.svg';
 import LogoutIcon from '@mui/icons-material/Logout';
@@ -17,6 +18,9 @@ import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import LocalParkingIcon from '@mui/icons-material/LocalParking';
 import { useTheme } from '@mui/material/styles';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import MapIcon from '@mui/icons-material/Map';
+import AddLocationIcon from '@mui/icons-material/AddLocation';
 
 interface NavBarProps {
   user: IUser | null;
@@ -24,6 +28,7 @@ interface NavBarProps {
 }
 
 export default function NavBar({ user, handleSignOut }: NavBarProps) {
+  const navigate = useNavigate();
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -76,7 +81,32 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
             </Typography>
           </Button>
         </Box>
+        <Stack
+          direction='row'
+          spacing={2}
+          sx={{
+            flexGrow: 1,
+            justifyContent: 'center',
+          }}
+        >
+          <Button
+            color='inherit'
+            startIcon={<MapIcon />}
+            onClick={() => navigate('/parkings/map')}
+          >
+            Карта парковок
+          </Button>
 
+          {(user?.role === 'owner' || user?.role === 'admin') && (
+            <Button
+              color='inherit'
+              startIcon={<AddLocationIcon />}
+              onClick={() => navigate('/create-parking')}
+            >
+              Создать парковку
+            </Button>
+          )}
+        </Stack>
         <Box sx={{ flexGrow: 1 }} />
 
         <Box
