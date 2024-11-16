@@ -276,9 +276,15 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
               <Button 
                 variant="contained" 
                 fullWidth
-                onClick={() => setShowSpaces(true)}
+                onClick={() => {
+                  if (!isAuthenticated) {
+                    window.location.href = '/signin';
+                    return;
+                  }
+                  setShowSpaces(true);
+                }}
               >
-                Забронировать
+                {isAuthenticated ? 'Забронировать' : 'Войдите, чтобы забронировать'}
               </Button>
               <Button 
                 variant="outlined" 
@@ -301,7 +307,14 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
               Назад
             </Button>
             {!entryTime || !exitTime ? (
-              <TimeSelectionSection onTimeSelect={handleTimeSelect} />
+              <Box sx={{ 
+                display: 'flex',
+                justifyContent: 'center',
+                gap: 2,
+                flexWrap: 'wrap'
+              }}>
+                <TimeSelectionSection onTimeSelect={handleTimeSelect} />
+              </Box>
             ) : (
               <>
                 <Typography variant="h6">
@@ -433,58 +446,84 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
 };
 
 interface TimeSelectionSectionProps {
-  onTimeSelect: (entry: Date, exit: Date) => void;
+  onTimeSelect: (entry: Date | null, exit: Date | null) => void;
 }
 
 const TimeSelectionSection = ({ onTimeSelect }: TimeSelectionSectionProps) => {
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [entry, setEntry] = useState<Date | null>(null);
   const [entryTime, setEntryTime] = useState<string | null>(null);
+  const [exit, setExit] = useState<Date | null>(null);
   const [exitTime, setExitTime] = useState<string | null>(null);
-  const [exitDate, setExitDate] = useState(new Date());
 
-  const handleSelectTimes = () => {
-    if (!entryTime || !exitTime) return;
+  const getDateWithTime = (date: Date, time: string) => {
+    const [hours, minutes] = time.split(':');
+    const newDate = new Date(date);
+    newDate.setHours(parseInt(hours), parseInt(minutes));
+    return newDate;
+  };
+
+  const isExitTimeValid = (exitDate: Date, exitTime: string) => {
+    if (!entry || !entryTime) return true;
     
-    const entry = new Date(selectedDate);
-    const [entryHours, entryMinutes] = entryTime.split(':');
-    entry.setHours(parseInt(entryHours), parseInt(entryMinutes));
+    const entryDateTime = getDateWithTime(entry, entryTime);
+    const exitDateTime = getDateWithTime(exitDate, exitTime);
+    
+    return exitDateTime > entryDateTime;
+  };
 
-    const exit = new Date(exitDate);
-    const [exitHours, exitMinutes] = exitTime.split(':');
-    exit.setHours(parseInt(exitHours), parseInt(exitMinutes));
+  const handleExitTimeChange = (date: Date) => {
+    setExit(date);
+    // Сбрасываем время выезда при изменении даты
+    setExitTime(null);
+  };
 
-    onTimeSelect(entry, exit);
+  const handleExitTimeSelect = (time: string) => {
+    if (!exit) return;
+    
+    if (isExitTimeValid(exit, time)) {
+      setExitTime(time);
+    } else {
+      alert('Время выезда должно быть позже времени заезда');
+    }
   };
 
   return (
-    <Box>
-      <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
-        <TimeSelector
-          selectedDate={selectedDate}
-          selectedTime={entryTime}
-          onDateChange={setSelectedDate}
-          onTimeChange={setEntryTime}
-          label="Заезд"
-        />
-        <TimeSelector
-          selectedDate={exitDate}
-          selectedTime={exitTime}
-          onDateChange={setExitDate}
-          onTimeChange={setExitTime}
-          label="Выезд"
-        />
-      </Stack>
-      
-      {entryTime && exitTime && (
-        <Button 
-          variant="contained" 
-          fullWidth 
-          onClick={handleSelectTimes}
-          sx={{ mt: 2 }}
-        >
-          Выбрать место
-        </Button>
-      )}
+    <Box sx={{ 
+      display: 'flex', 
+      gap: 2,
+      justifyContent: 'center',
+      flexWrap: 'wrap'
+    }}>
+      <TimeSelector
+        label="Заезд"
+        selectedDate={entry || new Date()}
+        selectedTime={entryTime}
+        onDateChange={setEntry}
+        onTimeChange={setEntryTime}
+      />
+      <TimeSelector
+        label="Выезд"
+        selectedDate={exit || new Date()}
+        selectedTime={exitTime}
+        onDateChange={handleExitTimeChange}
+        onTimeChange={handleExitTimeSelect}
+        entryDate={entry}
+        entryTime={entryTime}
+      />
+      <Button
+        fullWidth
+        variant="contained"
+        disabled={!entry || !exit || !entryTime || !exitTime}
+        onClick={() => {
+          if (entry && exit && entryTime && exitTime) {
+            const entryDate = getDateWithTime(entry, entryTime);
+            const exitDate = getDateWithTime(exit, exitTime);
+            onTimeSelect(entryDate, exitDate);
+          }
+        }}
+      >
+        Подтвердить
+      </Button>
     </Box>
   );
 }; 
