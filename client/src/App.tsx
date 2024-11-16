@@ -13,6 +13,7 @@ import ProfilePage from "./components/pages/ProfilePage";
 import { ParkingMap } from './components/parking/ParkingMap';
 import ParkingOwnerPage from "./components/pages/ParkingOwnerPage";
 import ErrorPage from "./components/pages/ErrorPage";
+import { LandingPage } from "./components/pages/LandingPage";
 
 
 function App() {
@@ -35,11 +36,8 @@ function App() {
       children: [
         {
           path: "/",
-          element: (
-            <ProtectedRoute isAllowed={!!user} user={null}>
-              <div>Защищенная страница</div>
-            </ProtectedRoute>
-          ),
+          element: <LandingPage />,
+          
         },
         {
           path: "/signin",
