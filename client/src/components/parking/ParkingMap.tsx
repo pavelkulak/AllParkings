@@ -12,6 +12,7 @@ export const ParkingMap = () => {
   const markersRef = useRef<any[]>([]);
   const userMarkerRef = useRef<any>(null);
   const routeRef = useRef<any>(null);
+  const directionsRef = useRef<any>(null);
   const isInitializedRef = useRef(false);
   const [mapglAPI, setMapglAPI] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -47,24 +48,34 @@ export const ParkingMap = () => {
   };
 
   const buildRoute = async (mapglAPI: any, map: any, from: [number, number], to: [number, number]) => {
-    if (routeRef.current) {
-      routeRef.current.destroy();
-    }
-  
     try {
-      const directions = new Directions(map, {
+      // Удаляем существующий маршрут
+      if (routeRef.current) {
+        routeRef.current.destroy();
+        routeRef.current = null;
+      }
+
+      // Удаляем существующий directions
+      if (directionsRef.current) {
+        directionsRef.current.clear();
+      }
+
+      // Создаем новый directions
+      directionsRef.current = new Directions(map, {
         directionsApiKey: import.meta.env.VITE_2GIS_API_KEY,
       });
-  
-      const route = await directions.carRoute({
+
+      const routeResponse = await directionsRef.current.carRoute({
         points: [from, to],
       });
-  
-      routeRef.current = new mapglAPI.Polyline(map, {
-        coordinates: route.geometry.coordinates,
-        width: 5,
-        color: '#4285f4',
-      });
+
+      if (routeResponse && routeResponse.geometry) {
+        routeRef.current = new mapglAPI.Polyline(map, {
+          coordinates: routeResponse.geometry.coordinates,
+          width: 5,
+          color: '#4285f4',
+        });
+      }
     } catch (error) {
       console.error('Ошибка построения маршрута:', error);
     }
@@ -103,7 +114,7 @@ export const ParkingMap = () => {
       try {
         const response = await fetch('http://localhost:3000/api/parking-lots/all');
         if (!response.ok) {
-          throw new Error('Ошибка при загрузке парковок');
+          throw new Error('Ошибка при згузке парковок');
         }
         const data = await response.json();
         setParkings(data);
@@ -170,6 +181,12 @@ export const ParkingMap = () => {
         if (userMarkerRef.current) {
           userMarkerRef.current.destroy();
         }
+        if (routeRef.current) {
+          routeRef.current.destroy();
+        }
+        if (directionsRef.current) {
+          directionsRef.current.clear();
+        }
         markersRef.current.forEach(marker => marker.destroy());
         mapInstanceRef.current.destroy();
         mapInstanceRef.current = null;
@@ -178,9 +195,11 @@ export const ParkingMap = () => {
     };
   }, [parkings]);
 
-  const handleMarkerClick = async (parking: Parking) => {
+  const handleMarkerClick = (parking: Parking) => {
     setSelectedParking(parking);
-    
+  };
+
+  const handleBuildRoute = async (parking: Parking) => {
     try {
       const userCoords = await getCurrentPosition();
       const parkingCoords: [number, number] = [
@@ -235,6 +254,12 @@ export const ParkingMap = () => {
         parking={selectedParking}
         open={!!selectedParking}
         onClose={() => setSelectedParking(null)}
+        onBuildRoute={async () => {
+          if (selectedParking) {
+            await handleBuildRoute(selectedParking);
+            setSelectedParking(null);
+          }
+        }}
       />
     </Container>
   );

@@ -1,9 +1,10 @@
 const parkingLotsRouter = require('express').Router();
-const { ParkingLot, ParkingSpace, ParkingEntrance } = require('../../db/models');
+const { ParkingLot, ParkingSpace, ParkingEntrance, Booking } = require('../../db/models');
 const { verifyAccessToken } = require('../middleware/verifyToken');
 const multer = require('multer');
 const path = require('path');
 const { sequelize } = require('../../db/models');
+const { Op } = require('sequelize');
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -189,5 +190,72 @@ parkingLotsRouter.get("/myparking", async (req, res) => {
   }
 });
 
+parkingLotsRouter.get('/:id/available-spaces', async (req, res) => {
+  try {
+    const { entry_time, exit_time } = req.query;
+    const entryDate = new Date(entry_time);
+    const exitDate = new Date(exit_time);
+    
+    const parkingLot = await ParkingLot.findByPk(req.params.id, {
+      include: [
+        {
+          model: ParkingSpace,
+          include: [{
+            model: Booking,
+            where: {
+              [Op.or]: [
+                {
+                  // Начало существующего бронирования находится в пределах нового интервала
+                  start_time: {
+                    [Op.between]: [entryDate, exitDate]
+                  }
+                },
+                {
+                  // Конец существующего бронирования находится в пределах нового интервала
+                  end_time: {
+                    [Op.between]: [entryDate, exitDate]
+                  }
+                },
+                {
+                  // Новый интервал полностью входит в существующее бронирование
+                  [Op.and]: [
+                    { start_time: { [Op.lte]: entryDate } },
+                    { end_time: { [Op.gte]: exitDate } }
+                  ]
+                }
+              ],
+              status: 'confirmed'
+            },
+            required: false
+          }]
+        },
+        {
+          model: ParkingEntrance
+        }
+      ]
+    });
+
+    if (!parkingLot) {
+      return res.status(404).json({ error: 'Парковка не найдена' });
+    }
+
+    // Преобразуем места в нужный формат
+    const spaces = parkingLot.ParkingSpaces.map(space => ({
+      id: space.id,
+      parking_id: space.parking_id,
+      space_number: space.space_number,
+      location: space.location,
+      is_free: space.Bookings.length === 0
+    }));
+
+    res.json({
+      ParkingSpaces: spaces,
+      ParkingEntrance: parkingLot.ParkingEntrance
+    });
+  } catch (error) {
+    console.error('Ошибка при получении свободных мест:', error);
+    res.status(500).json({ error: 'Ошибка при получении свободных мест' });
+  }
+});
 
 module.exports = parkingLotsRouter; 
