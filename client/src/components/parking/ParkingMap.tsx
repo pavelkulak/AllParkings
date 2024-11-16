@@ -158,9 +158,7 @@ export const ParkingMap = () => {
         parkings.forEach((parking: Parking) => {
           const marker = new mapglAPI.Marker(map, {
             coordinates: [parking.location.coordinates.lon, parking.location.coordinates.lat],
-            label: {
-              text: `${parking.price_per_hour} руб/час`,
-            }
+            
           });
 
           marker.on('click', () => handleMarkerClick(parking));

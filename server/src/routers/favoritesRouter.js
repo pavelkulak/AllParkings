@@ -67,7 +67,10 @@ favoritesRouter.get('/', verifyAccessToken, async (req, res) => {
       }]
     });
 
-    res.json(favorites);
+    // Преобразуем данные, чтобы вернуть только информацию о парковках
+    const parkings = favorites.map(favorite => favorite.ParkingLot);
+
+    res.json(parkings);
   } catch (error) {
     console.error('Error fetching favorites:', error);
     res.status(500).json({ error: 'Ошибка при получении избранного' });
