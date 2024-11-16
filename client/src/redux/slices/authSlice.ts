@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { AuthState } from '../../types/auth.types';
 import { setAccessToken } from '../../services/axiosInstance';
-import { refreshToken, signIn, signUp, signOut, updateAvatar, updateUserProfile, changePassword, deleteAvatar } from '../../redux/thunkActions';
+import { refreshToken, signIn, signUp, signOut, updateAvatar, updateUserProfile, changePassword, deleteAvatar, deleteAccount } from '../../redux/thunkActions';
 
 const initialState: AuthState = {
   user: null,
@@ -13,11 +13,7 @@ const initialState: AuthState = {
 const authSlice = createSlice({
   name: 'auth',
   initialState,
-  reducers: {
-    clearError: (state) => {
-      state.error = null;
-    },
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(refreshToken.pending, (state) => {
@@ -117,9 +113,13 @@ const authSlice = createSlice({
       .addCase(changePassword.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload as string;
+      })
+      .addCase(deleteAccount.fulfilled, (state) => {
+        state.user = null;
+        state.accessToken = '';
+        setAccessToken('');
       });
   },
 });
 
-export const { clearError } = authSlice.actions;
 export default authSlice.reducer;

@@ -4,6 +4,7 @@ const generateToken = require('../utils/generateToken');
 const cookieConfig = require('../configs/cookieConfig');
 const authRouter = require('express').Router();
 const { verifyAccessToken } = require('../middleware/verifyToken');
+const { where } = require('sequelize');
 
 authRouter.post('/signup', async (req, res) => {
   try {
@@ -162,23 +163,40 @@ authRouter.put('/change-password', verifyAccessToken, async (req, res) => {
     const { currentPassword, newPassword } = req.body;
 
     const user = await User.findByPk(userId);
-    
-    const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+
+    const isPasswordValid = await bcrypt.compare(
+      currentPassword,
+      user.password,
+    );
     if (!isPasswordValid) {
       return res.status(400).json({ error: 'Неверный текущий пароль' });
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    
-    await User.update(
-      { password: hashedPassword },
-      { where: { id: userId } }
-    );
+
+    await User.update({ password: hashedPassword }, { where: { id: userId } });
 
     res.json({ message: 'Пароль успешно изменен' });
   } catch (error) {
     console.error('Ошибка при изменении пароля:', error);
     res.status(500).json({ error: 'Ошибка при изменении пароля' });
+  }
+});
+
+authRouter.delete('/destroyAccount', verifyAccessToken, async (req, res) => {
+  try {
+    const { user } = res.locals;
+
+    await User.destroy({ where: { id: user.id } });
+
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    });
+      res.json({ message: 'Пользователь успешно удален!' });
+  } catch (error) {
+    res.json({ error: 'Не получилось удалить пользователя' });
   }
 });
 
