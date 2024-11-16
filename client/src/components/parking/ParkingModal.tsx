@@ -276,9 +276,15 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
               <Button 
                 variant="contained" 
                 fullWidth
-                onClick={() => setShowSpaces(true)}
+                onClick={() => {
+                  if (!isAuthenticated) {
+                    window.location.href = '/signin';
+                    return;
+                  }
+                  setShowSpaces(true);
+                }}
               >
-                Забронировать
+                {isAuthenticated ? 'Забронировать' : 'Войдите, чтобы забронировать'}
               </Button>
               <Button 
                 variant="outlined" 
