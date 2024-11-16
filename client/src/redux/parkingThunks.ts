@@ -79,44 +79,41 @@ export const getMyParkings = createAsyncThunk<ParkingLot[]>(
 );
 
 
-export const updateMyParkings = createAsyncThunk<
-  ParkingLot[]  
->(
+export const updateMyParkings = createAsyncThunk<ParkingLot[]>(
   "parking/updateMyParkings",
-  async ({ id, name, description, location, price_per_hour, status }) => {
-    // Проверяем и подготавливаем данные локации
-    const locationData = {
-      address: location?.address || "",
+  async (data: {
+    id: string;
+    name: string;
+    description: string;
+    location: {
+      address: string;
       coordinates: {
-        lat: location?.coordinates?.lat || null,
-        lon: location?.coordinates?.lon || null,
-      },
+        lat: number | null;
+        lon: number | null;
+      };
     };
-
-    const locationJson = JSON.stringify(locationData);
-
-    // Подготавливаем данные для запроса
+    price_per_hour: number;
+  }) => {
     const requestData = {
-      name: name || "",
-      description: description || "",
-      location: locationJson,
-      price_per_hour: price_per_hour || 0,
-      ...(status && { status }), // Добавляем status только если он определён
+      name: data.name,
+      description: data.description,
+      location: data.location, // Передаем объект локации напрямую
+      price_per_hour: data.price_per_hour,
     };
 
     const response = await axiosInstance.patch<ParkingLot[]>(
-      `/parking-lots/myparking/update/${id}`,
+      `/parking-lots/myparking/update/${data.id}`,
       requestData
     );
     return response.data;
   }
 );
 
-export const deleteMyParkings = createAsyncThunk<ParkingLot[], string>(
+export const deleteMyParkings = createAsyncThunk<ParkingLot[], { id: string }>(
   "parking/deleteMyParkings",
-  async (id) => {
+  async (data: { id: string }) => {
     const response = await axiosInstance.delete<ParkingLot[]>(
-      `/parking-lots/myparking/delete/${id}`
+      `/parking-lots/myparking/delete/${data.id}`
     );
     return response.data;
   }

@@ -12,7 +12,7 @@ function Footer() {
         width: "100%",
         backgroundColor: "primary.main",
         color: "white",
-        padding: 0,
+        padding: 0,      
       }}
     >
       <Container maxWidth="lg">
@@ -20,7 +20,7 @@ function Footer() {
           display={{ xs: "block", sm: "flex" }} // Вертикально на маленьких экранах, горизонтально на больших
           justifyContent="center"
           alignItems="center"
-          sx={{ mb: 1 }}
+          sx={{ mb: 0 }}
         >
           {/* Первая пара значков */}
           <Box
@@ -116,7 +116,7 @@ function Footer() {
         <Typography
           variant="body2"
           textAlign="center"
-          sx={{ p: 2, mt: "auto" }}
+          sx={{ p: 1, mt: "auto" }}
         >
           © {new Date().getFullYear()} Все права защищены!
         </Typography>

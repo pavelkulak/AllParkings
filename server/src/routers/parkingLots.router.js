@@ -64,30 +64,52 @@ parkingLotsRouter.get("/myparking", verifyAccessToken, async (req, res) => {
 });
 
 
-//Обновление данных текущей парковки владельца
-parkingLotsRouter.patch("/myparking/update/:id", verifyAccessToken, async (req, res) => {
-  try {
-    const { user } = res.locals;
-    const { id } = req.params.id;
-    const { nameReq, descriptionReq, locationReq, price_per_hourReq } = req.body;
-    const parkings = await ParkingLot.update(
-      {
-        name: nameReq,
-        description: descriptionReq,
-        location: JSON.parse(locationReq),       
-        price_per_hour: price_per_hourReq,
-      },
-      {
-        where: {
-          id: id,
+parkingLotsRouter.patch(
+  "/myparking/update/:id",
+  verifyAccessToken,
+  async (req, res) => {
+    try {
+      const id = req.params.id;
+      const { name, description, location, price_per_hour } = req.body;
+
+      // Обновляем данные
+      await ParkingLot.update(
+        {
+          name,
+          description,
+          location,
+          price_per_hour,
         },
-      }
-    );
+        {
+          where: { id },
+        }
+      );
+
+      // Получаем обновленную запись
+      const updatedParking = await ParkingLot.findByPk(id);
+
+      // Возвращаем обновленные данные
+      res.json(updatedParking);
+    } catch (error) {
+      console.error("Ошибка при обновлении парковок владельца:", error);
+      res
+        .status(500)
+        .json({ error: "Ошибка при обновлении парковок владельца" });
+    }
+  }
+);
+
+//Удаление парковки
+parkingLotsRouter.delete("/myparking/delete/:id", verifyAccessToken, async (req, res) => {
+  try {
     
-    res.json(parkings);
+    const parking = await ParkingLot.findByPk(req.params.id);
+   
+    await parking.destroy();
+    res.sendStatus(204);
   } catch (error) {
-    console.error("Ошибка при обновлении парковок владельца:", error);
-    res.status(500).json({ error: "Ошибка при обновлении парковок владельца" });
+    console.error("Ошибка при удалении парковки:", error);
+    res.status(500).json({ error: "Ошибка при удалении парковки" });
   }
 });
 
@@ -219,25 +241,6 @@ parkingLotsRouter.get('/:id/spaces', async (req, res) => {
   }
 });
 
-//Удаление парковки
-parkingLotsRouter.delete("/myparking/delete/:id", verifyAccessToken, async (req, res) => {
-  try {
-    const { user } = res.locals;
-    const { id } = req.params.id;
-    const parkings = await ParkingLot.delete(
-      {
-        where: {
-          id: id,
-        },
-      }
-    );
-    
-    res.json(parkings);
-  } catch (error) {
-    console.error("Ошибка при удалении парковки:", error);
-    res.status(500).json({ error: "Ошибка при удалении парковки" });
-  }
-});
 
 
 module.exports = parkingLotsRouter; 

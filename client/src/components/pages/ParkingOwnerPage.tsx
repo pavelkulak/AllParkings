@@ -62,8 +62,7 @@ export default function ParkingOwnerPage() {
         lon: null,
       },
     },
-    price_per_hour: "",
-    status: "pending" as const,
+    price_per_hour: ""   
   });
 
   useEffect(() => {
@@ -76,38 +75,36 @@ export default function ParkingOwnerPage() {
     }
   }, [parkingLots]); // Обновляем данные когда parkingLots изменяется
 
-  const handleDeleteClick = async () => {
-    if (!selectedParking) return;
+const handleDeleteClick = async () => {
+  if (!selectedParking) return;
 
-    if (window.confirm("Вы уверены, что хотите удалить эту парковку?")) {
-      try {
-        await dispatch(deleteMyParkings()).unwrap();
+  if (window.confirm("Вы уверены, что хотите удалить эту парковку?")) {
+    try {
+      await dispatch(deleteMyParkings({ id: selectedParking.id })).unwrap();
 
-        // Очищаем выбранную парковку
-        setSelectedParking(null);
-        setParkingData({
-          name: "",
-          description: "",
-          location: {
-            address: "",
-            coordinates: {
-              lat: null,
-              lon: null,
-            },
+      // Очищаем все состояния
+      setSelectedParking(null);
+      setParkingData({
+        name: "",
+        description: "",
+        location: {
+          address: "",
+          coordinates: {
+            lat: null,
+            lon: null,
           },
-          price_per_hour: "",
-          status: "pending" as const,
-        });
+        },
+        price_per_hour: "",
+      });
 
-        // Обновляем список парковок
-        dispatch(getMyParkings());
-      } catch (error) {
-        console.error("Ошибка при удалении парковки:", error);
-        setError("Ошибка при удалении парковки");
-      }
+      // Обновляем список парковок и очищаем Autocomplete
+      await dispatch(getMyParkings());
+    } catch (error) {
+      console.error("Ошибка при удалении парковки:", error);
+      setError("Ошибка при удалении парковки");
     }
-  };
-
+  }
+};
 
   const [selectedParking, setSelectedParking] = useState<Parking | null>(null);
 
@@ -127,8 +124,7 @@ export default function ParkingOwnerPage() {
             lon: option.parking.location.coordinates.lon,
           },
         },
-        price_per_hour: option.parking.price_per_hour.toString(),
-        status: option.parking.status as const,
+        price_per_hour: option.parking.price_per_hour.toString()       
       });
     } else {
       setSelectedParking(null);
@@ -142,40 +138,69 @@ export default function ParkingOwnerPage() {
             lon: null,
           },
         },
-        price_per_hour: "",
-        status: "pending" as const,
+        price_per_hour: ""
       });
     }
   };
 
-  const handleSaveChanges = async () => {
-    if (!selectedParking) return;
+const [isSaving, setIsSaving] = useState(false);
 
-    try {
-      await dispatch(
-        updateMyParkings({
-          id: selectedParking.id,
-          name: parkingData.name,
-          description: parkingData.description,
-          location: {
-            address: parkingData.location.address,
-            coordinates: {
-              lat: parkingData.location.coordinates.lat,
-              lon: parkingData.location.coordinates.lon,
-            },
+const handleSaveChanges = async () => {
+  if (!selectedParking) return;
+
+  try {
+    // Включаем индикатор загрузки
+    setIsSaving(true);
+
+    // Отправляем запрос на обновление
+    const updatedData = await dispatch(
+      updateMyParkings({
+        id: selectedParking.id,
+        name: parkingData.name,
+        description: parkingData.description,
+        location: {
+          address: parkingData.location?.address || "",
+          coordinates: {
+            lat: parkingData.location?.coordinates?.lat || null,
+            lon: parkingData.location?.coordinates?.lon || null,
           },
-          price_per_hour: Number(parkingData.price_per_hour),
-          status: parkingData.status,
-        })
-      ).unwrap();
+        },
+        price_per_hour: Number(parkingData.price_per_hour),
+      })
+    ).unwrap();
 
-      // Обновляем список парковок после успешного сохранения
-      dispatch(getMyParkings());
-    } catch (error) {
-      console.error("Ошибка при сохранении изменений:", error);
-      setError("Ошибка при сохранении изменений");
+    // Имитируем задержку
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+
+    // Получаем обновленный список парковок
+    const parkings = await dispatch(getMyParkings()).unwrap();
+
+    const updatedParking = parkings.find((p) => p.id === selectedParking.id);
+
+    if (updatedParking) {
+      setSelectedParking(updatedParking);
+      setParkingData({
+        name: updatedParking.name,
+        description: updatedParking.description || "",
+        location: {
+          address: updatedParking.location?.address || "",
+          coordinates: {
+            lat: updatedParking.location?.coordinates?.lat || null,
+            lon: updatedParking.location?.coordinates?.lon || null,
+          },
+        },
+        price_per_hour: updatedParking.price_per_hour.toString(),
+      });
     }
-  };
+  } catch (error) {
+    console.error("Ошибка при сохранении изменений:", error);
+    setError("Ошибка при сохранении изменений");
+  } finally {
+    // Выключаем индикатор загрузки
+    setIsSaving(false);
+  }
+};
+
   const [addressSuggestions, setAddressSuggestions] = useState<
     Array<{
       name: string;
@@ -469,11 +494,13 @@ export default function ParkingOwnerPage() {
         sx={{ width: 300 }}
         renderInput={(params) => <TextField {...params} label="Парковка" />}
         options={
-          parkingLots?.map((parking) => ({
-            label: parking.name,
-            value: parking.id,
-            parking: parking,
-          })) || []
+          Array.isArray(parkingLots)
+            ? parkingLots.map((parking) => ({
+                label: parking.name,
+                value: parking.id,
+                parking: parking,
+              }))
+            : []
         }
         onChange={handleParkingChange}
         value={
@@ -486,7 +513,11 @@ export default function ParkingOwnerPage() {
             : null
         }
       />
-      {selectedParking && (
+      {!selectedParking ? (
+        <Typography sx={{ mt: 4, color: "text.secondary" }}>
+          Выберите парковку для просмотра и редактирования
+        </Typography>
+      ) : (
         <Container
           maxWidth="xl"
           sx={{
@@ -545,17 +576,30 @@ export default function ParkingOwnerPage() {
               helperText="Укажите особенности парковки, режим работы и другую полезную информацию"
             />
 
-            <Tabs
-              value={addressMethod}
-              onChange={(_, value) => setAddressMethod(value)}
-              sx={{ mb: 2 }}
+            <Box
+              sx={{
+                width: "100%",
+                display: "flex",
+                justifyContent: "flex-start",
+              }}
             >
-              <Tab value="input" label="Ввести адрес" />
-              <Tab value="map" label="Выбрать на карте" />
-            </Tabs>
+              <Tabs
+                value={addressMethod}
+                onChange={(_, value) => setAddressMethod(value)}
+                sx={{
+                  mb: 2,
+                  "& .MuiTabs-flexContainer": {
+                    justifyContent: "flex-start",
+                  },
+                }}
+              >
+                <Tab value="input" label="Ввести адрес" />
+                <Tab value="map" label="Выбрать на карте" />
+              </Tabs>
+            </Box>
 
             {addressMethod === "map" ? (
-              <Box sx={{ position: "relative" }}>
+              <Box sx={{ position: "relative", width: "100%" }}>
                 {isLoading && (
                   <Box
                     sx={{
@@ -576,7 +620,7 @@ export default function ParkingOwnerPage() {
                 )}
                 <Box
                   ref={mapContainerRef}
-                  sx={{ height: 400, width: "100%", mb: 2 }}
+                  sx={{ height: 350, width: "100%", mb: 1 }}
                 />
                 <LocationButton
                   onLocationFound={(coords) => {
@@ -593,7 +637,7 @@ export default function ParkingOwnerPage() {
                 />
               </Box>
             ) : (
-              <Box sx={{ position: "relative" }}>
+              <Box sx={{ position: "relative", width: "100%" }}>
                 <TextField
                   size="small"
                   required
@@ -668,10 +712,17 @@ export default function ParkingOwnerPage() {
             <Button
               fullWidth
               variant="contained"
-              size="small"
-              onClick={handleSaveChanges} // Меняем onChange на onClick
+              onClick={handleSaveChanges}
+              disabled={isSaving}
             >
-              Сохранить изменения
+              {isSaving ? (
+                <>
+                  <CircularProgress size={24} sx={{ mr: 1 }} />
+                  Сохранение...
+                </>
+              ) : (
+                "Сохранить изменения"
+              )}
             </Button>
             <Button
               fullWidth
