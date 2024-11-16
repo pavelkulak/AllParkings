@@ -258,4 +258,45 @@ parkingLotsRouter.get('/:id/available-spaces', async (req, res) => {
   }
 });
 
+// Получить место пользователя на парковке
+parkingLotsRouter.get('/:parkingId/user-space', verifyAccessToken, async (req, res) => {
+  try {
+    const { parkingId } = req.params;
+    const userId = res.locals.user.id;
+
+    // Получаем активное бронирование пользователя
+    const activeBooking = await Booking.findOne({
+      where: {
+        user_id: userId,
+        parking_id: parkingId,
+        status: 'active',
+        entry_time: {
+          [Op.lte]: new Date()
+        },
+        exit_time: {
+          [Op.gte]: new Date()
+        }
+      },
+      include: [{
+        model: ParkingSpace,
+        attributes: ['id', 'space_number', 'location']
+      }]
+    });
+
+    if (!activeBooking) {
+      return res.status(404).json({ error: 'Активное бронирование не найдено' });
+    }
+
+    res.json({
+      spaceId: activeBooking.ParkingSpace.id,
+      spaceNumber: activeBooking.ParkingSpace.space_number,
+      location: activeBooking.ParkingSpace.location
+    });
+
+  } catch (error) {
+    console.error('Error fetching user space:', error);
+    res.status(500).json({ error: 'Ошибка при получении информации о месте' });
+  }
+});
+
 module.exports = parkingLotsRouter; 
