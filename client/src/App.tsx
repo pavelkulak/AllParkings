@@ -15,8 +15,9 @@ import ParkingConstructor from './components/constructor/ParkingConstructor';
 import CreateParkingForm from './components/parking/CreateParkingForm';
 import ProfilePage from './components/pages/ProfilePage';
 import { ParkingMap } from './components/parking/ParkingMap';
-import ParkingOwnerPage from './components/pages/ParkingOwnerPage';
-import ErrorPage from './components/pages/ErrorPage';
+import ParkingOwnerPage from "./components/pages/ParkingOwnerPage";
+import ErrorPage from "./components/pages/ErrorPage";
+import { LandingPage } from "./components/pages/LandingPage";
 
 function App() {
   const dispatch = useAppDispatch();
@@ -37,12 +38,8 @@ function App() {
       errorElement: <ErrorPage />,
       children: [
         {
-          path: '/',
-          element: (
-            <ProtectedRoute isAllowed={!!user} user={null}>
-              <div>Защищенная страница</div>
-            </ProtectedRoute>
-          ),
+          path: "/",
+          element: <LandingPage />,
         },
         {
           path: '/signin',
