@@ -27,7 +27,7 @@ import InfoIcon from '@mui/icons-material/Info';
 import { Tooltip } from '@mui/material';
 import InputMask from 'react-input-mask';
 import { Card, CardContent, CardMedia, Rating } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
+import CloseIcon from '@mui/icons-material/Close';
 
 export default function ProfilePage() {
   const { user } = useAppSelector((state) => state.auth);
@@ -105,19 +105,15 @@ export default function ProfilePage() {
     });
   };
 
-  // Функция для очистки номера телефона от форматирования
   const cleanPhoneNumber = (phone: string) => {
-    // Оставляем только цифры, включая 7 в начале
     return phone.replace(/\D/g, '');
   };
 
-  // Обновляем функцию сохранения
   const handleSaveChanges = () => {
     if (surnameError || nameError || patronymicError || phoneError) {
       return;
     }
 
-    // Очищаем телефон от форматирования перед отправкой
     const cleanedPhone = cleanPhoneNumber(phone);
 
     dispatch(
@@ -125,7 +121,7 @@ export default function ProfilePage() {
         surname,
         name,
         patronymic,
-        phone: cleanedPhone, // Теперь будет в формате "79951000000"
+        phone: cleanedPhone,
       }),
     );
   };
@@ -794,13 +790,18 @@ export default function ProfilePage() {
                           position: 'absolute',
                           bottom: 8,
                           right: 8,
-                          color: 'red', // или '#FF0000', или 'error.main' если используете тему Material UI
+                          color: 'red',
+                          bgcolor: 'rgba(255, 255, 255, 0.8)',
+                          padding: '4px',
+                          '&:hover': {
+                            bgcolor: 'rgba(255, 255, 255, 0.9)',
+                          },
                         }}
                         onClick={() =>
                           dispatch(removeFromFavorites(favorite.parking_id))
                         }
                       >
-                        <DeleteIcon />
+                        <CloseIcon />
                       </IconButton>
                     </CardContent>
                   </Card>

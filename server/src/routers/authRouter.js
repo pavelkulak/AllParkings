@@ -4,7 +4,6 @@ const generateToken = require('../utils/generateToken');
 const cookieConfig = require('../configs/cookieConfig');
 const authRouter = require('express').Router();
 const { verifyAccessToken } = require('../middleware/verifyToken');
-const { where } = require('sequelize');
 
 authRouter.post('/signup', async (req, res) => {
   try {
