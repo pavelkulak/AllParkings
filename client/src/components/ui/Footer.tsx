@@ -7,20 +7,28 @@ function Footer() {
     <Box
       component="footer"
       sx={{
-        position: "fixed",
-        bottom: 0,
         width: "100%",
         backgroundColor: "primary.main",
         color: "white",
-        padding: 0,      
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
       }}
     >
-      <Container maxWidth="lg">
+      <Container 
+        maxWidth="lg"
+        sx={{
+          py: 2,
+        }}
+      >
         <Box
-          display={{ xs: "block", sm: "flex" }} // Вертикально на маленьких экранах, горизонтально на больших
+          display="flex"
+          flexDirection={{ xs: "column", sm: "row" }}
           justifyContent="center"
           alignItems="center"
-          sx={{ mb: 0 }}
+          flexWrap="wrap"
+          gap={1}
         >
           {/* Первая пара значков */}
           <Box
@@ -43,12 +51,12 @@ function Footer() {
               href="https://github.com/pavelkulak"
               target="_blank"
               rel="noopener noreferrer"
-              sx={{ color: "white", ml: 1 }}
+              sx={{ color: "white", ml: 0 }}
             >
               <GitHubIcon />
             </IconButton>
             <Typography variant="body2" sx={{ ml: 1 }}>
-              pashafistov
+              Павел Кулаков
             </Typography>
           </Box>
 
@@ -73,12 +81,12 @@ function Footer() {
               href="https://github.com/Gadyuka0514"
               target="_blank"
               rel="noopener noreferrer"
-              sx={{ color: "white", ml: 1 }}
+              sx={{ color: "white", ml: 0 }}
             >
               <GitHubIcon />
             </IconButton>
             <Typography variant="body2" sx={{ ml: 1 }}>
-              Nikitushka_05
+              Никита Коломыльцев
             </Typography>
           </Box>
 
@@ -103,12 +111,12 @@ function Footer() {
               href="https://github.com/kex121"
               target="_blank"
               rel="noopener noreferrer"
-              sx={{ color: "white", ml: 1 }}
+              sx={{ color: "white", ml: 0 }}
             >
               <GitHubIcon />
             </IconButton>
             <Typography variant="body2" sx={{ ml: 1 }}>
-              BEAVISE
+              Тимур Соболев
             </Typography>
           </Box>
         </Box>
@@ -116,9 +124,9 @@ function Footer() {
         <Typography
           variant="body2"
           textAlign="center"
-          sx={{ p: 1, mt: "auto" }}
+          sx={{ pt: 1 }}
         >
-          © {new Date().getFullYear()} Все права защищены!
+          © Eagles {new Date().getFullYear()} Все права защищены!
         </Typography>
       </Container>
     </Box>
