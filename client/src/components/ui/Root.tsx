@@ -21,12 +21,25 @@ export default function Root() {
   };
 
   return (
-    <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <Box 
+      sx={{ 
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        position: 'relative',
+        paddingBottom: '200px', // Добавляем отступ для футера
+      }}
+    >
       <NavBar user={user} handleSignOut={handleSignOut} />
-      <Box sx={{ flex: 1 }}>
+      <Box 
+        sx={{ 
+          flex: 1,
+          width: '100%',
+        }}
+      >
         <Outlet />
-        <Footer />
       </Box>
+      <Footer />
     </Box>
   );
 }
