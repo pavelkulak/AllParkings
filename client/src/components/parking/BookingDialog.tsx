@@ -6,123 +6,100 @@ import {
   DialogActions,
   Button,
   Stack,
-  Typography
+  Typography,
+  Box,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
-import { DateTimePicker } from '@mui/x-date-pickers';
 import { useAppDispatch } from '../../redux/hooks';
 import { createBooking } from '../../redux/bookingThunks';
 import dayjs from 'dayjs';
+import 'dayjs/locale/ru';
 
+// Обновляем интерфейс BookingDialog
 interface BookingDialogProps {
   open: boolean;
   onClose: () => void;
   spaceId: number;
   pricePerHour: number;
   onSuccess: () => void;
+  entryTime: Date;
+  exitTime: Date;
 }
 
-export const BookingDialog = ({ open, onClose, spaceId, pricePerHour, onSuccess }: BookingDialogProps) => {
+export const BookingDialog = ({
+  open,
+  onClose,
+  spaceId,
+  pricePerHour,
+  onSuccess,
+  entryTime,
+  exitTime
+}: BookingDialogProps) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const dispatch = useAppDispatch();
-  const [startTime, setStartTime] = useState<dayjs.Dayjs | null>(null);
-  const [endTime, setEndTime] = useState<dayjs.Dayjs | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  console.log('BookingDialog rendered with spaceId:', spaceId);
-
   const calculatePrice = () => {
-    if (!startTime || !endTime) return 0;
-    const hours = endTime.diff(startTime, 'hour', true);
+    const hours = dayjs(exitTime).diff(dayjs(entryTime), 'hour', true);
     return Math.max(0, Math.ceil(hours * pricePerHour));
   };
 
   const handleSubmit = async () => {
-    console.log('Attempting to create booking...');
-    if (!startTime || !endTime) {
-      setError('Пожалуйста, выберите время начала и окончания');
-      return;
-    }
-
-    if (endTime.isBefore(startTime)) {
-      setError('Время окончания должно быть позже времени начала');
-      return;
-    }
-
     try {
-      await dispatch(createBooking({
+      const result = await dispatch(createBooking({
         spaceId,
-        startTime: startTime.toISOString(),
-        endTime: endTime.toISOString()
+        startTime: dayjs(entryTime).toISOString(),
+        endTime: dayjs(exitTime).toISOString()
       })).unwrap();
       
-      console.log('Booking created successfully');
-      onSuccess();
-      onClose();
+      if (result) {
+        onSuccess();
+        onClose();
+      }
     } catch (error: any) {
-      console.error('Booking creation failed:', error);
       setError(error.message || 'Ошибка при создании бронирования');
+      onSuccess();
     }
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Бронирование места</DialogTitle>
+    <Dialog 
+      open={open} 
+      onClose={onClose} 
+      maxWidth="sm" 
+      fullWidth 
+      fullScreen={isMobile}
+    >
+      <DialogTitle>Подтверждение бронирования</DialogTitle>
       <DialogContent>
         <Stack spacing={3} sx={{ mt: 2 }}>
           {error && (
             <Typography color="error">{error}</Typography>
           )}
           
-          <DateTimePicker
-            label="Время начала"
-            value={startTime}
-            onChange={(newValue) => {
-              console.log('Start time changed:', newValue);
-              setStartTime(newValue);
-            }}
-            minDateTime={dayjs()}
-            format="DD.MM.YYYY HH:mm"
-            ampm={false}
-            slotProps={{
-              textField: {
-                fullWidth: true,
-              },
-              actionBar: {
-                actions: ['clear', 'today', 'accept'],
-              },
-            }}
-          />
-
-          <DateTimePicker
-            label="Время окончания"
-            value={endTime}
-            onChange={(newValue) => {
-              console.log('End time changed:', newValue);
-              setEndTime(newValue);
-            }}
-            minDateTime={startTime || dayjs()}
-            format="DD.MM.YYYY HH:mm"
-            ampm={false}
-            slotProps={{
-              textField: {
-                fullWidth: true,
-              },
-              actionBar: {
-                actions: ['clear', 'today', 'accept'],
-              },
-            }}
-          />
+          <Box>
+            <Typography variant="subtitle2" gutterBottom>Время бронирования:</Typography>
+            <Typography>
+              С {dayjs(entryTime).format('DD.MM.YYYY HH:mm')} до {dayjs(exitTime).format('DD.MM.YYYY HH:mm')}
+            </Typography>
+          </Box>
 
           <Typography variant="h6">
             Стоимость: {calculatePrice()} руб.
           </Typography>
         </Stack>
       </DialogContent>
-      <DialogActions>
+      <DialogActions sx={{ p: 2 }}>
         <Button onClick={onClose}>Отмена</Button>
-        <Button onClick={handleSubmit} variant="contained">
-          Забронировать
+        <Button 
+          onClick={handleSubmit} 
+          variant="contained"
+        >
+          Подтвердить бронирование
         </Button>
       </DialogActions>
     </Dialog>
   );
-}; 
+};

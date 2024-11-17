@@ -1,9 +1,10 @@
 const parkingLotsRouter = require('express').Router();
-const { ParkingLot, ParkingSpace, ParkingEntrance } = require('../../db/models');
+const { ParkingLot, ParkingSpace, ParkingEntrance, Booking } = require('../../db/models');
 const { verifyAccessToken } = require('../middleware/verifyToken');
 const multer = require('multer');
 const path = require('path');
 const { sequelize } = require('../../db/models');
+const { Op } = require('sequelize');
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {

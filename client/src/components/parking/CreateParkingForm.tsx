@@ -148,12 +148,7 @@ export default function CreateParkingForm() {
         // Добавляем маркеры существующих парковок
         existingParkings.forEach((parking: Parking) => {
           new mapglAPI.Marker(mapInstance, {
-            coordinates: [parking.location.coordinates.lon, parking.location.coordinates.lat],
-            label: {
-              text: `${parking.price_per_hour}₽/час`,
-              offset: [0, -60],
-              relativeAnchor: [0.5, 0],
-            }
+            coordinates: [parking.location.coordinates.lon, parking.location.coordinates.lat]
           });
         });
       } catch (error) {
