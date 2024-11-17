@@ -1,5 +1,6 @@
 import { useEffect, useRef, useMemo, useState } from 'react';
 import { load } from '@2gis/mapgl';
+import { Directions } from '@2gis/mapgl-directions';
 import { Box, Container, Paper, Typography, CircularProgress } from '@mui/material';
 import { Parking } from '../../types/parking';
 import { LocationButton } from '../map/LocationButton';
@@ -11,6 +12,7 @@ export const ParkingMap = () => {
   const markersRef = useRef<any[]>([]);
   const userMarkerRef = useRef<any>(null);
   const routeRef = useRef<any>(null);
+  const directionsRef = useRef<any>(null);
   const isInitializedRef = useRef(false);
   const [mapglAPI, setMapglAPI] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -46,24 +48,34 @@ export const ParkingMap = () => {
   };
 
   const buildRoute = async (mapglAPI: any, map: any, from: [number, number], to: [number, number]) => {
-    if (routeRef.current) {
-      routeRef.current.destroy();
-    }
-
     try {
-      const directions = new mapglAPI.Directions(map, {
+      // Удаляем существующий маршрут
+      if (routeRef.current) {
+        routeRef.current.destroy();
+        routeRef.current = null;
+      }
+
+      // Удаляем существующий directions
+      if (directionsRef.current) {
+        directionsRef.current.clear();
+      }
+
+      // Создаем новый directions
+      directionsRef.current = new Directions(map, {
         directionsApiKey: import.meta.env.VITE_2GIS_API_KEY,
       });
 
-      const route = await directions.carRoute({
+      const routeResponse = await directionsRef.current.carRoute({
         points: [from, to],
       });
 
-      routeRef.current = new mapglAPI.Polyline(map, {
-        coordinates: route.geometry.coordinates,
-        width: 5,
-        color: '#4285f4',
-      });
+      if (routeResponse && routeResponse.geometry) {
+        routeRef.current = new mapglAPI.Polyline(map, {
+          coordinates: routeResponse.geometry.coordinates,
+          width: 5,
+          color: '#4285f4',
+        });
+      }
     } catch (error) {
       console.error('Ошибка построения маршрута:', error);
     }
@@ -98,35 +110,22 @@ export const ParkingMap = () => {
   };
 
   useEffect(() => {
-    const fetchParkings = async () => {
+    const initialize = async () => {
       try {
+        setIsLoading(true);
+        
+        // Загружаем парковки
         const response = await fetch('http://localhost:3000/api/parking-lots/all');
         if (!response.ok) {
           throw new Error('Ошибка при загрузке парковок');
         }
         const data = await response.json();
         setParkings(data);
-      } catch (error) {
-        console.error('Ошибка:', error);
-      }
-    };
 
-    fetchParkings();
-  }, []);
-
-  useEffect(() => {
-    const initializeMap = async () => {
-      try {
-        setIsLoading(true);
-        
-        console.log('Получаем местоположение...');
+        // Инициализируем карту
         const userCoords = await getCurrentPosition();
-        console.log('Получены координаты:', userCoords);
-
-        console.log('Загружаем API карты...');
         const mapglAPI = await load();
         setMapglAPI(mapglAPI);
-        console.log('API карты загружен');
 
         if (!mapContainerRef.current) return;
 
@@ -139,18 +138,13 @@ export const ParkingMap = () => {
         mapInstanceRef.current = map;
         isInitializedRef.current = true;
 
-        // Создаем маркер пользователя
+        // Создаем маркеры
         createUserMarker(mapglAPI, map, userCoords);
         
-        // Добавляем маркеры парковок
-        parkings.forEach((parking: Parking) => {
+        data.forEach((parking: Parking) => {
           const marker = new mapglAPI.Marker(map, {
             coordinates: [parking.location.coordinates.lon, parking.location.coordinates.lat],
-            label: {
-              text: `${parking.price_per_hour} руб/час`,
-            }
           });
-
           marker.on('click', () => handleMarkerClick(parking));
           markersRef.current.push(marker);
         });
@@ -162,23 +156,45 @@ export const ParkingMap = () => {
       }
     };
 
-    initializeMap();
+    initialize();
 
     return () => {
       if (mapInstanceRef.current) {
-        if (userMarkerRef.current) {
-          userMarkerRef.current.destroy();
-        }
         markersRef.current.forEach(marker => marker.destroy());
+        markersRef.current = [];
+        if (userMarkerRef.current) userMarkerRef.current.destroy();
+        if (routeRef.current) routeRef.current.destroy();
+        if (directionsRef.current) directionsRef.current.clear();
         mapInstanceRef.current.destroy();
         mapInstanceRef.current = null;
         isInitializedRef.current = false;
       }
     };
-  }, [parkings]);
+  }, []);
 
   const handleMarkerClick = (parking: Parking) => {
     setSelectedParking(parking);
+  };
+
+  const handleBuildRoute = async (parking: Parking) => {
+    try {
+      const userCoords = await getCurrentPosition();
+      const parkingCoords: [number, number] = [
+        parking.location.coordinates.lon,
+        parking.location.coordinates.lat
+      ];
+      
+      if (mapglAPI && mapInstanceRef.current) {
+        await buildRoute(
+          mapglAPI, 
+          mapInstanceRef.current, 
+          userCoords, 
+          parkingCoords
+        );
+      }
+    } catch (error) {
+      console.error('Ошибка при построении маршрута:', error);
+    }
   };
 
   return (
@@ -215,6 +231,12 @@ export const ParkingMap = () => {
         parking={selectedParking}
         open={!!selectedParking}
         onClose={() => setSelectedParking(null)}
+        onBuildRoute={async () => {
+          if (selectedParking) {
+            await handleBuildRoute(selectedParking);
+            setSelectedParking(null);
+          }
+        }}
       />
     </Container>
   );

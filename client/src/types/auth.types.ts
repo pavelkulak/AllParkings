@@ -4,7 +4,7 @@ export interface IUser {
   name: string;
   surname: string;
   patronymic?: string;
-  phone: number;
+  phone: string;
   email: string;
   role: "user" | "owner" | "admin";
   avatar?: string;

@@ -130,7 +130,7 @@ dist
 .pnp.*
 
 # Image files
-src/img/*
-!src/img/.gitkeep
-src/img/parking/*
-!src/img/parking/.gitkeep
+img/*
+!img/.gitkeep
+img/parking/*
+!img/parking/.gitkeep

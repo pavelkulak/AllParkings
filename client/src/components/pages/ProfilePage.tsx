@@ -1,12 +1,33 @@
 import { useAppDispatch, useAppSelector } from '../../redux/hooks';
-import { Box, Typography, Avatar, Button, TextField, Switch } from '@mui/material';
+import {
+  Box,
+  Typography,
+  Avatar,
+  Button,
+  TextField,
+  Switch,
+  CircularProgress,
+} from '@mui/material';
 import { useState, useRef, useEffect } from 'react';
-import { updateAvatar, updateUserProfile, changePassword } from '../../redux/thunkActions';
+import { useNavigate } from 'react-router-dom';
+import {
+  updateAvatar,
+  updateUserProfile,
+  changePassword,
+  deleteAvatar,
+  deleteAccount,
+} from '../../redux/thunkActions';
+import { getFavorites, removeFromFavorites } from '../../redux/favoritesThunks';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { IconButton, InputAdornment } from '@mui/material';
 import LightModeSharpIcon from '@mui/icons-material/LightModeSharp';
 import DarkModeSharpIcon from '@mui/icons-material/DarkModeSharp';
 import { useTheme } from '@mui/material/styles';
+import InfoIcon from '@mui/icons-material/Info';
+import { Tooltip } from '@mui/material';
+import InputMask from 'react-input-mask';
+import { Card, CardContent, CardMedia, Rating } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 
 export default function ProfilePage() {
   const { user } = useAppSelector((state) => state.auth);
@@ -26,25 +47,44 @@ export default function ProfilePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dispatch = useAppDispatch();
   const [activeTab, setActiveTab] = useState('settings');
+  const { favorites, status } = useAppSelector((state) => state.favorites);
+  const navigate = useNavigate();
 
   const theme = useTheme();
   // Изменение темы на будущее
   // const toggleTheme = () => {
   // };
 
-  // Удаление аккаунта на будущее
-  // const handleDeleteAccount = () => {
-  //   if (window.confirm('Вы уверены, что хотите удалить свой аккаунт? Это действие необратимо.')) {
-  //     alert('Аккаунт удален');
-  //   }
-  // };
+  const handleDeleteAccount = () => {
+    if (
+      window.confirm(
+        'Вы уверены, что хотите удалить свой аккаунт? Это действие необратимо.',
+      )
+    ) {
+      dispatch(deleteAccount());
+      navigate('/');
+    }
+  };
+
+  const isFieldsValid = () => {
+    const isSurnameValid = surname.length >= 2;
+    const isNameValid = name.length >= 2;
+    const isPatronymicValid = !patronymic || patronymic.length >= 2;
+    const isPhoneValid = phone && !phone.includes('_');
+
+    return isSurnameValid && isNameValid && isPatronymicValid && isPhoneValid;
+  };
 
   useEffect(() => {
+    const cleanedCurrentPhone = phone.replace(/\D/g, '');
+    const cleanedOriginalPhone = user?.phone?.toString() || '';
+
     setIsChanged(
-      surname !== user?.surname ||
+      (surname !== user?.surname ||
         name !== user?.name ||
         patronymic !== user?.patronymic ||
-        phone !== user?.phone,
+        cleanedCurrentPhone !== cleanedOriginalPhone) &&
+        isFieldsValid(),
     );
   }, [surname, name, patronymic, phone, user]);
 
@@ -65,8 +105,25 @@ export default function ProfilePage() {
     });
   };
 
+  const cleanPhoneNumber = (phone: string) => {
+    return phone.replace(/\D/g, '');
+  };
+
   const handleSaveChanges = () => {
-    dispatch(updateUserProfile({ surname, name, patronymic, phone }));
+    if (surnameError || nameError || patronymicError || phoneError) {
+      return;
+    }
+
+    const cleanedPhone = cleanPhoneNumber(phone);
+
+    dispatch(
+      updateUserProfile({
+        surname,
+        name,
+        patronymic,
+        phone: cleanedPhone,
+      }),
+    );
   };
 
   const handleChangePassword = () => {
@@ -108,17 +165,88 @@ export default function ProfilePage() {
     return '';
   };
 
-  const handleNewPasswordChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+  const handleNewPasswordChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ): void => {
     const password = e.target.value;
     setNewPassword(password);
     setNewPasswordError(validatePassword(password));
   };
 
-  const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+  const handleConfirmPasswordChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ): void => {
     const confirmPass = e.target.value;
     setConfirmPassword(confirmPass);
-    setConfirmPasswordError(confirmPass !== newPassword ? 'Пароли должны совпадать' : '');
+    setConfirmPasswordError(
+      confirmPass !== newPassword ? 'Пароли должны совпадать' : '',
+    );
   };
+
+  const [surnameError, setSurnameError] = useState('');
+  const [nameError, setNameError] = useState('');
+  const [patronymicError, setPatronymicError] = useState('');
+  const [phoneError, setPhoneError] = useState('');
+
+  const validateName = (value: string, fieldName: string) => {
+    if (value && value.length < 2) {
+      return `${fieldName} должно содержать минимум 2 буквы`;
+    }
+    if (value && !/^[а-яА-ЯёЁa-zA-Z]+$/.test(value)) {
+      return `${fieldName} должно содержать только буквы`;
+    }
+    return '';
+  };
+
+  const handleSurnameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSurname(value);
+    setSurnameError(validateName(value, 'Фамилия'));
+  };
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setName(value);
+    setNameError(validateName(value, 'Имя'));
+  };
+
+  const handlePatronymicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setPatronymic(value);
+    setPatronymicError(value ? validateName(value, 'Отчество') : '');
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setPhone(value);
+    setPhoneError(value.includes('_') ? 'Введите полный номер телефона' : '');
+  };
+
+  useEffect(() => {
+    if (user?.phone) {
+      const formattedPhone = user.phone
+        .toString()
+        .replace(/(\d)(\d{3})(\d{3})(\d{2})(\d{2})/, '+$1 $2 $3 $4 $5');
+      setPhone(formattedPhone);
+    }
+  }, [user]);
+
+  const handleDeleteAvatar = () => {
+    if (window.confirm('Вы уверены, что хотите удалить аватар?')) {
+      dispatch(deleteAvatar())
+        .unwrap()
+        .then(() => {})
+        .catch((error) => {
+          alert(error || 'Ошибка при удалении аватара');
+        });
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'favorites') {
+      dispatch(getFavorites());
+    }
+  }, [activeTab, dispatch]);
 
   return (
     <Box
@@ -130,13 +258,22 @@ export default function ProfilePage() {
       }}
     >
       <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-        <Button onClick={() => setActiveTab('settings')} variant={activeTab === 'settings' ? 'contained' : 'outlined'}>
+        <Button
+          onClick={() => setActiveTab('settings')}
+          variant={activeTab === 'settings' ? 'contained' : 'outlined'}
+        >
           Настройки
         </Button>
-        <Button onClick={() => setActiveTab('favorites')} variant={activeTab === 'favorites' ? 'contained' : 'outlined'}>
+        <Button
+          onClick={() => setActiveTab('favorites')}
+          variant={activeTab === 'favorites' ? 'contained' : 'outlined'}
+        >
           Избранное
         </Button>
-        <Button onClick={() => setActiveTab('history')} variant={activeTab === 'history' ? 'contained' : 'outlined'}>
+        <Button
+          onClick={() => setActiveTab('history')}
+          variant={activeTab === 'history' ? 'contained' : 'outlined'}
+        >
           История
         </Button>
       </Box>
@@ -204,9 +341,13 @@ export default function ProfilePage() {
                 sx={{
                   cursor: 'pointer',
                   mt: 1,
+                  '&:hover': {
+                    opacity: 0.8,
+                  },
                 }}
+                onClick={handleDeleteAvatar}
               >
-                Удалить аватар (не создан)
+                Удалить аватар
               </Typography>
             )}
           </Box>
@@ -216,48 +357,155 @@ export default function ProfilePage() {
               {user?.email || ' Error'}
             </Typography>
 
-            <Box sx={{ mb: 2 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                width: '100%',
+                mb: 2,
+              }}
+            >
+              <Box
+                sx={{
+                  width: '28px',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  visibility: surnameError ? 'visible' : 'hidden',
+                }}
+              >
+                <Tooltip title={surnameError} arrow>
+                  <InfoIcon
+                    color='error'
+                    sx={{ fontSize: '24px', cursor: 'pointer' }}
+                  />
+                </Tooltip>
+              </Box>
               <TextField
                 fullWidth
                 value={surname}
-                onChange={(e) => setSurname(e.target.value)}
+                onChange={handleSurnameChange}
                 size='small'
                 label='Фамилия'
                 variant='standard'
                 required
+                error={!!surnameError}
               />
             </Box>
-            <Box sx={{ mb: 2 }}>
+
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                width: '100%',
+                mb: 2,
+              }}
+            >
+              <Box
+                sx={{
+                  width: '28px',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  visibility: nameError ? 'visible' : 'hidden',
+                }}
+              >
+                <Tooltip title={nameError} arrow>
+                  <InfoIcon
+                    color='error'
+                    sx={{ fontSize: '24px', cursor: 'pointer' }}
+                  />
+                </Tooltip>
+              </Box>
               <TextField
                 fullWidth
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={handleNameChange}
                 size='small'
                 label='Имя'
                 variant='standard'
                 required
+                error={!!nameError}
               />
             </Box>
-            <Box sx={{ mb: 2 }}>
+
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                width: '100%',
+                mb: 2,
+              }}
+            >
+              <Box
+                sx={{
+                  width: '28px',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  visibility: patronymicError ? 'visible' : 'hidden',
+                }}
+              >
+                <Tooltip title={patronymicError} arrow>
+                  <InfoIcon
+                    color='error'
+                    sx={{ fontSize: '24px', cursor: 'pointer' }}
+                  />
+                </Tooltip>
+              </Box>
               <TextField
                 fullWidth
                 value={patronymic}
-                onChange={(e) => setPatronymic(e.target.value)}
+                onChange={handlePatronymicChange}
                 size='small'
                 label='Отчество'
                 variant='standard'
+                error={!!patronymicError}
               />
             </Box>
-            <Box sx={{ mb: 2 }}>
-              <TextField
-                fullWidth
+
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                width: '100%',
+                mb: 2,
+              }}
+            >
+              <Box
+                sx={{
+                  width: '28px',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  visibility: phoneError ? 'visible' : 'hidden',
+                }}
+              >
+                <Tooltip title={phoneError} arrow>
+                  <InfoIcon
+                    color='error'
+                    sx={{ fontSize: '24px', cursor: 'pointer' }}
+                  />
+                </Tooltip>
+              </Box>
+              <InputMask
+                mask='+7 999 999 99 99'
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                size='small'
-                label='Номер телефона'
-                variant='standard'
-                required
-              />
+                onChange={handlePhoneChange}
+                maskChar='_'
+              >
+                {(inputProps: any) => (
+                  <TextField
+                    {...inputProps}
+                    fullWidth
+                    size='small'
+                    label='Номер телефона'
+                    variant='standard'
+                    required
+                    error={!!phoneError}
+                  />
+                )}
+              </InputMask>
             </Box>
 
             <Box sx={{ display: 'flex', justifyContent: 'space-around' }}>
@@ -280,7 +528,7 @@ export default function ProfilePage() {
               alignItems: 'center',
               justifyContent: 'center',
               borderLeft: '1px solid #ddd',
-              px: 5,
+              px: 1,
               minHeight: '100%',
               width: '25%',
             }}
@@ -288,7 +536,25 @@ export default function ProfilePage() {
             <Typography variant='h6' sx={{ mb: 3 }}>
               Смена пароля
             </Typography>
-            <Box sx={{ width: '100%', mb: 2 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                width: '100%',
+                mb: 3,
+              }}
+            >
+              <Box
+                sx={{
+                  width: '28px',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  visibility: 'hidden',
+                }}
+              >
+                <InfoIcon sx={{ fontSize: '24px' }} />
+              </Box>
               <TextField
                 fullWidth
                 type={showCurrentPassword ? 'text' : 'password'}
@@ -298,29 +564,56 @@ export default function ProfilePage() {
                 label='Ваш пароль'
                 variant='standard'
                 required
-                slotProps={{
-                  input: {
-                    endAdornment: (
-                      <InputAdornment position='end'>
-                        <IconButton
-                          onClick={() =>
-                            setShowCurrentPassword(!showCurrentPassword)
-                          }
-                          edge='end'
-                        >
-                          {showCurrentPassword ? (
-                            <VisibilityOff />
-                          ) : (
-                            <Visibility />
-                          )}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  },
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position='start'>
+                      <IconButton
+                        onClick={() =>
+                          setShowCurrentPassword(!showCurrentPassword)
+                        }
+                        edge='end'
+                      >
+                        {showCurrentPassword ? (
+                          <VisibilityOff />
+                        ) : (
+                          <Visibility />
+                        )}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
                 }}
               />
             </Box>
-            <Box sx={{ width: '100%', mb: 2 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                width: '100%',
+                mb: 3,
+              }}
+            >
+              <Box
+                sx={{
+                  width: '28px',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  visibility: newPasswordError ? 'visible' : 'hidden',
+                }}
+              >
+                <Tooltip title={newPasswordError} arrow>
+                  <InfoIcon
+                    color='error'
+                    sx={{
+                      fontSize: '24px',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        opacity: 0.8,
+                      },
+                    }}
+                  />
+                </Tooltip>
+              </Box>
               <TextField
                 fullWidth
                 type={showNewPassword ? 'text' : 'password'}
@@ -331,26 +624,51 @@ export default function ProfilePage() {
                 variant='standard'
                 required
                 error={!!newPasswordError}
-                helperText={newPasswordError}
-                slotProps={{
-                  input: {
-                    endAdornment: (
-                      <InputAdornment position='end'>
-                        <IconButton
-                          onClick={() => setShowNewPassword(!showNewPassword)}
-                          edge='end'
-                        >
-                          {showNewPassword ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  },
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position='start'>
+                      <IconButton
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        edge='end'
+                      >
+                        {showNewPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
                 }}
               />
             </Box>
-            <Box sx={{ width: '100%', mb: 2 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                width: '100%',
+                mb: 3,
+              }}
+            >
+              <Box
+                sx={{
+                  width: '28px',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  visibility: confirmPasswordError ? 'visible' : 'hidden',
+                }}
+              >
+                <Tooltip title={confirmPasswordError} arrow>
+                  <InfoIcon
+                    color='error'
+                    sx={{
+                      fontSize: '24px',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        opacity: 0.8,
+                      },
+                    }}
+                  />
+                </Tooltip>
+              </Box>
               <TextField
-                sx={{ marginBottom: '35px' }}
                 fullWidth
                 type='password'
                 value={confirmPassword}
@@ -358,13 +676,8 @@ export default function ProfilePage() {
                 size='small'
                 label='Подтвердите пароль'
                 variant='standard'
-                onPaste={(e) => {
-                  e.preventDefault();
-                  alert('Вставка запрещена. Пожалуйста, введите пароль вручную.');
-                }}
                 required
                 error={!!confirmPasswordError}
-                helperText={confirmPasswordError}
               />
             </Box>
             <Button
@@ -373,9 +686,9 @@ export default function ProfilePage() {
               size='medium'
               onClick={handleChangePassword}
               disabled={
-                !currentPassword || 
-                !newPassword || 
-                !confirmPassword || 
+                !currentPassword ||
+                !newPassword ||
+                !confirmPassword ||
                 !!newPasswordError ||
                 !!confirmPasswordError
               }
@@ -400,19 +713,19 @@ export default function ProfilePage() {
             <Typography variant='h6'>Настройки</Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <LightModeSharpIcon />
-              <Typography variant="body2">Light</Typography>
+              <Typography variant='body2'>Light</Typography>
               <Switch
                 // checked={theme.palette.mode === 'dark'}
                 // onChange={toggleTheme}
-                color="default"
+                color='default'
               />
               <DarkModeSharpIcon />
-              <Typography variant="body2">Dark</Typography>
+              <Typography variant='body2'>Dark</Typography>
             </Box>
             <Button
-              variant='contained'
+              variant='outlined'
               color='error'
-              // onClick={handleDeleteAccount}
+              onClick={handleDeleteAccount}
             >
               Удалить аккаунт
             </Button>
@@ -428,7 +741,73 @@ export default function ProfilePage() {
               mt: 2,
             }}
           >
-            <Typography variant='h6'>Здесь будет избранное</Typography>
+            <Typography variant='h6' sx={{ mb: 2 }}>
+              Избранные парковки
+            </Typography>
+            {status === 'loading' && <CircularProgress />}
+            {status === 'succeeded' && favorites?.length === 0 && (
+              <Typography>У вас пока нет избранных парковок</Typography>
+            )}
+            {status === 'succeeded' && favorites?.length > 0 && (
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                {favorites.map((favorite) => (
+                  <Card key={favorite.id} sx={{ position: 'relative' }}>
+                    <CardMedia
+                      component='img'
+                      height='140'
+                      image={
+                        favorite.ParkingLot?.img
+                          ? `${import.meta.env.VITE_API_URL}/img/parking/${
+                              favorite.ParkingLot.img
+                            }`
+                          : '/default-parking.jpg'
+                      }
+                      alt={favorite.ParkingLot?.name}
+                    />
+                    <CardContent>
+                      <Typography variant='h6' noWrap>
+                        {favorite.ParkingLot?.name}
+                      </Typography>
+                      <Typography variant='body2' color='text.secondary' noWrap>
+                        {favorite.ParkingLot?.location?.address}
+                      </Typography>
+                      <Box
+                        sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                      >
+                        <Rating
+                          value={
+                            Number(favorite.ParkingLot?.average_rating) || 0
+                          }
+                          readOnly
+                          size='small'
+                        />
+                        <Typography variant='body2'>
+                          {favorite.ParkingLot?.price_per_hour} ₽/час
+                        </Typography>
+                      </Box>
+                      <IconButton
+                        sx={{
+                          position: 'absolute',
+                          bottom: 8,
+                          right: 8,
+                          color: 'red',
+                          bgcolor: 'rgba(255, 255, 255, 0.8)',
+                          padding: '4px',
+                          '&:hover': {
+                            bgcolor: 'rgba(255, 255, 255, 0.9)',
+                          },
+                        }}
+                        onClick={() =>
+                          dispatch(removeFromFavorites(favorite.parking_id))
+                        }
+                      >
+                        <CloseIcon />
+                      </IconButton>
+                    </CardContent>
+                  </Card>
+                ))}
+              </Box>
+            )}
           </Box>
         )}
 
