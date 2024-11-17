@@ -68,6 +68,20 @@ export const updateAvatar = createAsyncThunk<AuthResponse, FormData>(
   },
 );
 
+export const deleteAvatar = createAsyncThunk(
+  'auth/deleteAvatar',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.delete('/upload/avatar');
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Ошибка при удалении аватара',
+      );
+    }
+  },
+);
+
 export const updateUserProfile = createAsyncThunk<AuthResponse, Partial<IUser>>(
   'auth/updateUserProfile',
   async (userData, { rejectWithValue }) => {
@@ -98,4 +112,23 @@ export const changePassword = createAsyncThunk<
       return rejectWithValue('Ошибка при изменении пароля');
     }
   },
+);
+
+export const deleteAccount = createAsyncThunk(
+  '/auth/deleteAccount',
+  async () => {
+    await axiosInstance.delete('/auth/destroyAccount');
+  },
+);
+
+export const logout = createAsyncThunk(
+  'auth/logout',
+  async (_, { rejectWithValue }) => {
+    try {
+      await axiosInstance.post('/auth/logout');
+      return true;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'Ошибка при выходе');
+    }
+  }
 );

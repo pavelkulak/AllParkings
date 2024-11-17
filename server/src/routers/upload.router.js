@@ -82,4 +82,49 @@ uploadRouter.post('/avatar', verifyAccessToken, upload.single('avatar'), async (
   }
 });
 
+uploadRouter.delete('/avatar', verifyAccessToken, async (req, res) => {
+  try {
+    const userId = res.locals.user.id;
+    
+    const currentUser = await User.findByPk(userId);
+    if (!currentUser) {
+      return res.status(404).json({ message: 'Пользователь не найден' });
+    }
+
+    if (currentUser.avatar) {
+      const avatarPath = path.join(uploadDir, path.basename(currentUser.avatar));
+      if (fs.existsSync(avatarPath)) {
+        fs.unlinkSync(avatarPath);
+      }
+    }
+
+    await User.update(
+      { avatar: null },
+      { where: { id: userId } }
+    );
+
+    const updatedUser = await User.findByPk(userId);
+    const user = {
+      id: updatedUser.id,
+      name: updatedUser.name,
+      surname: updatedUser.surname,
+      patronymic: updatedUser.patronymic,
+      phone: updatedUser.phone,
+      email: updatedUser.email,
+      role: updatedUser.role,
+      avatar: updatedUser.avatar
+    };
+
+    const { accessToken, refreshToken } = generateToken({ user });
+
+    res
+      .cookie('refreshToken', refreshToken, cookieConfig)
+      .json({ accessToken, user });
+
+  } catch (error) {
+    console.error('Ошибка при удалении аватара:', error);
+    res.status(500).json({ message: 'Ошибка при удалении аватара' });
+  }
+});
+
 module.exports = uploadRouter;

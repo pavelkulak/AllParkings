@@ -148,12 +148,7 @@ export default function CreateParkingForm() {
         // Добавляем маркеры существующих парковок
         existingParkings.forEach((parking: Parking) => {
           new mapglAPI.Marker(mapInstance, {
-            coordinates: [parking.location.coordinates.lon, parking.location.coordinates.lat],
-            label: {
-              text: `${parking.price_per_hour}₽/час`,
-              offset: [0, -60],
-              relativeAnchor: [0.5, 0],
-            }
+            coordinates: [parking.location.coordinates.lon, parking.location.coordinates.lat]
           });
         });
       } catch (error) {
@@ -317,20 +312,17 @@ export default function CreateParkingForm() {
 
   return (
     <Container maxWidth="sm">
-      <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
+      <Paper elevation={3} sx={{ p: 2, mt: 3, textAlign:'center' }}>
         <Typography variant="h5" component="h1" gutterBottom>
           Создание новой парковки
         </Typography>
 
         <Box component="form" onSubmit={handleSubmit}>
-          <Stack spacing={3}>
-            {error && (
-              <Typography color="error">
-                {error}
-              </Typography>
-            )}
-            
+          <Stack spacing={2}>
+            {error && <Typography color="error">{error}</Typography>}
+
             <TextField
+              size="small"
               required
               fullWidth
               name="name"
@@ -341,6 +333,7 @@ export default function CreateParkingForm() {
             />
 
             <TextField
+              size="small"
               fullWidth
               multiline
               rows={4}
@@ -356,24 +349,29 @@ export default function CreateParkingForm() {
                 files={files}
                 onFilesChange={handleFilesChange}
                 maxFiles={5}
-                acceptedFileTypes={['image/jpeg', 'image/png']}
+                acceptedFileTypes={["image/jpeg", "image/png"]}
                 maxFileSize={5 * 1024 * 1024}
               >
                 <Box
                   sx={{
-                    border: '2px dashed #ccc',
+                    border: "2px dashed #ccc",
                     borderRadius: 2,
                     p: 3,
-                    textAlign: 'center',
-                    cursor: 'pointer',
-                    '&:hover': {
-                      borderColor: 'primary.main',
-                      bgcolor: 'rgba(0, 0, 0, 0.04)'
-                    }
+                    alignContent: "center",
+                    cursor: "pointer",
+                    "&:hover": {
+                      borderColor: "primary.main",
+                      bgcolor: "rgba(0, 0, 0, 0.04)",
+                    },
+                    display: "flex",
+                    alignItems: "center",
+                    flexDirection: "column",
                   }}
                 >
-                  <CloudUploadIcon sx={{ fontSize: 48, color: 'text.secondary' }} />
-                  <Typography variant="h6" sx={{ mt: 2 }}>
+                  <CloudUploadIcon
+                    sx={{ fontSize: 36, color: "text.secondary" }}
+                  />
+                  <Typography variant="body2" sx={{ mt: 1 }}>
                     Перетащите фотографии сюда или кликните для выбора
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -381,9 +379,9 @@ export default function CreateParkingForm() {
                   </Typography>
                 </Box>
               </FileUploader>
-              
+
               {files.length > 0 && (
-                <Box sx={{ display: 'flex', gap: 1, mt: 2, flexWrap: 'wrap' }}>
+                <Box sx={{ display: "flex", gap: 1, mt: 2, flexWrap: "wrap" }}>
                   {files.map((file, index) => (
                     <Box
                       key={index}
@@ -392,8 +390,8 @@ export default function CreateParkingForm() {
                       sx={{
                         width: 100,
                         height: 100,
-                        objectFit: 'cover',
-                        borderRadius: 1
+                        objectFit: "cover",
+                        borderRadius: 1,
                       }}
                     />
                   ))}
@@ -410,33 +408,38 @@ export default function CreateParkingForm() {
               <Tab value="map" label="Выбрать на карте" />
             </Tabs>
 
-            {addressMethod === 'map' ? (
-              <Box sx={{ position: 'relative' }}>
+            {addressMethod === "map" ? (
+              <Box sx={{ position: "relative" }}>
                 {isLoading && (
-                  <Box sx={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                    zIndex: 2,
-                  }}>
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      backgroundColor: "rgba(255, 255, 255, 0.8)",
+                      zIndex: 2,
+                    }}
+                  >
                     <CircularProgress />
                   </Box>
                 )}
-                <Box 
+                <Box
                   ref={mapContainerRef}
-                  sx={{ height: 400, width: '100%', mb: 2 }} 
+                  sx={{ height: 350, width: "100%", mb: 1 }}
                 />
-                <LocationButton onLocationFound={(coords) => {
-                  if (!map || !mapglAPI) return;
-                  createUserMarker(mapglAPI, map, coords);
-                }} />
+                <LocationButton
+                  onLocationFound={(coords) => {
+                    if (!map || !mapglAPI) return;
+                    createUserMarker(mapglAPI, map, coords);
+                  }}
+                />
                 <TextField
+                  size="small"
                   fullWidth
                   label="Выбранный адрес"
                   value={parkingData.location.address}
@@ -444,8 +447,9 @@ export default function CreateParkingForm() {
                 />
               </Box>
             ) : (
-              <Box sx={{ position: 'relative' }}>
+              <Box sx={{ position: "relative" }}>
                 <TextField
+                  size="small"
                   required
                   fullWidth
                   name="address"
@@ -457,12 +461,12 @@ export default function CreateParkingForm() {
                 {addressSuggestions.length > 0 && (
                   <Paper
                     sx={{
-                      position: 'absolute',
-                      width: '100%',
+                      position: "absolute",
+                      width: "100%",
                       maxHeight: 200,
-                      overflow: 'auto',
+                      overflow: "auto",
                       zIndex: 1000,
-                      mt: 1
+                      mt: 1,
                     }}
                   >
                     {addressSuggestions.map((suggestion, index) => (
@@ -470,12 +474,14 @@ export default function CreateParkingForm() {
                         key={index}
                         sx={{
                           p: 1,
-                          cursor: 'pointer',
-                          '&:hover': { bgcolor: 'action.hover' }
+                          cursor: "pointer",
+                          "&:hover": { bgcolor: "action.hover" },
                         }}
                         onClick={() => handleSuggestionSelect(suggestion)}
                       >
-                        <Typography variant="body2">{suggestion.full_name}</Typography>
+                        <Typography variant="body2">
+                          {suggestion.full_name}
+                        </Typography>
                       </Box>
                     ))}
                   </Paper>
@@ -484,6 +490,7 @@ export default function CreateParkingForm() {
             )}
 
             <TextField
+              size="small"
               required
               fullWidth
               name="price_per_hour"
@@ -494,12 +501,7 @@ export default function CreateParkingForm() {
               inputProps={{ min: 0 }}
             />
 
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              size="large"
-            >
+            <Button type="submit" fullWidth variant="contained" size="large">
               Создать и перейти к настройке мест
             </Button>
           </Stack>
