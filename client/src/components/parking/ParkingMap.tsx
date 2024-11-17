@@ -110,35 +110,22 @@ export const ParkingMap = () => {
   };
 
   useEffect(() => {
-    const fetchParkings = async () => {
-      try {
-        const response = await fetch('http://localhost:3000/api/parking-lots/all');
-        if (!response.ok) {
-          throw new Error('Ошибка при згузке парковок');
-        }
-        const data = await response.json();
-        setParkings(data);
-      } catch (error) {
-        console.error('Ошибка:', error);
-      }
-    };
-
-    fetchParkings();
-  }, []);
-
-  useEffect(() => {
-    const initializeMap = async () => {
+    const initialize = async () => {
       try {
         setIsLoading(true);
         
-        console.log('Получаем местоположение...');
-        const userCoords = await getCurrentPosition();
-        console.log('Получены координаты:', userCoords);
+        // Загружаем парковки
+        const response = await fetch('http://localhost:3000/api/parking-lots/all');
+        if (!response.ok) {
+          throw new Error('Ошибка при загрузке парковок');
+        }
+        const data = await response.json();
+        setParkings(data);
 
-        console.log('Загружаем API карты...');
+        // Инициализируем карту
+        const userCoords = await getCurrentPosition();
         const mapglAPI = await load();
         setMapglAPI(mapglAPI);
-        console.log('API карты загружен');
 
         if (!mapContainerRef.current) return;
 
@@ -151,16 +138,13 @@ export const ParkingMap = () => {
         mapInstanceRef.current = map;
         isInitializedRef.current = true;
 
-        // Создаем маркер пользователя
+        // Создаем маркеры
         createUserMarker(mapglAPI, map, userCoords);
         
-        // Добавляем маркеры парковок
-        parkings.forEach((parking: Parking) => {
+        data.forEach((parking: Parking) => {
           const marker = new mapglAPI.Marker(map, {
             coordinates: [parking.location.coordinates.lon, parking.location.coordinates.lat],
-            
           });
-
           marker.on('click', () => handleMarkerClick(parking));
           markersRef.current.push(marker);
         });
@@ -172,26 +156,21 @@ export const ParkingMap = () => {
       }
     };
 
-    initializeMap();
+    initialize();
 
     return () => {
       if (mapInstanceRef.current) {
-        if (userMarkerRef.current) {
-          userMarkerRef.current.destroy();
-        }
-        if (routeRef.current) {
-          routeRef.current.destroy();
-        }
-        if (directionsRef.current) {
-          directionsRef.current.clear();
-        }
         markersRef.current.forEach(marker => marker.destroy());
+        markersRef.current = [];
+        if (userMarkerRef.current) userMarkerRef.current.destroy();
+        if (routeRef.current) routeRef.current.destroy();
+        if (directionsRef.current) directionsRef.current.clear();
         mapInstanceRef.current.destroy();
         mapInstanceRef.current = null;
         isInitializedRef.current = false;
       }
     };
-  }, [parkings]);
+  }, []);
 
   const handleMarkerClick = (parking: Parking) => {
     setSelectedParking(parking);
