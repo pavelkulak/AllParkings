@@ -62,63 +62,71 @@ export const GeneralChat = () => {
   };
 
   return (
-    <>
-      <Paper sx={{ height: '600px', display: 'flex', flexDirection: 'column' }}>
-        <Box sx={{ 
-          flex: 1, 
-          overflow: 'auto', 
-          p: 2,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 1
-        }}>
-          {messages.map((msg) => (
-            <Box
-              key={msg.id}
-              sx={{
-                display: 'flex',
-                gap: 1,
-                alignItems: 'flex-start'
-              }}
-            >
-              <Avatar 
-                src={
-                  msg.sender?.avatar
-                    ? `${import.meta.env.VITE_TARGET}${msg.sender.avatar}`
-                    : undefined
-                }
-              />
-              <Box sx={{ flex: 1 }}>
-                <Stack direction="row" spacing={1} alignItems="baseline">
-                  <Typography variant="subtitle2" color="primary">
-                    {msg.sender?.name} {msg.sender?.surname}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {format(new Date(msg.createdAt), 'HH:mm dd MMM', { locale: ru })}
-                  </Typography>
-                </Stack>
-                <Typography>{msg.content}</Typography>
-              </Box>
-            </Box>
-          ))}
-          <div ref={messagesEndRef} />
-        </Box>
-        <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
-          <Stack direction="row" spacing={1}>
-            <TextField
-              fullWidth
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-              placeholder="Введите сообщение..."
-              size="small"
+    <Paper 
+      sx={{ 
+        height: '70vh',
+        maxHeight: '600px',
+        display: 'flex', 
+        flexDirection: 'column',
+        width: '100%',
+        maxWidth: '800px',
+        margin: 'auto'
+      }}
+    >
+      <Box sx={{ 
+        flex: 1, 
+        overflow: 'auto', 
+        p: 2,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 1
+      }}>
+        {messages.map((msg) => (
+          <Box
+            key={msg.id}
+            sx={{
+              display: 'flex',
+              gap: 1,
+              alignItems: 'flex-start'
+            }}
+          >
+            <Avatar 
+              src={
+                msg.sender?.avatar
+                  ? `${import.meta.env.VITE_TARGET}${msg.sender.avatar}`
+                  : undefined
+              }
             />
-            <IconButton onClick={handleSend} color="primary">
-              <SendIcon />
-            </IconButton>
-          </Stack>
-        </Box>
-      </Paper>
-    </>
+            <Box sx={{ flex: 1 }}>
+              <Stack direction="row" spacing={1} alignItems="baseline">
+                <Typography variant="subtitle2" color="primary">
+                  {msg.sender?.name} {msg.sender?.surname}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {format(new Date(msg.createdAt), 'HH:mm dd MMM', { locale: ru })}
+                </Typography>
+              </Stack>
+              <Typography>{msg.content}</Typography>
+            </Box>
+          </Box>
+        ))}
+        <div ref={messagesEndRef} />
+      </Box>
+      <Box sx={{ p: 1, borderTop: 1, borderColor: 'divider' }}>
+        <Stack direction="row" spacing={1}>
+          <TextField
+            fullWidth
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+            placeholder="Введите сообщение..."
+            size="small"
+          />
+          <IconButton onClick={handleSend} color="primary">
+            <SendIcon />
+          </IconButton>
+        </Stack>
+      </Box>
+    </Paper>
   );
 };
