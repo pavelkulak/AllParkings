@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Tab, Tabs, Typography } from '@mui/material';
 import PendingParkings from './PendingParkings';
-// import ReviewManagement from './ReviewManagement';
+import ReviewManagement from './ReviewManagement';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState(0);
@@ -23,7 +23,7 @@ export default function AdminDashboard() {
       </Tabs>
 
       {activeTab === 0 && <PendingParkings />}
-      {/* {activeTab === 1 && <ReviewManagement />} */}
+      {activeTab === 1 && <ReviewManagement />}
     </Box>
   );
 }
