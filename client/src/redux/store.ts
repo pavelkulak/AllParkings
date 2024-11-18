@@ -3,6 +3,7 @@ import authReducer from './slices/authSlice';
 import parkingReducer from './slices/parkingSlice';
 import favoritesReducer from './slices/favoritesSlice';
 import bookingReducer from './slices/bookingSlice';
+import adminReducer from './slices/adminSlice';
 
 export const store = configureStore({
   reducer: {
@@ -10,6 +11,7 @@ export const store = configureStore({
     parking: parkingReducer,
     favorites: favoritesReducer,
     booking: bookingReducer,
+    admin: adminReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

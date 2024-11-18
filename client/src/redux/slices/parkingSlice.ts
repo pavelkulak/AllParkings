@@ -1,6 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { ParkingState } from '../../types/parking.types';
 import { createParking, deleteMyParkings, getMyParkings, getOwnerParkings, updateMyParkings } from '../parkingThunks';
+import { updateParkingStatus } from '../adminThunks';
 
 const initialState: ParkingState = {
   parkingLots: [],
@@ -77,6 +78,16 @@ const parkingSlice = createSlice({
         state.status = "failed";
         state.error =
           action.error.message || "Ошибка при получении парковки владельца";
+      })
+      .addCase(updateParkingStatus.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(updateParkingStatus.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        const index = state.parkingLots.findIndex(p => p.id === action.payload.id);
+        if (index !== -1) {
+          state.parkingLots[index] = action.payload;
+        }
       });
   },
 });
