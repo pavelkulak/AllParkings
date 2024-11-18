@@ -1,6 +1,34 @@
 import { Box, Typography, Stack } from '@mui/material';
 import { ConstructorGrid, GRID_SIZES } from '../constructor/ParkingConstructor';
 import { ParkingSpace, ParkingEntrance } from '../../types/parking';
+import styled from '@emotion/styled';
+import { Paper } from '@mui/material';
+
+const ParkingSpotWrapper = styled.div`
+  position: absolute;
+  width: 40px;
+  height: 80px;
+`;
+
+const ParkingSpot = styled(Paper)<{ rotation: number }>`
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px;
+  background-color: rgba(25, 118, 210, 0.2);
+  border: 2px solid #1976d2;
+  transform: rotate(${props => props.rotation}deg);
+  transform-origin: center center;
+  user-select: none;
+  transition: transform 0.3s ease;
+  
+  .MuiTypography-root {
+    font-size: 0.8rem;
+  }
+`;
 
 interface UserParkingSchemeProps {
   parkingId: number;
@@ -10,84 +38,63 @@ interface UserParkingSchemeProps {
 }
 
 export const UserParkingScheme = ({ spaces, entrance, userSpaceId }: UserParkingSchemeProps) => {
+  const parsedSpaces = spaces.map(space => ({
+    ...space,
+    location: typeof space.location === 'string' ? JSON.parse(space.location) : space.location
+  }));
+
+  const parsedEntrance = entrance && {
+    ...entrance,
+    location: typeof entrance.location === 'string' ? JSON.parse(entrance.location) : entrance.location
+  };
+
   return (
     <Box>
-      <Stack spacing={2}>
-        <Typography variant="h6">Схема парковки</Typography>
-        
-        {/* Легенда */}
-        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Box sx={{ 
-              width: 20, 
-              height: 20, 
-              bgcolor: '#4CAF50',
-              border: '1px solid #388E3C' 
-            }} />
-            <Typography>Ваш автомобиль</Typography>
+      <ConstructorGrid 
+        sx={{ 
+          width: GRID_SIZES.medium.width, 
+          height: GRID_SIZES.medium.height,
+          margin: '0 auto'
+        }}
+      >
+        {parsedEntrance && (
+          <Box
+            sx={{
+              position: 'absolute',
+              left: parsedEntrance.location.x,
+              top: parsedEntrance.location.y,
+              width: 40,
+              height: 40,
+              bgcolor: 'warning.main',
+              border: '2px solid',
+              borderColor: 'warning.dark',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white'
+            }}
+          >
+            <Typography>Вход</Typography>
           </Box>
-        </Box>
+        )}
 
-        {/* Схема парковки */}
-        <ConstructorGrid 
-          sx={{ 
-            width: GRID_SIZES.medium.width, 
-            height: GRID_SIZES.medium.height,
-            margin: '0 auto'
-          }}
-        >
-          {/* Вход */}
-          {entrance && (
-            <Box
-              sx={{
-                position: 'absolute',
-                left: entrance.x,
-                top: entrance.y,
-                width: entrance.width,
-                height: entrance.height,
-                bgcolor: 'warning.main',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white'
-              }}
+        {parsedSpaces.map((space) => (
+          <ParkingSpotWrapper
+            key={space.id}
+            style={{
+              left: space.location.x,
+              top: space.location.y
+            }}
+          >
+            <ParkingSpot
+              rotation={space.location.rotation}
+              elevation={3}
             >
-              <Typography>Вход</Typography>
-            </Box>
-          )}
-
-          {/* Парковочные места */}
-          {spaces.map((space) => (
-            <Box
-              key={space.id}
-              sx={{
-                position: 'absolute',
-                left: space.x,
-                top: space.y,
-                width: 40,
-                height: 80,
-                bgcolor: space.id === userSpaceId ? '#4CAF50' : 'rgba(0, 0, 0, 0.1)',
-                border: '1px solid',
-                borderColor: space.id === userSpaceId ? '#388E3C' : 'grey.300',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transform: `rotate(${space.rotation}deg)`,
-                transformOrigin: 'center center'
-              }}
-            >
-              <Typography
-                sx={{
-                  transform: `rotate(${-space.rotation}deg)`,
-                  color: space.id === userSpaceId ? 'white' : 'text.primary'
-                }}
-              >
-                {space.number}
-              </Typography>
-            </Box>
-          ))}
-        </ConstructorGrid>
-      </Stack>
+              <Typography>{space.space_number}</Typography>
+            </ParkingSpot>
+          </ParkingSpotWrapper>
+        ))}
+      </ConstructorGrid>
     </Box>
   );
 }; 
