@@ -470,6 +470,7 @@ const handleSaveChanges = async () => {
         createParking({
           ...parkingData,
           price_per_hour: Number(parkingData.price_per_hour),
+          status: 'pending'
         })
       ).unwrap();
 
