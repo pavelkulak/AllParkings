@@ -2,6 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 import type { AuthState } from '../../types/auth.types';
 import { setAccessToken } from '../../services/axiosInstance';
 import { refreshToken, signIn, signUp, signOut, updateAvatar, updateUserProfile, changePassword, deleteAvatar, deleteAccount } from '../../redux/thunkActions';
+import { connectSocket, disconnectSocket } from '../../services/socket';
 
 const initialState: AuthState = {
   user: null,
@@ -42,6 +43,7 @@ const authSlice = createSlice({
         state.user = action.payload.user;
         state.accessToken = action.payload.accessToken;
         setAccessToken(action.payload.accessToken);
+        connectSocket(action.payload.user.id);
       })
       .addCase(signIn.rejected, (state, action) => {
         state.status = 'failed';
@@ -70,6 +72,7 @@ const authSlice = createSlice({
         state.accessToken = '';
         state.error = null;
         setAccessToken('');
+        disconnectSocket();
       })
       .addCase(signOut.rejected, (state, action) => {
         state.status = 'failed';
