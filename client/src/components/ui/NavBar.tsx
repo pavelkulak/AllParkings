@@ -11,6 +11,7 @@ import {
   Menu,
   MenuItem,
   Stack,
+  IconButton,
 } from '@mui/material';
 import logo from '../../img/logo.svg';
 import LogoutIcon from '@mui/icons-material/Logout';
@@ -21,6 +22,9 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MapIcon from '@mui/icons-material/Map';
 import AddLocationIcon from '@mui/icons-material/AddLocation';
+import ChatIcon from '@mui/icons-material/Chat';
+import { useAppSelector, useAppDispatch } from '../../redux/hooks';
+import { clearUnreadCount } from '../../redux/slices/chatSlice';
 
 interface NavBarProps {
   user: IUser | null;
@@ -39,6 +43,8 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const theme = useTheme();
+  const unreadCount = useAppSelector((state) => state.chat.unreadCount);
+  const dispatch = useAppDispatch();
 
   return (
     <AppBar position='static' sx={{ fontFamily: 'Merriweather' }}>
@@ -270,6 +276,13 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
             </>
           )}
         </Box>
+        <IconButton
+          color="inherit"
+          onClick={() => navigate('/chat')}
+          sx={{ mr: 2 }}
+        >
+          <ChatIcon />
+        </IconButton>
       </Toolbar>
     </AppBar>
   );
