@@ -32,6 +32,67 @@ const upload = multer({
   }
 });
 
+// Сначала определяем статические маршруты
+parkingLotsRouter.get('/pending', verifyAccessToken, verifyAdmin, async (req, res) => {
+  try {
+    const pendingParkings = await ParkingLot.findAll({
+      where: {
+        status: 'pending'
+      },
+      include: [
+        {
+          model: ParkingSpace,
+          attributes: ['id', 'space_number', 'location']
+        },
+        {
+          model: ParkingEntrance,
+          attributes: ['id', 'location']
+        }
+      ]
+    });
+    res.json(pendingParkings);
+  } catch (error) {
+    console.error('Ошибка при получении ожидающих парковок:', error);
+    res.status(500).json({ error: 'Ошибка при получении парковок' });
+  }
+});
+
+// Затем все остальные маршруты �� параметрами
+parkingLotsRouter.get('/:id/spaces', async (req, res) => {
+  console.log('Получен запрос на пространства парковки с ID:', req.params.id);
+  
+  try {
+    const parkingLot = await ParkingLot.findByPk(req.params.id, {
+      include: [
+        {
+          model: ParkingSpace,
+          attributes: ['id', 'space_number', 'is_free', 'location']
+        },
+        {
+          model: ParkingEntrance,
+          attributes: ['id', 'location']
+        }
+      ]
+    });
+
+    console.log('Результат запроса к БД:', parkingLot ? 'Парковка найдена' : 'Парковка не найдена');
+    if (parkingLot) {
+      console.log('Количество пространств:', parkingLot.ParkingSpaces?.length || 0);
+      console.log('Наличие входа:', !!parkingLot.ParkingEntrance);
+    }
+
+    if (!parkingLot) {
+      console.log('Парковка не найдена в базе данных');
+      return res.status(404).json({ error: 'Парковка не найдена' });
+    }
+
+    res.json(parkingLot);
+  } catch (error) {
+    console.error('Ошибка при получении парковки:', error);
+    res.status(500).json({ error: 'Ошибка при получении парковки' });
+  }
+});
+
 // Получение всех активных парковок (публичный эндпоинт)
 parkingLotsRouter.get('/all', async (req, res) => {
   try {
@@ -228,33 +289,6 @@ parkingLotsRouter.post('/:id/spaces', verifyAccessToken, async (req, res) => {
   }
 });
 
-// Получение парковки с местами по ID (публичный эндпоинт)
-parkingLotsRouter.get('/:id/spaces', async (req, res) => {
-  try {
-    const parkingLot = await ParkingLot.findByPk(req.params.id, {
-      include: [
-        {
-          model: ParkingSpace,
-          attributes: ['id', 'space_number', 'is_free', 'location']
-        },
-        {
-          model: ParkingEntrance,
-          attributes: ['id', 'location']
-        }
-      ]
-    });
-
-    if (!parkingLot) {
-      return res.status(404).json({ error: 'Парковка не найдена' });
-    }
-
-    res.json(parkingLot);
-  } catch (error) {
-    console.error('Error fetching parking spaces:', error);
-    res.status(500).json({ error: 'Ошибка при получении парковки' });
-  }
-});
-
 // Добавьте этот код в parkingLots.router.js
 parkingLotsRouter.get('/:id/available-spaces', async (req, res) => {
   try {
@@ -312,30 +346,6 @@ parkingLotsRouter.get('/:id/available-spaces', async (req, res) => {
   } catch (error) {
     console.error('Ошибка при получении доступных мест:', error);
     res.status(500).json({ error: 'Ошибка при получении доступных мест' });
-  }
-});
-
-parkingLotsRouter.get('/pending', verifyAccessToken, async (req, res) => {
-  try {
-    const pendingParkings = await ParkingLot.findAll({
-      where: {
-        status: 'pending'
-      },
-      include: [
-        {
-          model: ParkingSpace,
-          attributes: ['id', 'space_number', 'location']
-        },
-        {
-          model: ParkingEntrance,
-          attributes: ['id', 'location']
-        }
-      ]
-    });
-    res.json(pendingParkings);
-  } catch (error) {
-    console.error('Ошибка при получении ожидающих парковок:', error);
-    res.status(500).json({ error: 'Ошибка при получении парковок' });
   }
 });
 
