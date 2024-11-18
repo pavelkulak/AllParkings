@@ -76,4 +76,70 @@ bookingsRouter.get('/space/:spaceId', verifyAccessToken, async (req, res) => {
   }
 });
 
+bookingsRouter.get('/history', verifyAccessToken, async (req, res) => {
+  try {
+    const bookings = await Booking.findMany({
+      where: {
+        user_id: req.user.id,
+        exit_time: {
+          lt: new Date()
+        }
+      },
+      include: {
+        parking: {
+          select: {
+            name: true,
+            location: true,
+            price_per_hour: true
+          }
+        },
+        space: {
+          select: {
+            number: true
+          }
+        }
+      },
+      orderBy: {
+        entry_time: 'desc'
+      }
+    });
+    res.json(bookings);
+  } catch (error) {
+    res.status(500).json({ error: 'Ошибка при получении истории бронирований' });
+  }
+});
+
+bookingsRouter.get('/active', verifyAccessToken, async (req, res) => {
+  try {
+    const bookings = await Booking.findMany({
+      where: {
+        user_id: res.locals.user.id,
+        exit_time: {
+          gte: new Date()
+        }
+      },
+      include: {
+        parking: {
+          select: {
+            name: true,
+            location: true,
+            price_per_hour: true
+          }
+        },
+        space: {
+          select: {
+            number: true
+          }
+        }
+      },
+      orderBy: {
+        entry_time: 'asc'
+      }
+    });
+    res.json(bookings);
+  } catch (error) {
+    res.status(500).json({ error: 'Ошибка при получении активных бронирований' });
+  }
+});
+
 module.exports = bookingsRouter;

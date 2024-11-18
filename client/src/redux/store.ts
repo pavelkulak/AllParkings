@@ -2,11 +2,14 @@ import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './slices/authSlice';
 import parkingReducer from './slices/parkingSlice';
 import favoritesReducer from './slices/favoritesSlice';
+import bookingReducer from './slices/bookingSlice';
+
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     parking: parkingReducer,
     favorites: favoritesReducer,
+    booking: bookingReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
