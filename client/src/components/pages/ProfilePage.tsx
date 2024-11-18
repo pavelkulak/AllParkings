@@ -29,7 +29,10 @@ import { Tooltip } from '@mui/material';
 import InputMask from 'react-input-mask';
 import { Card, CardContent, CardMedia, Rating } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { getBookingHistory, getActiveBookings } from '../../redux/bookingThunks';
+import {
+  getBookingHistory,
+  getActiveBookings,
+} from '../../redux/bookingThunks';
 import { Tabs, Tab } from '@mui/material';
 
 export default function ProfilePage() {
@@ -51,9 +54,14 @@ export default function ProfilePage() {
   const dispatch = useAppDispatch();
   const [activeTab, setActiveTab] = useState('settings');
   const { favorites, status } = useAppSelector((state) => state.favorites);
-  const { activeBookings, bookingHistory } = useAppSelector((state) => state.booking);
+  const { activeBookings, bookingHistory } = useAppSelector(
+    (state) => state.booking,
+  );
   const navigate = useNavigate();
-  const [historyTab, setHistoryTab] = useState<'active' | 'history'>('active');  
+  const [historyTab, setHistoryTab] = useState<'active' | 'history'>('active');
+
+  console.log('bookingHistory', bookingHistory);
+  console.log('activeBookings', activeBookings);
 
   const theme = useTheme();
   // Изменение темы на будущее
@@ -433,7 +441,7 @@ export default function ProfilePage() {
                 value={name}
                 onChange={handleNameChange}
                 size='small'
-                label='Имя'
+                label='мя'
                 variant='standard'
                 required
                 error={!!nameError}
@@ -786,9 +794,7 @@ export default function ProfilePage() {
                         sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
                       >
                         <Rating
-                          value={
-                            Number(favorite.average_rating) || 0
-                          }
+                          value={Number(favorite.average_rating) || 0}
                           readOnly
                           size='small'
                         />
@@ -824,11 +830,17 @@ export default function ProfilePage() {
 
         {activeTab === 'history' && (
           <Box sx={{ border: '1px solid #ddd', borderRadius: 3, p: 3, mt: 2 }}>
-            <Typography variant="h6" sx={{ mb: 2 }}>История бронирований</Typography>
-            
-            <Tabs value={historyTab} onChange={(_, value) => setHistoryTab(value)} sx={{ mb: 2 }}>
-              <Tab label="Активные" value="active" />
-              <Tab label="История" value="history" />
+            <Typography variant='h6' sx={{ mb: 2 }}>
+              История бронирований
+            </Typography>
+
+            <Tabs
+              value={historyTab}
+              onChange={(_, value) => setHistoryTab(value)}
+              sx={{ mb: 2 }}
+            >
+              <Tab label='Активные' value='active' />
+              <Tab label='История' value='history' />
             </Tabs>
 
             {historyTab === 'active' ? (
@@ -839,19 +851,55 @@ export default function ProfilePage() {
                   activeBookings.map((booking) => (
                     <Card key={booking.id}>
                       <CardContent>
-                        <Typography variant="h6">{booking.parking.name}</Typography>
-                        <Typography color="textSecondary">
-                          Место: {booking.space.number}
+                        <Typography variant='h6'>
+                          {booking.ParkingSpace?.ParkingLot?.name ||
+                            'Неизвестно'}
+                        </Typography>
+                        <Typography color='textSecondary'>
+                          Место:{' '}
+                          {booking.ParkingSpace?.space_number || 'Неизвестно'}
+                        </Typography>
+                        <Box>
+                          <Typography>
+                            Дата:{' '}
+                            {new Date(booking.start_time).toLocaleString(
+                              'ru-RU',
+                              {
+                                year: 'numeric',
+                                month: 'numeric',
+                                day: 'numeric',
+                              },
+                            )}
+                          </Typography>
+                          <Typography>
+                            Время: от{' '}
+                            {new Date(booking.start_time).toLocaleString(
+                              'ru-RU',
+                              {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              },
+                            )}{' '}
+                            до{' '}
+                            {new Date(booking.end_time).toLocaleString(
+                              'ru-RU',
+                              {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              },
+                            )}
+                          </Typography>
+                        </Box>
+                        <Typography>
+                          Адрес:{' '}
+                          {booking.ParkingSpace?.ParkingLot?.location
+                            ?.address || 'Неизвестно'}
                         </Typography>
                         <Typography>
-                          {new Date(booking.entry_time).toLocaleString()} - 
-                          {new Date(booking.exit_time).toLocaleString()}
-                        </Typography>
-                        <Typography>
-                          Адрес: {booking.parking.location.address}
-                        </Typography>
-                        <Typography>
-                          Стоимость: {booking.parking.price_per_hour} ₽/час
+                          Стоимость:{' '}
+                          {booking.ParkingSpace?.ParkingLot?.price_per_hour ||
+                            'Неизвестно'}{' '}
+                          ₽/час
                         </Typography>
                       </CardContent>
                     </Card>
@@ -866,19 +914,55 @@ export default function ProfilePage() {
                   bookingHistory.map((booking) => (
                     <Card key={booking.id}>
                       <CardContent>
-                        <Typography variant="h6">{booking.parking.name}</Typography>
-                        <Typography color="textSecondary">
-                          Место: {booking.space.number}
+                        <Typography variant='h6'>
+                          {booking.ParkingSpace?.ParkingLot?.name ||
+                            'Неизвестно'}
+                        </Typography>
+                        <Typography color='textSecondary'>
+                          Место:{' '}
+                          {booking.ParkingSpace?.space_number || 'Неизвестно'}
+                        </Typography>
+                        <Box>
+                          <Typography>
+                            Дата:{' '}
+                            {new Date(booking.start_time).toLocaleString(
+                              'ru-RU',
+                              {
+                                year: 'numeric',
+                                month: 'numeric',
+                                day: 'numeric',
+                              },
+                            )}
+                          </Typography>
+                          <Typography>
+                            Время: от{' '}
+                            {new Date(booking.start_time).toLocaleString(
+                              'ru-RU',
+                              {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              },
+                            )}{' '}
+                            до{' '}
+                            {new Date(booking.end_time).toLocaleString(
+                              'ru-RU',
+                              {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              },
+                            )}
+                          </Typography>
+                        </Box>
+                        <Typography>
+                          Адрес:{' '}
+                          {booking.ParkingSpace?.ParkingLot?.location
+                            ?.address || 'Неизвестно'}
                         </Typography>
                         <Typography>
-                          {new Date(booking.entry_time).toLocaleString()} - 
-                          {new Date(booking.exit_time).toLocaleString()}
-                        </Typography>
-                        <Typography>
-                          Адрес: {booking.parking.location.address}
-                        </Typography>
-                        <Typography>
-                          Стоимость: {booking.parking.price_per_hour} ₽/час
+                          Стоимость:{' '}
+                          {booking.ParkingSpace?.ParkingLot?.price_per_hour ||
+                            'Неизвестно'}{' '}
+                          ₽/час
                         </Typography>
                       </CardContent>
                     </Card>

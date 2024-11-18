@@ -1,6 +1,6 @@
 const { Op } = require('sequelize');
 const bookingsRouter = require('express').Router();
-const { Booking, ParkingSpace } = require('../../db/models');
+const { Booking, ParkingLot, ParkingSpace } = require('../../db/models');
 const { verifyAccessToken } = require('../middleware/verifyToken');
 
 // Создание бронирования
@@ -78,66 +78,52 @@ bookingsRouter.get('/space/:spaceId', verifyAccessToken, async (req, res) => {
 
 bookingsRouter.get('/history', verifyAccessToken, async (req, res) => {
   try {
-    const bookings = await Booking.findMany({
+    const bookings = await Booking.findAll({
       where: {
-        user_id: req.user.id,
-        exit_time: {
-          lt: new Date()
+        user_id: res.locals.user.id,
+        end_time: {
+          [Op.lt]: new Date()
         }
       },
-      include: {
-        parking: {
-          select: {
-            name: true,
-            location: true,
-            price_per_hour: true
-          }
-        },
-        space: {
-          select: {
-            number: true
-          }
-        }
-      },
-      orderBy: {
-        entry_time: 'desc'
-      }
+      include: [{
+        model: ParkingSpace,
+        attributes: ['space_number'],
+        include: [{
+          model: ParkingLot,
+          attributes: ['name', 'location', 'price_per_hour']
+        }]
+      }],
+      order: [['start_time', 'DESC']]
     });
     res.json(bookings);
   } catch (error) {
+    console.error('Ошибка при получении истории:', error);
     res.status(500).json({ error: 'Ошибка при получении истории бронирований' });
   }
 });
 
 bookingsRouter.get('/active', verifyAccessToken, async (req, res) => {
   try {
-    const bookings = await Booking.findMany({
+    const bookings = await Booking.findAll({
       where: {
         user_id: res.locals.user.id,
-        exit_time: {
-          gte: new Date()
+        end_time: {
+          [Op.gte]: new Date()
         }
       },
-      include: {
-        parking: {
-          select: {
-            name: true,
-            location: true,
-            price_per_hour: true
-          }
-        },
-        space: {
-          select: {
-            number: true
-          }
-        }
-      },
-      orderBy: {
-        entry_time: 'asc'
-      }
+      include: [{
+        model: ParkingSpace,
+        attributes: ['space_number'],
+        include: [{
+          model: ParkingLot,
+          attributes: ['name', 'location', 'price_per_hour']
+        }]
+      }],
+      order: [['start_time', 'ASC']]
     });
     res.json(bookings);
   } catch (error) {
+    console.error('Ошибка при получении активных:', error);
     res.status(500).json({ error: 'Ошибка при получении активных бронирований' });
   }
 });
