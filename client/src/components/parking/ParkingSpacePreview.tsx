@@ -33,9 +33,9 @@ export const ParkingSpacePreview = ({ parkingId, highlightedSpaceId }: ParkingSp
 
   const getSpaceColor = (space: ParkingSpace) => {
     if (+space.id === highlightedSpaceId) {
-      return '#FF4444';
+      return 'rgba(255, 68, 68, 0.7)';
     }
-    return '#90EE90';
+    return 'rgba(144, 238, 144, 0.7)';
   };
 
   const getSpaceLabel = (space: ParkingSpace) => space.space_number;
@@ -85,15 +85,15 @@ export const ParkingSpacePreview = ({ parkingId, highlightedSpaceId }: ParkingSp
             position: 'absolute',
             left: JSON.parse(space.location).x,
             top: JSON.parse(space.location).y,
-            width: 60,
-            height: 120,
+            width: 40,
+            height: 80,
             bgcolor: getSpaceColor(space),
             border: '1px solid',
             borderColor: 'grey.300',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            borderRadius: 2,
+            borderRadius: 4,
             color: space.id === highlightedSpaceId ? 'white' : 'inherit',
           }}
         >
