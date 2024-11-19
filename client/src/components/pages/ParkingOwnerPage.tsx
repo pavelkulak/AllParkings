@@ -584,9 +584,7 @@ const handleSaveChanges = async () => {
             }}
           >
             <Stack direction="row" spacing={2} alignItems="center">
-              <Typography variant="body2">
-                Статус:
-              </Typography>
+              <Typography variant="body2">Статус:</Typography>
               <Chip
                 label={getStatusInfo(parkingData.status).label}
                 color={getStatusInfo(parkingData.status).color}
@@ -731,16 +729,6 @@ const handleSaveChanges = async () => {
               onChange={handleChange}
               inputProps={{ min: 0 }}
             />
-
-            <Button
-              fullWidth
-              variant="outlined"
-              size="small"
-              component={Link}
-              to="/errorpage"
-            >
-              Статистика
-            </Button>
             <Button
               fullWidth
               variant="outlined"
@@ -749,6 +737,15 @@ const handleSaveChanges = async () => {
               to="/errorpage"
             >
               Посмотреть отзывы
+            </Button>
+            <Button
+              fullWidth
+              variant="outlined"
+              size="small"
+              component={Link}
+              to="/errorpage"
+            >
+              Статистика
             </Button>
             <Button
               fullWidth

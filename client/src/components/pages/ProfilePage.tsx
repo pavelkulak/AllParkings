@@ -276,7 +276,7 @@ export default function ProfilePage() {
         mt: 4,
       }}
     >
-      <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2, gap: 2 }}>
         <Button
           onClick={() => setActiveTab('settings')}
           variant={activeTab === 'settings' ? 'contained' : 'outlined'}
