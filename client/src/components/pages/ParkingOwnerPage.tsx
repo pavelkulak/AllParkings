@@ -19,6 +19,9 @@ import {
   Tab,
   Tabs,
   Chip,
+  CardContent,
+  Rating,
+  Card,
 } from "@mui/material";
 import { Add as AddIcon, Description } from "@mui/icons-material";
 import { useEffect, useRef, useState } from "react";
@@ -35,6 +38,7 @@ import {
 import { Parking } from "../../types/parking";
 import { LocationButton } from "../map/LocationButton";
 import ReviewsModal from '../modals/ReviewsModal';
+import axiosInstance from "../../services/axiosInstance";
 
 interface IParkingOption {
   parking(parking: any): unknown;
@@ -52,6 +56,38 @@ export default function ParkingOwnerPage() {
   const [map, setMap] = useState<any>(null);
   const [marker, setMarker] = useState<any>(null);
   const [isReviewsModalOpen, setIsReviewsModalOpen] = useState(false);
+  const [selectedParking, setSelectedParking] = useState<any>(null);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [parkings, setParkings] = useState<Parking[]>([]);
+    
+  const [selectedReview, setSelectedReview] = useState<Review | null>(null);
+
+  const fetchParkings = async () => {
+    try {
+      const response = await axiosInstance.get("/parking-lots/all");
+      setParkings(response.data);
+    } catch (error) {
+      console.error("Ошибка при получении парковок:", error);
+    }
+  };
+
+  const fetchReviews = async () => {
+    try {
+      const response = await axiosInstance.get("/reviews/all");
+      setReviews(response.data);
+    } catch (error) {
+      console.error("Ошибка при получении отзывов:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchParkings();
+    fetchReviews();
+  }, []);
+
+  const filteredReviews = selectedParking
+    ? reviews.filter((review) => review.parking_id === selectedParking.id)
+    : reviews;
 
   const { parkingLots } = useAppSelector((state) => state.parking);
 
@@ -71,7 +107,7 @@ export default function ParkingOwnerPage() {
 
   useEffect(() => {
     dispatch(getMyParkings());
-  }, []); // Загружаем парковки только при монтировании
+  }, [dispatch]);
 
   useEffect(() => {
     if (parkingLots && parkingLots.length > 0) {
@@ -79,140 +115,125 @@ export default function ParkingOwnerPage() {
     }
   }, [parkingLots]); // Обновляем данные когда parkingLots изменяется
 
-const handleDeleteClick = async () => {
-  if (!selectedParking) return;
+  const handleDeleteClick = async () => {
+    if (!selectedParking) return;
 
-  if (window.confirm("Вы уверены, что хотите удалить эту парковку?")) {
-    try {
-      await dispatch(deleteMyParkings({ id: selectedParking.id })).unwrap();
+    if (window.confirm("Вы уверены, что хотите удалить эту парковку?")) {
+      try {
+        await dispatch(deleteMyParkings({ id: selectedParking.id })).unwrap();
 
-      // Очищаем все состояния
-      setSelectedParking(null);
-      setParkingData({
-        status: "",
-        name: "",
-        description: "",
-        location: {
-          address: "",
-          coordinates: {
-            lat: null,
-            lon: null,
+        // Очищаем все состояния
+        setSelectedParking(null);
+        setParkingData({
+          status: "",
+          name: "",
+          description: "",
+          location: {
+            address: "",
+            coordinates: {
+              lat: null,
+              lon: null,
+            },
           },
-        },
-        price_per_hour: "",
-      });
+          price_per_hour: "",
+        });
 
-      // Обновляем список парковок и очищаем Autocomplete
-      await dispatch(getMyParkings());
-    } catch (error) {
-      console.error("Ошибка при удалении парковки:", error);
-      setError("Ошибка при удалении парковки");
+        // Обновляем список парковок и очищаем Autocomplete
+        await dispatch(getMyParkings());
+      } catch (error) {
+        console.error("Ошибка при удалении парковки:", error);
+        setError("Ошибка при удалении парковки");
+      }
     }
-  }
-};
+  };
 
-  const [selectedParking, setSelectedParking] = useState<Parking | null>(null);
-
+  // Обработчик изменения значения в Autocomplete
   const handleParkingChange = (
     _: React.SyntheticEvent,
     option: IParkingOption | null
   ) => {
     if (option) {
-      setSelectedParking(option.parking);
-      setParkingData({
-        status: option.parking.status,
-        name: option.parking.name,
-        description: option.parking.description || "",
-        location: {
-          address: option.parking.location.address,
-          coordinates: {
-            lat: option.parking.location.coordinates.lat,
-            lon: option.parking.location.coordinates.lon,
-          },
-        },
-        price_per_hour: option.parking.price_per_hour.toString(),
-      });
+      // Проверяем права доступа (админ или владелец)
+      if (user?.role === 'admin' || option.parking.owner_id === user?.id) {
+        setSelectedParking(option.parking);
+      } else {
+        alert('У вас нет доступа к этой парковке');
+        setSelectedParking(null);
+      }
     } else {
       setSelectedParking(null);
-      setParkingData({
-        status: "",
-        name: "",
-        description: "",
-        location: {
-          address: "",
-          coordinates: {
-            lat: null,
-            lon: null,
-          },
-        },
-        price_per_hour: ""
-      });
     }
   };
 
+  // Обработчик клика по кнопке просмотра отзывов
   const handleReviewsClick = () => {
-    if (selectedParking) {
+    if (!selectedParking) return;
+    
+    // Проверяем права доступа перед открытием модального окна
+    if (user?.role === 'admin' || selectedParking.owner_id === user?.id) {
       setIsReviewsModalOpen(true);
+    } else {
+      alert('У вас нет доступа к отзывам этой парковки');
     }
   };
 
-const [isSaving, setIsSaving] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
-const handleSaveChanges = async () => {
-  if (!selectedParking) return;
+  const handleSaveChanges = async () => {
+    if (!selectedParking) return;
 
-  try {
-    // Включаем индикатор загрузки
-    setIsSaving(true);
+    try {
+      // Включаем индикатор загрузки
+      setIsSaving(true);
 
-    // Отправляем запрос на обновление
-    const updatedData = await dispatch(
-      updateMyParkings({
-        id: selectedParking.id,
-        name: parkingData.name,
-        description: parkingData.description,
-        location: {
-          address: parkingData.location?.address || "",
-          coordinates: {
-            lat: parkingData.location?.coordinates?.lat || null,
-            lon: parkingData.location?.coordinates?.lon || null,
+      // Отправляем запрос на обновление
+      const updatedData = await dispatch(
+        updateMyParkings({
+          id: selectedParking.id,
+          name: parkingData.name,
+          description: parkingData.description,
+          location: {
+            address: parkingData.location?.address || "",
+            coordinates: {
+              lat: parkingData.location?.coordinates?.lat || null,
+              lon: parkingData.location?.coordinates?.lon || null,
+            },
           },
-        },
-        price_per_hour: Number(parkingData.price_per_hour),
-      })
-    ).unwrap();
+          price_per_hour: Number(parkingData.price_per_hour),
+        })
+      ).unwrap();
 
-    // Имитируем задержку
-    await new Promise((resolve) => setTimeout(resolve, 3000));
+      // Имитируем задержку
+      await new Promise((resolve) => setTimeout(resolve, 3000));
 
-    // Получаем обновленный список парковок
-    const parkings = await dispatch(getMyParkings()).unwrap();
+      // Получаем обновленный список парковок
+      const parkings = await dispatch(getMyParkings()).unwrap();
 
-    const updatedParking = parkings.find((p) => p.id === selectedParking.id);
+      const updatedParking = parkings.find((p) => p.id === selectedParking.id);
 
-    if (updatedParking) {
-      setSelectedParking(updatedParking);
-      setParkingData({
-        name: updatedParking.name,
-        description: updatedParking.description || "",
-        location: {
-          address: updatedParking.location?.address || "",
-          coordinates: {
-            lat: updatedParking.location?.coordinates?.lat || null,
-            lon: updatedParking.location?.coordinates?.lon || null,
+      if (updatedParking) {
+        setSelectedParking(updatedParking);
+        setParkingData({
+          name: updatedParking.name,
+          description: updatedParking.description || "",
+          location: {
+            address: updatedParking.location?.address || "",
+            coordinates: {
+              lat: updatedParking.location?.coordinates?.lat || null,
+              lon: updatedParking.location?.coordinates?.lon || null,
+            },
           },
-        },
-        price_per_hour: updatedParking.price_per_hour.toString(),
-      });
+          price_per_hour: updatedParking.price_per_hour.toString(),
+        });
+      }
+    } catch (error) {
+      console.error("Ошибка при сохранении изменений:", error);
+      setError("Ошибка при сохранении изменений");
+    } finally {
+      // Выключаем индикатор загрузки
+      setIsSaving(false);
     }
-  } catch (error) {
-    console.error("Ошибка при сохранении изменений:", error);
-    setError("Ошибка при сохранении изменений");
-  } finally {
-    // Выключаем индикатор загрузки
-    setIsSaving(false);
-  }
-};
+  };
 
   const [addressSuggestions, setAddressSuggestions] = useState<
     Array<{
@@ -529,29 +550,27 @@ const handleSaveChanges = async () => {
       }}
     >
       <Autocomplete
-        disablePortal
-        sx={{ width: 300 }}
-        renderInput={(params) => <TextField {...params} label="Парковка" />}
-        options={
-          Array.isArray(parkingLots)
-            ? parkingLots.map((parking) => ({
-                label: parking.name,
-                value: parking.id,
-                parking: parking,
-              }))
-            : []
-        }
+        options={(Array.isArray(parkingLots) ? parkingLots : []).map((parking) => ({
+          label: parking.name,
+          value: parking.id,
+          parking: parking
+        }))}
+        value={selectedParking ? {
+          label: selectedParking.name,
+          value: selectedParking.id,
+          parking: selectedParking
+        } : null}
         onChange={handleParkingChange}
-        value={
-          selectedParking
-            ? {
-                label: selectedParking.name,
-                value: selectedParking.id,
-                parking: selectedParking,
-              }
-            : null
-        }
+        renderInput={(params) => (
+          <TextField 
+            {...params} 
+            label="Выберите парковку"
+            sx={{ width: '', minWidth: 300 }}
+          />
+        )}
+        sx={{ width: '', minWidth: 300 }}
       />
+
       {!selectedParking ? (
         <Typography sx={{ mt: 4, color: "text.secondary" }}>
           Выберите парковку для просмотра и редактирования
@@ -561,7 +580,7 @@ const handleSaveChanges = async () => {
           maxWidth="xl"
           sx={{
             display: "flex",
-            gap: 4, // Добавляем отступ между элементами
+            gap: 4,
             justifyContent: "space-around",
             margin: 10,
           }}
@@ -571,7 +590,7 @@ const handleSaveChanges = async () => {
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              m: 0, // Убираем margin у Box'ов, чтобы избежать наложения отступов
+              m: 0,
               borderRadius: 5,
               height: "100%",
               width: "60%",
@@ -585,7 +604,7 @@ const handleSaveChanges = async () => {
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              m: 0, // Убираем margin у Box'ов, чтобы избежать наложения отступов
+              m: 0,
               borderRadius: 5,
               height: "100%",
               width: "40%",
@@ -786,13 +805,12 @@ const handleSaveChanges = async () => {
         </Container>
       )}
 
-      {selectedParking && (
-        <ReviewsModal
-          open={isReviewsModalOpen}
-          onClose={() => setIsReviewsModalOpen(false)}
-          parkingId={selectedParking.id}
-        />
-      )}
+      <ReviewsModal
+        open={isReviewsModalOpen}
+        onClose={() => setIsReviewsModalOpen(false)}
+        selectedParkingId={selectedParking?.id}
+        parkingName={selectedParking?.name}
+      />
     </Box>
   );
 }

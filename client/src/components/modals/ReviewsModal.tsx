@@ -7,15 +7,13 @@ import {
   Stack,
   Avatar,
   Rating,
-  IconButton,
   CircularProgress,
-  Alert,
-  Skeleton
+  Alert
 } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
+
 import { useEffect, useState } from 'react';
-import axios from 'axios';
 import { useAppSelector } from '../../redux/hooks';
+import axiosInstance from "../../services/axiosInstance";
 
 interface Review {
   id: number;
@@ -34,57 +32,47 @@ interface Review {
 interface ReviewsModalProps {
   open: boolean;
   onClose: () => void;
-  parkingId?: number;
+  selectedParkingId: number | undefined;
+  parkingName?: string;
 }
 
 export default function ReviewsModal({ 
   open, 
   onClose, 
-  parkingId 
+  selectedParkingId,
+  parkingName 
 }: ReviewsModalProps) {
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const token = useAppSelector((state) => state.auth.token);
 
   const fetchReviews = async () => {
-    if (!parkingId || !token) return;
+    if (!selectedParkingId) return;
 
     try {
       setLoading(true);
       setError(null);
       
-      const response = await axios.get(
-        `http://localhost:3000/api/parking-lots/${parkingId}/reviews`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
-      
-      setReviews(response.data || []);
-    } catch (err: any) {
+      const response = await axiosInstance.get(`/reviews/${selectedParkingId}`);
+      setReviews(response.data);
+    } catch (err) {
       console.error('Error fetching reviews:', err);
-      if (err.response?.status === 403) {
-        setError('Вы не являетесь владельцем этой парковки');
-      } else {
-        setError('Не удалось загрузить отзывы');
-      }
+      setError('Не удалось загрузить отзывы');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (open && parkingId) {
+    if (open && selectedParkingId) {
       fetchReviews();
-    } else {
-      // Сбрасываем состояние при закрытии модального окна
-      setReviews([]);
-      setError(null);
     }
-  }, [open, parkingId]);
+  }, [open, selectedParkingId]);
+
+  const getRatingValue = (rating: any): number => {
+    const numRating = Number(rating);
+    return Number.isNaN(numRating) ? 0 : numRating;
+  };
 
   return (
     <Modal
@@ -107,7 +95,7 @@ export default function ReviewsModal({
         overflow: 'auto'
       }}>
         <Typography variant="h6" component="h2" gutterBottom>
-          Отзывы о парковке
+          Отзывы о парковке: {parkingName}
         </Typography>
 
         {loading ? (
@@ -122,7 +110,7 @@ export default function ReviewsModal({
           reviews.map((review) => (
             <Card key={review.id} sx={{ mb: 2 }}>
               <CardContent>
-                <Stack direction="row" spacing={2} alignItems="center">
+                <Stack direction="row" spacing={2} alignItems="flex-start">
                   <Avatar 
                     src={review.User.avatar || undefined}
                     sx={{ bgcolor: 'primary.main' }}
@@ -130,22 +118,32 @@ export default function ReviewsModal({
                     {review.User.name[0]}
                   </Avatar>
                   <Box flex={1}>
-                    <Typography variant="subtitle1">
+                    <Typography variant="subtitle1" sx={{ mb: 1 }}>
                       {review.User.name} {review.User.surname}
                     </Typography>
-                    <Rating 
-                      value={Number(review.rating)} 
-                      readOnly 
-                      size="small"
-                      sx={{ my: 1 }}
-                    />
-                    <Typography variant="body2">
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                      <Rating 
+                        value={getRatingValue(review.rating)} 
+                        readOnly 
+                        precision={1}
+                        size="small"
+                      />
+                      <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+                        {getRatingValue(review.rating)}/5
+                      </Typography>
+                    </Box>
+                    <Typography variant="body2" sx={{ mb: 1 }}>
                       {review.comment}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      {new Date(review.createdAt).toLocaleDateString()}
+                      {new Date(review.createdAt).toLocaleDateString('ru-RU', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
                     </Typography>
                   </Box>
+              
                 </Stack>
               </CardContent>
             </Card>
