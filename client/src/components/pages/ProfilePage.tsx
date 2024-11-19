@@ -9,6 +9,9 @@ import {
   CircularProgress,
   Stack,
   CardActionArea,
+  Dialog,
+  DialogContent,
+  DialogTitle,
 } from '@mui/material';
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -36,6 +39,9 @@ import {
 } from '../../redux/bookingThunks';
 import { Tabs, Tab } from '@mui/material';
 import DirectionsIcon from '@mui/icons-material/Directions';
+import { ParkingSpacePreview } from '../parking/ParkingSpacePreview';
+import MapIcon from '@mui/icons-material/Map';
+import { ParkingModal } from '../parking/ParkingModal';
 
 export default function ProfilePage() {
   const { user } = useAppSelector((state) => state.auth);
@@ -61,6 +67,8 @@ export default function ProfilePage() {
   );
   const navigate = useNavigate();
   const [historyTab, setHistoryTab] = useState<'active' | 'history'>('active');
+  const [showParkingModal, setShowParkingModal] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState(null);
 
   console.log('bookingHistory', bookingHistory);
   console.log('activeBookings', activeBookings);
@@ -904,17 +912,27 @@ export default function ProfilePage() {
                             'Неизвестно'}{' '}
                           ₽/час
                         </Typography>
-                        <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+                        <Box sx={{ mt: 2, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+                          <Button
+                            variant="outlined"
+                            startIcon={<MapIcon />}
+                            onClick={() => {
+                              const parkingLot = booking.ParkingSpace?.ParkingLot;
+                              if (parkingLot?.id) {
+                                setSelectedBooking(booking);
+                                setShowParkingModal(true);
+                              }
+                            }}
+                          >
+                            Показать схему парковки
+                          </Button>
                           <Button
                             variant="contained"
-                            color="primary"
                             startIcon={<DirectionsIcon />}
                             onClick={() => {
                               const parkingLot = booking.ParkingSpace?.ParkingLot;
                               if (parkingLot?.id) {
                                 handleParkingClick(parkingLot, true);
-                              } else {
-                                console.error('ID парковки отсутствует:', parkingLot);
                               }
                             }}
                           >
@@ -984,17 +1002,27 @@ export default function ProfilePage() {
                             'Неизвестно'}{' '}
                           ₽/час
                         </Typography>
-                        <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+                        <Box sx={{ mt: 2, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+                          <Button
+                            variant="outlined"
+                            startIcon={<MapIcon />}
+                            onClick={() => {
+                              const parkingLot = booking.ParkingSpace?.ParkingLot;
+                              if (parkingLot?.id) {
+                                setSelectedBooking(booking);
+                                setShowParkingModal(true);
+                              }
+                            }}
+                          >
+                            Показать схему парковки
+                          </Button>
                           <Button
                             variant="contained"
-                            color="primary"
                             startIcon={<DirectionsIcon />}
                             onClick={() => {
                               const parkingLot = booking.ParkingSpace?.ParkingLot;
                               if (parkingLot?.id) {
                                 handleParkingClick(parkingLot, true);
-                              } else {
-                                console.error('ID парковки отсутствует:', parkingLot);
                               }
                             }}
                           >
@@ -1010,6 +1038,32 @@ export default function ProfilePage() {
           </Box>
         )}
       </Box>
+
+      {showParkingModal && selectedBooking?.ParkingSpace?.ParkingLot && (
+        <Dialog 
+          open={showParkingModal} 
+          onClose={() => setShowParkingModal(false)}
+          maxWidth="lg"
+          fullWidth
+        >
+          <DialogTitle>
+            Схема парковки
+            <IconButton
+              aria-label="close"
+              onClick={() => setShowParkingModal(false)}
+              sx={{ position: 'absolute', right: 8, top: 8 }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </DialogTitle>
+          <DialogContent>
+            <ParkingSpacePreview 
+              parkingId={Number(selectedBooking.ParkingSpace.ParkingLot.id)}
+              highlightedSpaceId={Number(selectedBooking.ParkingSpace.id)}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
     </Box>
   );
 }
