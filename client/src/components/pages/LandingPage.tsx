@@ -33,6 +33,8 @@ import { Star, StarBorder, Favorite, LocationOn } from '@mui/icons-material';
 
 import LocalParkingIcon from '@mui/icons-material/LocalParking';
 import parkingImage from '../../assets/images/parking.png';
+import parkingMobileImage from '../../assets/images/Parking_mobile.png';
+import InteractivePark from "../../assets/images/InteractivePark.png";
 // import favoriteScreenshot from '../../assets/images/favorite-screenshot.png';
 // import reviewsScreenshot from '../../assets/images/reviews-screenshot.png';
 // import constructorScreenshot from '../../assets/images/constructor-screenshot.png';
@@ -102,11 +104,13 @@ export const LandingPage = () => {
   return (
     <Box>
       {/* Hero секция */}
-      <Box sx={{ 
-        bgcolor: 'primary.main', 
-        color: 'white',
-        py: 8
-      }}>
+      <Box
+        sx={{
+          bgcolor: "primary.main",
+          color: "white",
+          py: 8,
+        }}
+      >
         <Container maxWidth="lg">
           <Grid container spacing={4} alignItems="center">
             <Grid item xs={12} md={6}>
@@ -116,33 +120,33 @@ export const LandingPage = () => {
               <Typography variant="h5" gutterBottom>
                 Умная система бронирования парковочных мест
               </Typography>
-              <Button 
-                variant="contained" 
+              <Button
+                variant="contained"
                 size="large"
-                sx={{ 
+                sx={{
                   mt: 4,
-                  bgcolor: 'white',
-                  color: 'primary.main',
-                  '&:hover': {
-                    bgcolor: 'grey.100'
-                  }
+                  bgcolor: "white",
+                  color: "primary.main",
+                  "&:hover": {
+                    bgcolor: "grey.100",
+                  },
                 }}
-                onClick={() => navigate('/parkings/map')}
+                onClick={() => navigate("/parkings/map")}
               >
                 Найти парковку
               </Button>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Box 
-                component="img" 
-                src={parkingImage} 
+              <Box
+                component="img"
+                src={parkingImage}
                 alt="Парковка"
-                sx={{ 
-                  width: '100%',
-                  height: 'auto',
+                sx={{
+                  width: "100%",
+                  height: "auto",
                   borderRadius: 2,
-                  boxShadow: 3
-                }} 
+                  boxShadow: 3,
+                }}
               />
             </Grid>
           </Grid>
@@ -170,38 +174,40 @@ export const LandingPage = () => {
             <Grid container spacing={4} sx={{ mt: 4 }}>
               {driverFeatures.map((feature, index) => (
                 <Grid item xs={12} md={3} key={index}>
-                  <Paper 
-                    sx={{ 
-                      p: 3, 
-                      height: '280px',
-                      textAlign: 'center',
-                      position: 'relative',
-                      bgcolor: feature.inDevelopment ? 'warning.light' : 'background.paper',
-                      display: 'flex',
-                      flexDirection: 'column'
+                  <Paper
+                    sx={{
+                      p: 3,
+                      height: "280px",
+                      textAlign: "center",
+                      position: "relative",
+                      bgcolor: feature.inDevelopment
+                        ? "warning.light"
+                        : "background.paper",
+                      display: "flex",
+                      flexDirection: "column",
                     }}
                   >
-                    <Box sx={{ mb: 2 }}>
-                      {feature.icon}
-                    </Box>
+                    <Box sx={{ mb: 2 }}>{feature.icon}</Box>
                     <Typography variant="h6" sx={{ mb: 2 }}>
                       {feature.title}
                     </Typography>
-                    <Typography color={feature.inDevelopment ? 'black' : 'text.secondary'}>
+                    <Typography
+                      color={feature.inDevelopment ? "black" : "text.secondary"}
+                    >
                       {feature.description}
                     </Typography>
                     {feature.inDevelopment && (
                       <Box
                         sx={{
-                          position: 'absolute',
+                          position: "absolute",
                           top: 8,
                           right: 8,
-                          bgcolor: 'warning.main',
-                          color: 'black',
+                          bgcolor: "warning.main",
+                          color: "black",
                           px: 1,
                           py: 0.5,
                           borderRadius: 1,
-                          fontSize: '0.75rem'
+                          fontSize: "0.75rem",
                         }}
                       >
                         В разработке
@@ -213,7 +219,7 @@ export const LandingPage = () => {
             </Grid>
 
             {/* Секция поиска машины */}
-            <Box sx={{ bgcolor: 'grey.100', py: 8, mt: 8, mx: -3 }}>
+            <Box sx={{ bgcolor: "grey.100", py: 8, mt: 8 }}>
               <Container maxWidth="lg">
                 <Grid container spacing={4} alignItems="center">
                   <Grid item xs={12} md={6}>
@@ -221,17 +227,18 @@ export const LandingPage = () => {
                       Никогда не теряйте свою машину
                     </Typography>
                     <Typography variant="body1" paragraph>
-                      Благодаря интерактивной схеме парковки, вы всегда будете знать, где оставили свой автомобиль. 
-                      Ваше место парковки будет сохранено в приложении и вы легко найдете его при возвращении.
+                      Благодаря интерактивной схеме парковки, вы всегда будете
+                      знать, где оставили свой автомобиль. Ваше место парковки
+                      будет сохранено в приложении и вы легко найдете его при
+                      возвращении.
                     </Typography>
                     <List>
-                      
                       <ListItem>
                         <ListItemIcon>
                           <DirectionsCarIcon color="primary" />
                         </ListItemIcon>
-                        <ListItemText 
-                          primary="Легкий поиск" 
+                        <ListItemText
+                          primary="Легкий поиск"
                           secondary="Быстро находите свой автомобиль по сохраненной метке"
                         />
                       </ListItem>
@@ -239,24 +246,26 @@ export const LandingPage = () => {
                         <ListItemIcon>
                           <MapIcon color="primary" />
                         </ListItemIcon>
-                        <ListItemText 
-                          primary="Интерактивная схема" 
+                        <ListItemText
+                          primary="Интерактивная схема"
                           secondary="Визуальное отображение всех уровней парковки"
                         />
                       </ListItem>
                     </List>
                   </Grid>
                   <Grid item xs={12} md={6}>
-                    <Box 
-                      component="img" 
-                      src="/parking-scheme-mockup.jpg" 
-                      sx={{ 
-                        width: '100%',
-                        maxWidth: 500,
-                        height: 'auto',
+                    <Box
+                      component="img"
+                      src={InteractivePark}
+                      alt="Схема парковки"
+                      sx={{
+                        width: "100%",
+                        height: "auto",
                         borderRadius: 2,
-                        boxShadow: 3
-                      }} 
+                        boxShadow: 3,
+                        display: "block",
+                        objectFit: "contain",
+                      }}
                     />
                   </Grid>
                 </Grid>
@@ -274,38 +283,40 @@ export const LandingPage = () => {
             <Grid container spacing={4} sx={{ mt: 4 }}>
               {ownerFeatures.map((feature, index) => (
                 <Grid item xs={12} md={2.4} key={index}>
-                  <Paper 
-                    sx={{ 
-                      p: 3, 
-                      height: '280px',
-                      textAlign: 'center',
-                      position: 'relative',
-                      bgcolor: feature.inDevelopment ? 'warning.light' : 'background.paper',
-                      display: 'flex',
-                      flexDirection: 'column'
+                  <Paper
+                    sx={{
+                      p: 3,
+                      height: "280px",
+                      textAlign: "center",
+                      position: "relative",
+                      bgcolor: feature.inDevelopment
+                        ? "warning.light"
+                        : "background.paper",
+                      display: "flex",
+                      flexDirection: "column",
                     }}
                   >
-                    <Box sx={{ mb: 2 }}>
-                      {feature.icon}
-                    </Box>
+                    <Box sx={{ mb: 2 }}>{feature.icon}</Box>
                     <Typography variant="h6" sx={{ mb: 2 }}>
                       {feature.title}
                     </Typography>
-                    <Typography color={feature.inDevelopment ? 'black' : 'text.secondary'}>
+                    <Typography
+                      color={feature.inDevelopment ? "black" : "text.secondary"}
+                    >
                       {feature.description}
                     </Typography>
                     {feature.inDevelopment && (
                       <Box
                         sx={{
-                          position: 'absolute',
+                          position: "absolute",
                           top: 8,
                           right: 8,
-                          bgcolor: 'warning.main',
-                          color: 'black',
+                          bgcolor: "warning.main",
+                          color: "black",
                           px: 1,
                           py: 0.5,
                           borderRadius: 1,
-                          fontSize: '0.75rem'
+                          fontSize: "0.75rem",
                         }}
                       >
                         В разработке
@@ -320,7 +331,7 @@ export const LandingPage = () => {
       </Container>
 
       {/* Секция о мобильном приложении */}
-      <Box sx={{ bgcolor: 'grey.100', py: 8, mt: 8 }}>
+      <Box sx={{ bgcolor: "grey.100", py: 8, mt: 8 }}>
         <Container maxWidth="lg">
           <Grid container spacing={4} alignItems="center">
             <Grid item xs={12} md={6}>
@@ -328,18 +339,24 @@ export const LandingPage = () => {
                 Скоро на мобильных устройствах
               </Typography>
               <Typography variant="body1" paragraph>
-                Мы разрабатываем мобильное приложение для еще более удобного использования сервиса. 
-                Бронируйте парковочные места, оплачивайте услуги и получайте уведомления прямо на вашем смартфоне.
+                Мы разрабатываем мобильное приложение для еще более удобного
+                использования сервиса. Бронируйте парковочные места, оплачивайте
+                услуги и получайте уведомления прямо на вашем смартфоне.
               </Typography>
-              <Box sx={{ display: 'flex', gap: 2, mt: 4 }}>
-                <PhoneIphoneIcon sx={{ fontSize: 60 }} />
+              <Box sx={{ display: "flex", gap: 2, mt: 4 }}>
+                <PhoneIphoneIcon sx={{ fontSize: 60 }} color="primary" />
                 <Typography variant="h6" sx={{ mt: 1 }}>
                   Ожидайте в 2024
                 </Typography>
               </Box>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Box component="img" src="/path-to-mobile-app-mockup.jpg" sx={{ width: '100%' }} />
+              <Box
+                component="img"
+                alt="Мобильное приложение"
+                src={parkingMobileImage}
+                sx={{ width: "100%" }}
+              />
             </Grid>
           </Grid>
         </Container>

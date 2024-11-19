@@ -15,6 +15,7 @@ import {
 } from '@mui/material';
 import logo from '../../img/logo.svg';
 import LogoutIcon from '@mui/icons-material/Logout';
+import SettingsIcon from '@mui/icons-material/Settings';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import LocalParkingIcon from '@mui/icons-material/LocalParking';
 import { useTheme } from '@mui/material/styles';
@@ -47,40 +48,40 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
   const dispatch = useAppDispatch();
 
   return (
-    <AppBar position='static' sx={{ fontFamily: 'Merriweather' }}>
+    <AppBar position="static" sx={{ fontFamily: "Merriweather" }}>
       <Toolbar disableGutters>
         <Box
           sx={{
-            display: 'flex',
-            alignItems: 'center',
-            fontFamily: 'Merriweather',
+            display: "flex",
+            alignItems: "center",
+            fontFamily: "Merriweather",
           }}
         >
           <Button
             component={Link}
-            to='/'
+            to="/"
             sx={{
-              padding: '10px 20px',
-              backgroundColor: 'primary.main',
-              borderRadius: '5px',
+              padding: "10px 20px",
+              backgroundColor: "primary.main",
+              borderRadius: "5px",
             }}
           >
             <img
               src={logo}
-              alt='Логотип AllParkings'
+              alt="Логотип AllParkings"
               style={{
-                maxWidth: '50px',
-                marginRight: '10px',
-                filter: 'drop-shadow(0px 0px 3px rgba(0, 0, 0, 0.5))',
+                maxWidth: "50px",
+                marginRight: "10px",
+                filter: "drop-shadow(0px 0px 3px rgba(0, 0, 0, 0.5))",
               }}
             />
             <Typography
-              variant='h6'
+              variant="h6"
               sx={{
-                color: 'white',
-                textDecoration: 'none',
-                fontWeight: 'bold',
-                letterSpacing: '0.5px',
+                color: "white",
+                textDecoration: "none",
+                fontWeight: "bold",
+                letterSpacing: "0.5px",
               }}
             >
               AllParkings
@@ -88,26 +89,26 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
           </Button>
         </Box>
         <Stack
-          direction='row'
+          direction="row"
           spacing={2}
           sx={{
             flexGrow: 1,
-            justifyContent: 'center',
+            justifyContent: "center",
           }}
         >
           <Button
-            color='inherit'
+            color="inherit"
             startIcon={<MapIcon />}
-            onClick={() => navigate('/parkings/map')}
+            onClick={() => navigate("/parkings/map")}
           >
             Карта парковок
           </Button>
 
-          {(user?.role === 'owner' || user?.role === 'admin') && (
+          {(user?.role === "owner" || user?.role === "admin") && (
             <Button
-              color='inherit'
+              color="inherit"
               startIcon={<AddLocationIcon />}
-              onClick={() => navigate('/create-parking')}
+              onClick={() => navigate("/create-parking")}
             >
               Создать парковку
             </Button>
@@ -117,9 +118,9 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
 
         <Box
           sx={{
-            display: { xs: 'flex', sm: 'flex' },
-            alignItems: 'center',
-            padding: '10px 20px',
+            display: { xs: "flex", sm: "flex" },
+            alignItems: "center",
+            padding: "10px 20px",
           }}
         >
           {user ? (
@@ -134,10 +135,10 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
                 sx={{
                   mr: 2,
                   border: `1px solid ${theme.palette.grey[500]}`,
-                  bgcolor: 'lightblue',
+                  bgcolor: "lightblue",
                   width: 50,
                   height: 50,
-                  cursor: 'pointer',
+                  cursor: "pointer",
                 }}
                 onClick={handleMenuOpen}
               />
@@ -146,33 +147,33 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
                 open={Boolean(anchorEl)}
                 onClose={handleMenuClose}
                 anchorOrigin={{
-                  vertical: 'bottom',
-                  horizontal: 'left',
+                  vertical: "bottom",
+                  horizontal: "left",
                 }}
                 transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'left',
+                  vertical: "top",
+                  horizontal: "left",
                 }}
                 sx={{ margin: 1.2 }}
               >
                 <MenuItem
                   sx={{
-                    cursor: 'default',
+                    cursor: "default",
                     opacity: 1,
-                    backgroundColor: 'transparent',
-                    '&:hover': {
-                      backgroundColor: 'transparent',
+                    backgroundColor: "transparent",
+                    "&:hover": {
+                      backgroundColor: "transparent",
                     },
-                    '&:active': {
-                      backgroundColor: 'transparent',
+                    "&:active": {
+                      backgroundColor: "transparent",
                     },
-                    '&:focus': {
-                      backgroundColor: 'transparent',
+                    "&:focus": {
+                      backgroundColor: "transparent",
                     },
-                    '&.Mui-selected': {
-                      backgroundColor: 'transparent',
+                    "&.Mui-selected": {
+                      backgroundColor: "transparent",
                     },
-                    '&.Mui-disabled': {
+                    "&.Mui-disabled": {
                       opacity: 1,
                     },
                   }}
@@ -187,46 +188,74 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
                     }
                     sx={{ width: 40, height: 40, mr: 3 }}
                   />
-                  <Typography variant='body1'>{user.name}</Typography>
+                  <Typography variant="body1">{user.name}</Typography>
                 </MenuItem>
 
                 <Box
                   sx={{
-                    width: '100%',
-                    height: '3px',
-                    backgroundColor: 'secondary.main',
-                    margin: '4px 0',
+                    width: "100%",
+                    height: "3px",
+                    backgroundColor: "secondary.main",
+                    margin: "4px 0",
                   }}
                 />
 
                 <MenuItem
                   component={Link}
-                  to='/profile'
+                  to="/profile"
                   onClick={handleMenuClose}
                 >
                   <ListItemIcon>
-                    <AccountBoxIcon fontSize='small' />
+                    <AccountBoxIcon fontSize="small" />
                   </ListItemIcon>
                   Профиль
                 </MenuItem>
 
-                {user.role === 'owner' && (
+                {user.role === "owner" && (
                   <MenuItem
                     component={Link}
-                    to='/myparking'
+                    to="/myparking"
                     onClick={handleMenuClose}
                   >
                     <ListItemIcon>
-                      <LocalParkingIcon fontSize='small' />
+                      <LocalParkingIcon fontSize="small" />
                     </ListItemIcon>
                     Моя парковка
                   </MenuItem>
                 )}
 
+                {user?.role === "admin" && (
+                  <>
+                    <Box
+                      sx={{
+                        width: "100%",
+                        height: "3px",
+                        backgroundColor: "secondary.main",
+                        margin: "4px 0",
+                      }}
+                    />
+                    <MenuItem
+                      component={Link}
+                      to="/admin"
+                      onClick={handleMenuClose}
+                      sx={{
+                        "&:hover": {
+                          backgroundColor: "rgba(25, 118, 210, 0.08)",
+                        },
+                      }}
+                    >
+                      <ListItemIcon>
+                        <SettingsIcon fontSize="small" />
+                      </ListItemIcon>
+                      Админ панель
+                    </MenuItem>
+                  </>
+                )}
+
                 {user && (
-                  <MenuItem onClick={handleSignOut} sx={{ color: 'red' }}>
-                    <ListItemIcon sx={{ color: 'red' }}>
-                      <LogoutIcon fontSize='small' />
+                  <MenuItem onClick={handleSignOut} sx={{ color: "red" }}>
+                    <ListItemIcon sx={{ color: "red" }}>
+                      <LogoutIcon fontSize="small" />
                     </ListItemIcon>
                     Выход
                   </MenuItem>
@@ -236,38 +265,38 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
           ) : (
             <>
               <Button
-                color='inherit'
+                color="inherit"
                 component={Link}
-                to='/signin'
+                to="/signin"
                 sx={{
-                  display: { xs: 'flex', sm: 'flex' },
-                  alignItems: 'center',
-                  padding: '10px 20px',
-                  fontWeight: 'Regular 400 Italic',
-                  '&:hover': {
-                    backgroundColor: 'primary.dark',
+                  display: { xs: "flex", sm: "flex" },
+                  alignItems: "center",
+                  padding: "10px 20px",
+                  fontWeight: "Regular 400 Italic",
+                  "&:hover": {
+                    backgroundColor: "primary.dark",
                   },
-                  '&:active': {
-                    backgroundColor: 'primary.light',
+                  "&:active": {
+                    backgroundColor: "primary.light",
                   },
                 }}
               >
                 Войти
               </Button>
               <Button
-                color='inherit'
+                color="inherit"
                 component={Link}
-                to='/signup'
+                to="/signup"
                 sx={{
-                  display: { xs: 'flex', sm: 'flex' },
-                  alignItems: 'center',
-                  padding: '10px 20px',
-                  fontWeight: 'Regular 400 Italic',
-                  '&:hover': {
-                    backgroundColor: 'primary.dark',
+                  display: { xs: "flex", sm: "flex" },
+                  alignItems: "center",
+                  padding: "10px 20px",
+                  fontWeight: "Regular 400 Italic",
+                  "&:hover": {
+                    backgroundColor: "primary.dark",
                   },
-                  '&:active': {
-                    backgroundColor: 'primary.light',
+                  "&:active": {
+                    backgroundColor: "primary.light",
                   },
                 }}
               >
@@ -278,7 +307,7 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
         </Box>
         <IconButton
           color="inherit"
-          onClick={() => navigate('/chat')}
+          onClick={() => navigate("/chat")}
           sx={{ mr: 2 }}
         >
           <ChatIcon />
