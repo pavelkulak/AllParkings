@@ -18,6 +18,7 @@ import {
   CircularProgress,
   Tab,
   Tabs,
+  Chip,
 } from "@mui/material";
 import { Add as AddIcon, Description } from "@mui/icons-material";
 import { useEffect, useRef, useState } from "react";
@@ -53,6 +54,7 @@ export default function ParkingOwnerPage() {
   const { parkingLots } = useAppSelector((state) => state.parking);
 
   const [parkingData, setParkingData] = useState({
+    status:"",
     name: "",
     description: "",
     location: {
@@ -85,6 +87,7 @@ const handleDeleteClick = async () => {
       // Очищаем все состояния
       setSelectedParking(null);
       setParkingData({
+        status: "",
         name: "",
         description: "",
         location: {
@@ -115,6 +118,7 @@ const handleDeleteClick = async () => {
     if (option) {
       setSelectedParking(option.parking);
       setParkingData({
+        status: option.parking.status,
         name: option.parking.name,
         description: option.parking.description || "",
         location: {
@@ -124,7 +128,7 @@ const handleDeleteClick = async () => {
             lon: option.parking.location.coordinates.lon,
           },
         },
-        price_per_hour: option.parking.price_per_hour.toString()       
+        price_per_hour: option.parking.price_per_hour.toString(),
       });
     } else {
       setSelectedParking(null);
@@ -481,6 +485,31 @@ const handleSaveChanges = async () => {
     }
   };
 
+  const getStatusInfo = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return {
+          label: 'На рассмотрении',
+          color: 'warning' as const,
+        };
+      case 'active':
+        return {
+          label: 'Активна',
+          color: 'success' as const,
+        };
+      case 'inactive':
+        return {
+          label: 'Неактивна',
+          color: 'error' as const,
+        };
+      default:
+        return {
+          label: 'Статус неизвестен',
+          color: 'default' as const,
+        };
+    }
+  };
+
   return (
     <Box
       sx={{
@@ -554,6 +583,17 @@ const handleSaveChanges = async () => {
               gap: 1,
             }}
           >
+            <Stack direction="row" spacing={2} alignItems="center">
+              <Typography variant="body2">
+                Статус:
+              </Typography>
+              <Chip
+                label={getStatusInfo(parkingData.status).label}
+                color={getStatusInfo(parkingData.status).color}
+                size="small"
+              />
+            </Stack>
+
             <TextField
               size="small"
               required
