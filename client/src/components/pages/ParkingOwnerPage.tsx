@@ -71,18 +71,18 @@ export default function ParkingOwnerPage() {
     }
   };
 
-  const fetchReviews = async () => {
-    try {
-      const response = await axiosInstance.get("/reviews/all");
-      setReviews(response.data);
-    } catch (error) {
-      console.error("Ошибка при получении отзывов:", error);
-    }
-  };
+  // const fetchReviews = async () => {
+  //   try {
+  //     const response = await axiosInstance.get("/reviews/all");
+  //     setReviews(response.data);
+  //   } catch (error) {
+  //     console.error("Ошибка при получении отзывов:", error);
+  //   }
+  // };
 
   useEffect(() => {
     fetchParkings();
-    fetchReviews();
+    // fetchReviews();
   }, []);
 
   const filteredReviews = selectedParking
