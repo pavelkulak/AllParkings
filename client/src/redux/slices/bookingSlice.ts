@@ -1,14 +1,16 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { createBooking } from '../bookingThunks';
+import { getBookingHistory, getActiveBookings } from '../bookingThunks';
 
 interface BookingState {
-  currentBooking: any | null;
+  activeBookings: any[];
+  bookingHistory: any[];
   status: 'idle' | 'loading' | 'succeeded' | 'failed';
   error: string | null;
 }
 
 const initialState: BookingState = {
-  currentBooking: null,
+  activeBookings: [],
+  bookingHistory: [],
   status: 'idle',
   error: null
 };
@@ -16,31 +18,24 @@ const initialState: BookingState = {
 const bookingSlice = createSlice({
   name: 'booking',
   initialState,
-  reducers: {
-    clearBookingError: (state) => {
-      state.error = null;
-    },
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(createBooking.pending, (state) => {
-        console.log('Создание бронирования: pending');
+      .addCase(getBookingHistory.pending, (state) => {
         state.status = 'loading';
-        state.error = null;
       })
-      .addCase(createBooking.fulfilled, (state, action) => {
-        console.log('Создание бронирования: fulfilled', action.payload);
+      .addCase(getBookingHistory.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        state.currentBooking = action.payload;
-        state.error = null;
+        state.bookingHistory = action.payload;
       })
-      .addCase(createBooking.rejected, (state, action) => {
-        console.log('Создание бронирования: rejected', action.error);
+      .addCase(getBookingHistory.rejected, (state, action) => {
         state.status = 'failed';
-        state.error = action.error.message || 'Ошибка при создании бронирования';
+        state.error = action.error.message || null;
+      })
+      .addCase(getActiveBookings.fulfilled, (state, action) => {
+        state.activeBookings = action.payload;
       });
-  },
+  }
 });
 
-export const { clearBookingError } = bookingSlice.actions;
-export default bookingSlice.reducer;
+export default bookingSlice.reducer; 

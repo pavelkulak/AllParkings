@@ -18,6 +18,8 @@ import { ParkingMap } from './components/parking/ParkingMap';
 import ParkingOwnerPage from "./components/pages/ParkingOwnerPage";
 import ErrorPage from "./components/pages/ErrorPage";
 import { LandingPage } from "./components/pages/LandingPage";
+import AdminDashboard from './components/admin/AdminDashboard';
+import { ChatPage } from './components/pages/ChatPage';
 
 function App() {
   const dispatch = useAppDispatch();
@@ -106,6 +108,30 @@ function App() {
               redirectPath='/'
             >
               <ParkingOwnerPage />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: '/admin',
+          element: (
+            <ProtectedRoute
+              isAllowed={!!user}
+              allowedRoles={['admin']}
+              user={user}
+            >
+              <AdminDashboard />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: '/chat',
+          element: (
+            <ProtectedRoute
+              isAllowed={!!user}
+              user={user}
+              redirectPath='/'
+            >
+              <ChatPage />
             </ProtectedRoute>
           ),
         },
