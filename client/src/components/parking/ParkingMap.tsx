@@ -77,6 +77,7 @@ export const ParkingMap = () => {
 
       const routeResponse = await directionsRef.current.carRoute({
         points: [from, to],
+        directionsApiKey: import.meta.env.VITE_2GIS_API_KEY
       });
 
       if (routeResponse && routeResponse.geometry) {

@@ -90,7 +90,7 @@ bookingsRouter.get('/history', verifyAccessToken, async (req, res) => {
         attributes: ['space_number'],
         include: [{
           model: ParkingLot,
-          attributes: ['name', 'location', 'price_per_hour']
+          attributes: ['id', 'name', 'location', 'price_per_hour', 'description', 'img', 'average_rating']
         }]
       }],
       order: [['start_time', 'DESC']]
@@ -116,7 +116,7 @@ bookingsRouter.get('/active', verifyAccessToken, async (req, res) => {
         attributes: ['space_number'],
         include: [{
           model: ParkingLot,
-          attributes: ['name', 'location', 'price_per_hour']
+          attributes: ['id', 'name', 'location', 'price_per_hour', 'description', 'img', 'average_rating']
         }]
       }],
       order: [['start_time', 'ASC']]
