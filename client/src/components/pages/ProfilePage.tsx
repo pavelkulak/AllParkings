@@ -35,6 +35,7 @@ import {
   getActiveBookings,
 } from '../../redux/bookingThunks';
 import { Tabs, Tab } from '@mui/material';
+import DirectionsIcon from '@mui/icons-material/Directions';
 
 export default function ProfilePage() {
   const { user } = useAppSelector((state) => state.auth);
@@ -903,6 +904,23 @@ export default function ProfilePage() {
                             'Неизвестно'}{' '}
                           ₽/час
                         </Typography>
+                        <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            startIcon={<DirectionsIcon />}
+                            onClick={() => {
+                              const parkingLot = booking.ParkingSpace?.ParkingLot;
+                              if (parkingLot?.id) {
+                                handleParkingClick(parkingLot, true);
+                              } else {
+                                console.error('ID парковки отсутствует:', parkingLot);
+                              }
+                            }}
+                          >
+                            Построить маршрут
+                          </Button>
+                        </Box>
                       </CardContent>
                     </Card>
                   ))
@@ -966,6 +984,23 @@ export default function ProfilePage() {
                             'Неизвестно'}{' '}
                           ₽/час
                         </Typography>
+                        <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            startIcon={<DirectionsIcon />}
+                            onClick={() => {
+                              const parkingLot = booking.ParkingSpace?.ParkingLot;
+                              if (parkingLot?.id) {
+                                handleParkingClick(parkingLot, true);
+                              } else {
+                                console.error('ID парковки отсутствует:', parkingLot);
+                              }
+                            }}
+                          >
+                            Построить маршрут
+                          </Button>
+                        </Box>
                       </CardContent>
                     </Card>
                   ))
