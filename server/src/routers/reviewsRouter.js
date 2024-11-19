@@ -86,6 +86,8 @@ reviewsRouter.get('/parking/:parkingId', async (req, res) => {
   }
 });
 
+
+
 // Получение всех отзывов (только для админа)
 reviewsRouter.get('/all', verifyAccessToken, verifyAdmin, async (req, res) => {
   try {
@@ -106,6 +108,29 @@ reviewsRouter.get('/all', verifyAccessToken, verifyAdmin, async (req, res) => {
   } catch (error) {
     console.error('Ошибка при получении отзывов:', error);
     res.status(500).json({ error: 'Ошибка при получении отзывов' });
+  }
+});
+
+
+reviewsRouter.get("/:parkingId", async (req, res) => {
+  try {
+    const parkingId = req.params.parkingId;
+
+    const reviews = await Review.findAll({
+      where: { parking_id: parkingId },
+      include: [
+        {
+          model: User,
+          attributes: ["id", "name", "surname", "avatar"],
+        },
+      ],
+      order: [["createdAt", "DESC"]],
+    });
+
+    res.json(reviews);
+  } catch (error) {
+    console.error("Error fetching reviews:", error);
+    res.status(500).json({ error: "Ошибка при получении отзывов" });
   }
 });
 

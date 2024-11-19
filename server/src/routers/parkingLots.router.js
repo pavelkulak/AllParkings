@@ -3,7 +3,7 @@ const { ParkingLot, ParkingSpace, ParkingEntrance, Booking } = require('../../db
 const { verifyAccessToken } = require('../middleware/verifyToken');
 const multer = require('multer');
 const path = require('path');
-const { sequelize } = require('../../db/models');
+const { sequelize, Review, User } = require("../../db/models");
 const { Op } = require('sequelize');
 const { verifyAdmin } = require('../middleware/verifyAdmin');
 
@@ -57,7 +57,7 @@ parkingLotsRouter.get('/pending', verifyAccessToken, verifyAdmin, async (req, re
   }
 });
 
-// Затем все остальные маршруты �� параметрами
+// Затем все остальные маршруты  параметрами
 parkingLotsRouter.get('/:id/spaces', async (req, res) => {
   console.log('Получен запрос на пространства парковки с ID:', req.params.id);
   
@@ -379,6 +379,31 @@ parkingLotsRouter.patch('/:id/status', verifyAccessToken, verifyAdmin, async (re
   } catch (error) {
     console.error('Ошибка при обновлении статуса:', error);
     res.status(500).json({ error: 'Ошибка при обновлении статуса' });
+  }
+});
+
+// Получение отзывов для конкретной парковки
+parkingLotsRouter.get("/:id/reviews", verifyAccessToken, async (req, res) => {
+  try {
+    const parkingId = req.params.id;
+
+    // Получаем отзывы для данной парковки
+    const reviews = await Review.findAll({
+      where: { 
+        parking_id: parkingId 
+      },
+      include: [{
+        model: User,
+        attributes: ["id", "name", "surname", "avatar"]
+      }],
+      order: [["createdAt", "DESC"]]
+    });
+
+    console.log(`Found ${reviews.length} reviews for parking ${parkingId}`);
+    res.json(reviews);
+  } catch (error) {
+    console.error("Error fetching reviews:", error);
+    res.status(500).json({ error: "Ошибка при получении отзывов" });
   }
 });
 
