@@ -8,6 +8,7 @@ import {
   Switch,
   CircularProgress,
   Stack,
+  CardActionArea,
 } from '@mui/material';
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -258,14 +259,15 @@ export default function ProfilePage() {
     if (activeTab === 'favorites') {
       dispatch(getFavorites());
     }
-  }, [activeTab, dispatch]);
-
-  useEffect(() => {
     if (activeTab === 'history') {
       dispatch(getBookingHistory());
       dispatch(getActiveBookings());
     }
   }, [activeTab, dispatch]);
+
+  const handleParkingClick = (parking: any) => {
+    navigate('/parkings/map', { state: { selectedParking: parking } });
+  };
 
   return (
     <Box
@@ -771,56 +773,56 @@ export default function ProfilePage() {
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
                 {favorites.map((favorite) => (
                   <Card key={favorite.id} sx={{ position: 'relative' }}>
-                    <CardMedia
-                      component='img'
-                      height='140'
-                      image={
-                        favorite.img
-                          ? `${import.meta.env.VITE_API_URL}/img/parking/${
-                              favorite.img
-                            }`
-                          : 'parking-default.jpg'
-                      }
-                      alt={favorite.name}
-                    />
-                    <CardContent>
-                      <Typography variant='h6' noWrap>
-                        {favorite.name}
-                      </Typography>
-                      <Typography variant='body2' color='text.secondary' noWrap>
-                        {favorite.location?.address}
-                      </Typography>
-                      <Box
-                        sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
-                      >
-                        <Rating
-                          value={Number(favorite.average_rating) || 0}
-                          readOnly
-                          size='small'
-                        />
-                        <Typography variant='body2'>
-                          {favorite.price_per_hour} ₽/час
-                        </Typography>
-                      </Box>
-                      <IconButton
-                        sx={{
-                          position: 'absolute',
-                          top: 8,
-                          right: 8,
-                          color: 'red',
-                          bgcolor: 'rgba(255, 255, 255, 0.8)',
-                          padding: '4px',
-                          '&:hover': {
-                            bgcolor: 'rgba(255, 255, 255, 0.9)',
-                          },
-                        }}
-                        onClick={() =>
-                          dispatch(removeFromFavorites(favorite.id))
+                    <CardActionArea onClick={() => handleParkingClick(favorite)}>
+                      <CardMedia
+                        component='img'
+                        height='140'
+                        image={
+                          favorite.img
+                            ? `${import.meta.env.VITE_API_URL}/img/parking/${favorite.img}`
+                            : 'parking-default.jpg'
                         }
-                      >
-                        <CloseIcon />
-                      </IconButton>
-                    </CardContent>
+                        alt={favorite.name}
+                      />
+                      <CardContent>
+                        <Typography variant="h6" component="div">
+                          {favorite.name}
+                        </Typography>
+                        <Typography variant='body2' color='text.secondary' noWrap>
+                          {favorite.location?.address}
+                        </Typography>
+                        <Box
+                          sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                        >
+                          <Rating
+                            value={Number(favorite.average_rating) || 0}
+                            readOnly
+                            size='small'
+                          />
+                          <Typography variant='body2'>
+                            {favorite.price_per_hour} ₽/час
+                          </Typography>
+                        </Box>
+                        <IconButton
+                          sx={{
+                            position: 'absolute',
+                            top: 8,
+                            right: 8,
+                            color: 'red',
+                            bgcolor: 'rgba(255, 255, 255, 0.8)',
+                            padding: '4px',
+                            '&:hover': {
+                              bgcolor: 'rgba(255, 255, 255, 0.9)',
+                            },
+                          }}
+                          onClick={() =>
+                            dispatch(removeFromFavorites(favorite.id))
+                          }
+                        >
+                          <CloseIcon />
+                        </IconButton>
+                      </CardContent>
+                    </CardActionArea>
                   </Card>
                 ))}
               </Box>

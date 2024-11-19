@@ -5,6 +5,7 @@ import { Box, Container, Paper, Typography, CircularProgress } from '@mui/materi
 import { Parking } from '../../types/parking';
 import { LocationButton } from '../map/LocationButton';
 import { ParkingModal } from './ParkingModal';
+import { useLocation } from 'react-router-dom';
 
 export const ParkingMap = () => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -18,6 +19,15 @@ export const ParkingMap = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [parkings, setParkings] = useState<Parking[]>([]);
   const [selectedParking, setSelectedParking] = useState<Parking | null>(null);
+
+  const location = useLocation();
+  const initialParking = location.state?.selectedParking;
+
+  useEffect(() => {
+    if (initialParking) {
+      setSelectedParking(initialParking);
+    }
+  }, [initialParking]);
 
   const createUserMarker = (mapglAPI: any, map: any, coords: [number, number]) => {
     if (userMarkerRef.current) {
