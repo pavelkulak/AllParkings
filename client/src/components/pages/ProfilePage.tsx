@@ -41,7 +41,6 @@ import { Tabs, Tab } from '@mui/material';
 import DirectionsIcon from '@mui/icons-material/Directions';
 import { ParkingSpacePreview } from '../parking/ParkingSpacePreview';
 import MapIcon from '@mui/icons-material/Map';
-import { ParkingModal } from '../parking/ParkingModal';
 
 export default function ProfilePage() {
   const { user } = useAppSelector((state) => state.auth);
@@ -69,9 +68,6 @@ export default function ProfilePage() {
   const [historyTab, setHistoryTab] = useState<'active' | 'history'>('active');
   const [showParkingModal, setShowParkingModal] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
-
-  console.log('bookingHistory', bookingHistory);
-  console.log('activeBookings', activeBookings);
 
   const theme = useTheme();
   // Изменение темы на будущее
@@ -1040,12 +1036,17 @@ export default function ProfilePage() {
       </Box>
 
       {showParkingModal && selectedBooking?.ParkingSpace?.ParkingLot && (
-        <Dialog 
-          open={showParkingModal} 
-          onClose={() => setShowParkingModal(false)}
-          maxWidth="lg"
-          fullWidth
-        >
+  console.log('Selected booking:', {
+    parkingId: selectedBooking.ParkingSpace.ParkingLot.id,
+    spaceId: selectedBooking.ParkingSpace.id,
+    booking: selectedBooking
+  }),
+  <Dialog 
+    open={showParkingModal} 
+    onClose={() => setShowParkingModal(false)}
+    maxWidth="lg"
+    fullWidth
+  >
           <DialogTitle>
             Схема парковки
             <IconButton
@@ -1059,7 +1060,7 @@ export default function ProfilePage() {
           <DialogContent>
             <ParkingSpacePreview 
               parkingId={Number(selectedBooking.ParkingSpace.ParkingLot.id)}
-              highlightedSpaceId={Number(selectedBooking.ParkingSpace.id)}
+              highlightedSpaceId={Number(selectedBooking.space_id)}
             />
           </DialogContent>
         </Dialog>

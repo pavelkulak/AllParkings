@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Box, CircularProgress } from '@mui/material';
+import { Box, CircularProgress, Typography, Stack } from '@mui/material';
 import { ConstructorGrid, GRID_SIZES } from '../constructor/ParkingConstructor';
 import { ParkingSpace, ParkingEntrance } from '../../types/parking';
 
@@ -18,6 +18,7 @@ export const ParkingSpacePreview = ({ parkingId, highlightedSpaceId }: ParkingSp
       try {
         const response = await fetch(`http://localhost:3000/api/parking-lots/${parkingId}/spaces`);
         const data = await response.json();
+        
         setSpaces(data.ParkingSpaces || []);
         setEntrance(data.ParkingEntrance || null);
       } catch (error) {
@@ -30,6 +31,15 @@ export const ParkingSpacePreview = ({ parkingId, highlightedSpaceId }: ParkingSp
     fetchSpaces();
   }, [parkingId]);
 
+  const getSpaceColor = (space: ParkingSpace) => {
+    if (+space.id === highlightedSpaceId) {
+      return '#FF4444';
+    }
+    return '#90EE90';
+  };
+
+  const getSpaceLabel = (space: ParkingSpace) => space.space_number;
+
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
@@ -39,14 +49,37 @@ export const ParkingSpacePreview = ({ parkingId, highlightedSpaceId }: ParkingSp
   }
 
   return (
-    <ConstructorGrid
-      sx={{
-        width: GRID_SIZES.medium.width,
-        height: GRID_SIZES.medium.height,
-      }}
-    >
-      {spaces.map((space) => (
-        <Box
+    <Box>
+      <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ 
+            width: 20, 
+            height: 20, 
+            bgcolor: '#FF4444',
+            borderRadius: 1
+          }} />
+          <Typography variant="body2">Ваше место</Typography>
+        </Box>
+        
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ 
+            width: 20, 
+            height: 20, 
+            bgcolor: '#90EE90',
+            borderRadius: 1
+          }} />
+          <Typography variant="body2">Остальные места</Typography>
+        </Box>
+      </Box>
+
+      <ConstructorGrid
+        sx={{
+          width: GRID_SIZES.medium.width,
+          height: GRID_SIZES.medium.height,
+        }}
+      >
+        {spaces.map((space) => (
+          <Box
           key={space.id}
           sx={{
             position: 'absolute',
@@ -54,37 +87,39 @@ export const ParkingSpacePreview = ({ parkingId, highlightedSpaceId }: ParkingSp
             top: JSON.parse(space.location).y,
             width: 60,
             height: 120,
-            bgcolor: space.id === highlightedSpaceId ? '#4CAF50' : '#90EE90',
+            bgcolor: getSpaceColor(space),
             border: '1px solid',
             borderColor: 'grey.300',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             borderRadius: 2,
+            color: space.id === highlightedSpaceId ? 'white' : 'inherit',
           }}
         >
-          {space.space_number}
+          {getSpaceLabel(space)}
         </Box>
-      ))}
-      {entrance && (
-        <Box
-          sx={{
-            position: 'absolute',
-            left: JSON.parse(entrance.location).x,
-            top: JSON.parse(entrance.location).y,
-            width: 40,
-            height: 40,
-            bgcolor: 'warning.main',
-            color: 'white',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: 1,
-          }}
-        >
-          Вход
-        </Box>
-      )}
-    </ConstructorGrid>
+        ))}
+        {entrance && (
+          <Box
+            sx={{
+              position: 'absolute',
+              left: JSON.parse(entrance.location).x,
+              top: JSON.parse(entrance.location).y,
+              width: 40,
+              height: 40,
+              bgcolor: 'warning.main',
+              color: 'white',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 1,
+            }}
+          >
+            Вход
+          </Box>
+        )}
+      </ConstructorGrid>
+    </Box>
   );
 };
