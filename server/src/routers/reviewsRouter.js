@@ -1,6 +1,7 @@
 const reviewsRouter = require('express').Router();
 const { Review, User, ParkingLot } = require('../../db/models');
 const { verifyAccessToken } = require('../middleware/verifyToken');
+const { verifyAdmin } = require('../middleware/verifyAdmin');
 
 // Создание отзыва
 reviewsRouter.post('/', verifyAccessToken, async (req, res) => {
@@ -82,6 +83,63 @@ reviewsRouter.get('/parking/:parkingId', async (req, res) => {
   } catch (error) {
     console.error('Error fetching reviews:', error);
     res.status(500).json({ error: 'Ошибка при получении отзывов' });
+  }
+});
+
+// Получение всех отзывов (только для админа)
+reviewsRouter.get('/all', verifyAccessToken, verifyAdmin, async (req, res) => {
+  try {
+    const reviews = await Review.findAll({
+      include: [
+        {
+          model: User,
+          attributes: ['name', 'surname', 'avatar']
+        },
+        {
+          model: ParkingLot,
+          attributes: ['name']
+        }
+      ],
+      order: [['createdAt', 'DESC']]
+    });
+    res.json(reviews);
+  } catch (error) {
+    console.error('Ошибка при получении отзывов:', error);
+    res.status(500).json({ error: 'Ошибка при получении отзывов' });
+  }
+});
+
+// Удаление отзыва (только для админа)
+reviewsRouter.delete('/:id', verifyAccessToken, verifyAdmin, async (req, res) => {
+  try {
+    const review = await Review.findByPk(req.params.id);
+    if (!review) {
+      return res.status(404).json({ error: 'Отзыв не найден' });
+    }
+
+    // Получаем parkingId до удаления отзыва
+    const parkingId = review.parking_id;
+
+    await review.destroy();
+
+    // Пересчитываем средний рейтинг
+    const allReviews = await Review.findAll({
+      where: { parking_id: parkingId }
+    });
+
+    const averageRating = allReviews.length > 0
+      ? Number((allReviews.reduce((acc, rev) => acc + Number(rev.rating), 0) / allReviews.length).toFixed(1))
+      : 0;
+
+    await ParkingLot.update(
+      { average_rating: averageRating },
+      { where: { id: parkingId } }
+    );
+
+    res.sendStatus(204);
+  } catch (error) {
+    console.error('Ошибка при удалении отзыва:', error);
+    res.status(500).json({ error: 'Ошибка при удалении отзыва' });
   }
 });
 
