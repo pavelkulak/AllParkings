@@ -34,6 +34,7 @@ import {
 } from "../../redux/parkingThunks";
 import { Parking } from "../../types/parking";
 import { LocationButton } from "../map/LocationButton";
+import ReviewsModal from '../modals/ReviewsModal';
 
 interface IParkingOption {
   parking(parking: any): unknown;
@@ -42,7 +43,7 @@ interface IParkingOption {
 }
 
 export default function ParkingOwnerPage() {
-  const { user } = useAppSelector((state) => state.auth);
+  const user = useAppSelector((state) => state.auth.user);
 
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -50,6 +51,7 @@ export default function ParkingOwnerPage() {
   const [addressMethod, setAddressMethod] = useState<"input" | "map">("input");
   const [map, setMap] = useState<any>(null);
   const [marker, setMarker] = useState<any>(null);
+  const [isReviewsModalOpen, setIsReviewsModalOpen] = useState(false);
 
   const { parkingLots } = useAppSelector((state) => state.parking);
 
@@ -133,6 +135,7 @@ const handleDeleteClick = async () => {
     } else {
       setSelectedParking(null);
       setParkingData({
+        status: "",
         name: "",
         description: "",
         location: {
@@ -144,6 +147,12 @@ const handleDeleteClick = async () => {
         },
         price_per_hour: ""
       });
+    }
+  };
+
+  const handleReviewsClick = () => {
+    if (selectedParking) {
+      setIsReviewsModalOpen(true);
     }
   };
 
@@ -306,7 +315,7 @@ const handleSaveChanges = async () => {
       // Создаем маркер пользователя
       createUserMarker(mapglAPI, mapInstance, userCoords);
 
-      // Загружаем существующие парковки
+      // Загружаем сущесвующие парковки
       try {
         const response = await fetch(
           "http://localhost:3000/api/parking-lots/all"
@@ -729,15 +738,17 @@ const handleSaveChanges = async () => {
               onChange={handleChange}
               inputProps={{ min: 0 }}
             />
+
             <Button
               fullWidth
               variant="outlined"
-              size="small"
-              component={Link}
-              to="/errorpage"
+              onClick={handleReviewsClick}
+              disabled={!selectedParking}
+              sx={{ mt: 2 }}
             >
               Посмотреть отзывы
             </Button>
+
             <Button
               fullWidth
               variant="outlined"
@@ -773,6 +784,14 @@ const handleSaveChanges = async () => {
             </Button>
           </Box>
         </Container>
+      )}
+
+      {selectedParking && (
+        <ReviewsModal
+          open={isReviewsModalOpen}
+          onClose={() => setIsReviewsModalOpen(false)}
+          parkingId={selectedParking.id}
+        />
       )}
     </Box>
   );
