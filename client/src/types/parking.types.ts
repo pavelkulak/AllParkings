@@ -27,6 +27,7 @@ export interface ParkingLot {
   img?: string;
   ParkingSpaces?: ParkingSpace[];
   ParkingEntrance?: ParkingEntrance;
+  gridSize: keyof typeof GRID_SIZES;
 }
 
 export interface SaveConfigurationDto {

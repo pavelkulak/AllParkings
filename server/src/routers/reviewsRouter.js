@@ -41,8 +41,8 @@ reviewsRouter.post('/', verifyAccessToken, async (req, res) => {
     console.log('All reviews for parking:', allReviews.length);
 
     const averageRating = allReviews.length > 0
-      ? Number((allReviews.reduce((acc, rev) => acc + rev.rating, 0) / allReviews.length).toFixed(1))
-      : rating;
+      ? Number((allReviews.reduce((acc, rev) => acc + parseFloat(rev.rating), 0) / allReviews.length).toFixed(1))
+      : parseFloat(rating);
     console.log('Calculated average rating:', averageRating);
 
     await ParkingLot.update(
@@ -153,7 +153,7 @@ reviewsRouter.delete('/:id', verifyAccessToken, verifyAdmin, async (req, res) =>
     });
 
     const averageRating = allReviews.length > 0
-      ? Number((allReviews.reduce((acc, rev) => acc + Number(rev.rating), 0) / allReviews.length).toFixed(1))
+      ? Number((allReviews.reduce((acc, rev) => acc + parseFloat(rev.rating), 0) / allReviews.length).toFixed(1))
       : 0;
 
     await ParkingLot.update(

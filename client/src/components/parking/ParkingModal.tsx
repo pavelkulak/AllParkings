@@ -353,77 +353,98 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
                     <CircularProgress />
                   </Box>
                 ) : (
-                  <ConstructorGrid
-                    sx={{
-                      width: GRID_SIZES.medium.width,
-                      height: GRID_SIZES.medium.height,
-                    }}
-                  >
-                    {entrance && (
-                      <Box
-                        key="entrance"
+                  <Box sx={{ 
+                    width: '100%',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    bgcolor: 'background.paper',
+                    borderRadius: 1,
+                    p: 2,
+                    border: '1px solid',
+                    borderColor: 'divider'
+                  }}>
+                    <Box
+                      sx={{
+                        position: 'relative',
+                        width: 'fit-content',
+                        height: 'fit-content',
+                        margin: '0 auto'
+                      }}
+                    >
+                      <ConstructorGrid
                         sx={{
-                          position: 'absolute',
-                          left: JSON.parse(entrance.location).x,
-                          top: JSON.parse(entrance.location).y,
-                          width: 40,
-                          height: 40,
-                          bgcolor: 'warning.main',
-                          border: '1px solid',
-                          borderColor: 'grey.300',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: 'white'
+                          width: GRID_SIZES.medium.width,
+                          height: GRID_SIZES.medium.height,
                         }}
                       >
-                        <Typography>Вход</Typography>
-                      </Box>
-                    )}
-
-                    {spaces.map((space) => {
-                      const location = typeof space.location === 'string' 
-                        ? JSON.parse(space.location) 
-                        : space.location;
-
-                      return (
-                        <Box
-                          key={space.id}
-                          sx={{
-                            position: 'absolute',
-                            left: location.x,
-                            top: location.y,
-                            width: 40,
-                            height: 80,
-                            transform: `rotate(${location.rotation}deg)`,
-                            bgcolor: space.is_free ? 'rgba(3, 197, 3, 0.2)' : 'rgba(211, 47, 47, 0.2)',
-                            border: '2px solid',
-                            borderRadius: 4,
-                            borderColor: space.is_free ? '#03c503' : '#d32f2f',
-                            cursor: space.is_free ? 'pointer' : 'not-allowed',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            '&:hover': {
-                              opacity: space.is_free ? 0.8 : 1
-                            }
-                          }}
-                          onClick={() => {
-                            handleSpaceClick(space);
-                          }}
-                        >
-                          <Typography
+                        {entrance && (
+                          <Box
+                            key="entrance"
                             sx={{
-                              color: 'black',
-                              fontSize: '0.8rem'
+                              position: 'absolute',
+                              left: JSON.parse(entrance.location).x,
+                              top: JSON.parse(entrance.location).y,
+                              width: 40,
+                              height: 40,
+                              bgcolor: 'warning.main',
+                              border: '1px solid',
+                              borderColor: 'grey.300',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: 'white'
                             }}
                           >
-                            {space.space_number}
-                          </Typography>
-                        </Box>
-                      );
-                    })}
-                  </ConstructorGrid>
+                            <Typography>Вход</Typography>
+                          </Box>
+                        )}
+
+                        {spaces.map((space) => {
+                          const location = typeof space.location === 'string' 
+                            ? JSON.parse(space.location) 
+                            : space.location;
+
+                          return (
+                            <Box
+                              key={space.id}
+                              sx={{
+                                position: 'absolute',
+                                left: location.x,
+                                top: location.y,
+                                width: 40,
+                                height: 80,
+                                transform: `rotate(${location.rotation}deg)`,
+                                bgcolor: space.is_free ? 'rgba(3, 197, 3, 0.2)' : 'rgba(211, 47, 47, 0.2)',
+                                border: '2px solid',
+                                borderRadius: 4,
+                                borderColor: space.is_free ? '#03c503' : '#d32f2f',
+                                cursor: space.is_free ? 'pointer' : 'not-allowed',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                '&:hover': {
+                                  opacity: space.is_free ? 0.8 : 1
+                                }
+                              }}
+                              onClick={() => {
+                                handleSpaceClick(space);
+                              }}
+                            >
+                              <Typography
+                                sx={{
+                                  color: 'black',
+                                  fontSize: '0.8rem'
+                                }}
+                              >
+                                {space.space_number}
+                              </Typography>
+                            </Box>
+                          );
+                        })}
+                      </ConstructorGrid>
+                    </Box>
+                  </Box>
                 )}
                 {selectedSpace && parking && entryTime && exitTime && (
                   <BookingDialog
