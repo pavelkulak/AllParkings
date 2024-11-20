@@ -36,6 +36,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import {
   getBookingHistory,
   getActiveBookings,
+  cancelBooking,
 } from '../../redux/bookingThunks';
 import { Tabs, Tab } from '@mui/material';
 import DirectionsIcon from '@mui/icons-material/Directions';
@@ -886,6 +887,18 @@ export default function ProfilePage() {
                             >
                               Маршрут
                             </Button>
+                            <Button 
+                              variant="outlined"
+                              size="small"
+                              color="error"
+                              onClick={() => {
+                                if (window.confirm('Вы уверены, что хотите отменить бронирование?')) {
+                                  dispatch(cancelBooking(booking.id));
+                                }
+                              }}
+                            >
+                              Отменить
+                            </Button>
                           </Stack>
                         </Box>
 
@@ -1001,6 +1014,18 @@ export default function ProfilePage() {
                               onClick={() => handleParkingClick(booking.ParkingSpace?.ParkingLot)}
                             >
                               Маршрут
+                            </Button>
+                            <Button 
+                              variant="outlined"
+                              size="small"
+                              color="error"
+                              onClick={() => {
+                                if (window.confirm('Вы уверены, что хотите отменить бронирование?')) {
+                                  dispatch(cancelBooking(booking.id));
+                                }
+                              }}
+                            >
+                              Отменить
                             </Button>
                           </Stack>
                         </Box>
