@@ -12,6 +12,7 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
+  
 } from '@mui/material';
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -42,6 +43,7 @@ import { ParkingSpacePreview } from '../parking/ParkingSpacePreview';
 import MapIcon from '@mui/icons-material/Map';
 import { useThemeContext } from '../theme/ThemeContext';
 import { useTheme } from '@mui/material/styles';
+import { Grid } from '@mui/material';
 
 export default function ProfilePage() {
   const { user } = useAppSelector((state) => state.auth);
@@ -860,83 +862,109 @@ export default function ProfilePage() {
                   activeBookings.map((booking) => (
                     <Card key={booking.id}>
                       <CardContent>
-                        <Typography variant='h6'>
-                          {booking.ParkingSpace?.ParkingLot?.name ||
-                            'Неизвестно'}
-                        </Typography>
-                        <Typography color='textSecondary'>
-                          Место:{' '}
-                          {booking.ParkingSpace?.space_number || 'Неизвестно'}
-                        </Typography>
-                        <Box>
-                          <Typography>
-                            Дата:{' '}
-                            {new Date(booking.start_time).toLocaleString(
-                              'ru-RU',
-                              {
-                                year: 'numeric',
-                                month: 'numeric',
-                                day: 'numeric',
-                              },
-                            )}
+                        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                          <Typography variant='h6'>
+                            {booking.ParkingSpace?.ParkingLot?.name || 'Неизвестно'}
                           </Typography>
-                          <Typography>
-                            Время: от{' '}
-                            {new Date(booking.start_time).toLocaleString(
-                              'ru-RU',
-                              {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              },
-                            )}{' '}
-                            до{' '}
-                            {new Date(booking.end_time).toLocaleString(
-                              'ru-RU',
-                              {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              },
-                            )}
-                          </Typography>
-                        </Box>
-                        <Typography>
-                          Адрес:{' '}
-                          {booking.ParkingSpace?.ParkingLot?.location
-                            ?.address || 'Неизвестно'}
-                        </Typography>
-                        <Typography>
-                          Стоимость:{' '}
-                          {booking.ParkingSpace?.ParkingLot?.price_per_hour ||
-                            'Неизвестно'}{' '}
-                          ₽/час
-                        </Typography>
-                        <Box sx={{ mt: 2, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-                          <Button
-                            variant="outlined"
-                            startIcon={<MapIcon />}
-                            onClick={() => {
-                              const parkingLot = booking.ParkingSpace?.ParkingLot;
-                              if (parkingLot?.id) {
+                          <Stack direction="row" spacing={1}>
+                            <Button 
+                              variant="outlined" 
+                              size="small"
+                              startIcon={<MapIcon />}
+                              onClick={() => {
                                 setSelectedBooking(booking);
                                 setShowParkingModal(true);
-                              }
-                            }}
-                          >
-                            Показать схему парковки
-                          </Button>
-                          <Button
-                            variant="contained"
-                            startIcon={<DirectionsIcon />}
-                            onClick={() => {
-                              const parkingLot = booking.ParkingSpace?.ParkingLot;
-                              if (parkingLot?.id) {
-                                handleParkingClick(parkingLot);
-                              }
-                            }}
-                          >
-                            Построить маршрут
-                          </Button>
+                              }}
+                            >
+                              Схема
+                            </Button>
+                            <Button 
+                              variant="outlined"
+                              size="small" 
+                              startIcon={<DirectionsIcon />}
+                              onClick={() => handleParkingClick(booking.ParkingSpace?.ParkingLot)}
+                            >
+                              Маршрут
+                            </Button>
+                          </Stack>
                         </Box>
+
+                        <Grid container spacing={2}>
+                          <Grid item xs={12} sm={6}>
+                            <Box sx={{ 
+                              bgcolor: (theme) => theme.palette.mode === 'dark' ? 'background.default' : 'grey.100',
+                              p: 2, 
+                              borderRadius: 1,
+                              boxShadow: (theme) => theme.palette.mode === 'dark' ? 'none' : 1,
+                              height: '100%'
+                            }}>
+                              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                                Информация о парковке
+                              </Typography>
+                              <Stack spacing={1}>
+                                <Typography>
+                                  Место: {booking.ParkingSpace?.space_number || 'Неизвестно'}
+                                </Typography>
+                                <Typography>
+                                  Адрес: {booking.ParkingSpace?.ParkingLot?.location?.address || 'Неизвестно'}
+                                </Typography>
+                                <Typography>
+                                  Стоимость: {booking.ParkingSpace?.ParkingLot?.price_per_hour || 'Неизвестно'} ₽/час
+                                </Typography>
+                              </Stack>
+                            </Box>
+                          </Grid>
+                          
+                          <Grid item xs={12} sm={6}>
+                            <Box sx={{ 
+                              bgcolor: (theme) => theme.palette.mode === 'dark' ? 'background.default' : 'grey.100',
+                              p: 2, 
+                              borderRadius: 1,
+                              boxShadow: (theme) => theme.palette.mode === 'dark' ? 'none' : 1,
+                              height: '100%'
+                            }}>
+                              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                                Время бронирования
+                              </Typography>
+                              <Stack spacing={1}>
+                                <Box>
+                                  <Typography variant="body2" color="text.secondary">
+                                    Заезд:
+                                  </Typography>
+                                  <Typography>
+                                    {new Date(booking.start_time).toLocaleString('ru-RU', {
+                                      year: 'numeric',
+                                      month: 'long',
+                                      day: 'numeric',
+                                    })}
+                                    {' '}в{' '}
+                                    {new Date(booking.start_time).toLocaleString('ru-RU', {
+                                      hour: '2-digit',
+                                      minute: '2-digit'
+                                    })}
+                                  </Typography>
+                                </Box>
+                                <Box>
+                                  <Typography variant="body2" color="text.secondary">
+                                    Выезд:
+                                  </Typography>
+                                  <Typography>
+                                    {new Date(booking.end_time).toLocaleString('ru-RU', {
+                                      year: 'numeric',
+                                      month: 'long',
+                                      day: 'numeric',
+                                    })}
+                                    {' '}в{' '}
+                                    {new Date(booking.end_time).toLocaleString('ru-RU', {
+                                      hour: '2-digit',
+                                      minute: '2-digit'
+                                    })}
+                                  </Typography>
+                                </Box>
+                              </Stack>
+                            </Box>
+                          </Grid>
+                        </Grid>
                       </CardContent>
                     </Card>
                   ))
@@ -950,83 +978,109 @@ export default function ProfilePage() {
                   bookingHistory.map((booking) => (
                     <Card key={booking.id}>
                       <CardContent>
-                        <Typography variant='h6'>
-                          {booking.ParkingSpace?.ParkingLot?.name ||
-                            'Неизвестно'}
-                        </Typography>
-                        <Typography color='textSecondary'>
-                          Место:{' '}
-                          {booking.ParkingSpace?.space_number || 'Неизвестно'}
-                        </Typography>
-                        <Box>
-                          <Typography>
-                            Дата:{' '}
-                            {new Date(booking.start_time).toLocaleString(
-                              'ru-RU',
-                              {
-                                year: 'numeric',
-                                month: 'numeric',
-                                day: 'numeric',
-                              },
-                            )}
+                        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                          <Typography variant='h6'>
+                            {booking.ParkingSpace?.ParkingLot?.name || 'Неизвестно'}
                           </Typography>
-                          <Typography>
-                            Время: от{' '}
-                            {new Date(booking.start_time).toLocaleString(
-                              'ru-RU',
-                              {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              },
-                            )}{' '}
-                            до{' '}
-                            {new Date(booking.end_time).toLocaleString(
-                              'ru-RU',
-                              {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              },
-                            )}
-                          </Typography>
-                        </Box>
-                        <Typography>
-                          Адрес:{' '}
-                          {booking.ParkingSpace?.ParkingLot?.location
-                            ?.address || 'Неизвестно'}
-                        </Typography>
-                        <Typography>
-                          Стоимость:{' '}
-                          {booking.ParkingSpace?.ParkingLot?.price_per_hour ||
-                            'Неизвестно'}{' '}
-                          ₽/час
-                        </Typography>
-                        <Box sx={{ mt: 2, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-                          <Button
-                            variant="outlined"
-                            startIcon={<MapIcon />}
-                            onClick={() => {
-                              const parkingLot = booking.ParkingSpace?.ParkingLot;
-                              if (parkingLot?.id) {
+                          <Stack direction="row" spacing={1}>
+                            <Button 
+                              variant="outlined" 
+                              size="small"
+                              startIcon={<MapIcon />}
+                              onClick={() => {
                                 setSelectedBooking(booking);
                                 setShowParkingModal(true);
-                              }
-                            }}
-                          >
-                            Показать схему парковки
-                          </Button>
-                          <Button
-                            variant="contained"
-                            startIcon={<DirectionsIcon />}
-                            onClick={() => {
-                              const parkingLot = booking.ParkingSpace?.ParkingLot;
-                              if (parkingLot?.id) {
-                                handleParkingClick(parkingLot, true);
-                              }
-                            }}
-                          >
-                            Построить маршрут
-                          </Button>
+                              }}
+                            >
+                              Схема
+                            </Button>
+                            <Button 
+                              variant="outlined"
+                              size="small" 
+                              startIcon={<DirectionsIcon />}
+                              onClick={() => handleParkingClick(booking.ParkingSpace?.ParkingLot)}
+                            >
+                              Маршрут
+                            </Button>
+                          </Stack>
                         </Box>
+
+                        <Grid container spacing={2}>
+                          <Grid item xs={12} sm={6}>
+                            <Box sx={{ 
+                              bgcolor: (theme) => theme.palette.mode === 'dark' ? 'background.default' : 'grey.100',
+                              p: 2, 
+                              borderRadius: 1,
+                              boxShadow: (theme) => theme.palette.mode === 'dark' ? 'none' : 1,
+                              height: '100%'
+                            }}>
+                              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                                Информация о парковке
+                              </Typography>
+                              <Stack spacing={1}>
+                                <Typography>
+                                  Место: {booking.ParkingSpace?.space_number || 'Неизвестно'}
+                                </Typography>
+                                <Typography>
+                                  Адрес: {booking.ParkingSpace?.ParkingLot?.location?.address || 'Неизвестно'}
+                                </Typography>
+                                <Typography>
+                                  Стоимость: {booking.ParkingSpace?.ParkingLot?.price_per_hour || 'Неизвестно'} ₽/час
+                                </Typography>
+                              </Stack>
+                            </Box>
+                          </Grid>
+                          
+                          <Grid item xs={12} sm={6}>
+                            <Box sx={{ 
+                              bgcolor: (theme) => theme.palette.mode === 'dark' ? 'background.default' : 'grey.100',
+                              p: 2, 
+                              borderRadius: 1,
+                              boxShadow: (theme) => theme.palette.mode === 'dark' ? 'none' : 1,
+                              height: '100%'
+                            }}>
+                              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                                Время бронирования
+                              </Typography>
+                              <Stack spacing={1}>
+                                <Box>
+                                  <Typography variant="body2" color="text.secondary">
+                                    Заезд:
+                                  </Typography>
+                                  <Typography>
+                                    {new Date(booking.start_time).toLocaleString('ru-RU', {
+                                      year: 'numeric',
+                                      month: 'long',
+                                      day: 'numeric',
+                                    })}
+                                    {' '}в{' '}
+                                    {new Date(booking.start_time).toLocaleString('ru-RU', {
+                                      hour: '2-digit',
+                                      minute: '2-digit'
+                                    })}
+                                  </Typography>
+                                </Box>
+                                <Box>
+                                  <Typography variant="body2" color="text.secondary">
+                                    Выезд:
+                                  </Typography>
+                                  <Typography>
+                                    {new Date(booking.end_time).toLocaleString('ru-RU', {
+                                      year: 'numeric',
+                                      month: 'long',
+                                      day: 'numeric',
+                                    })}
+                                    {' '}в{' '}
+                                    {new Date(booking.end_time).toLocaleString('ru-RU', {
+                                      hour: '2-digit',
+                                      minute: '2-digit'
+                                    })}
+                                  </Typography>
+                                </Box>
+                              </Stack>
+                            </Box>
+                          </Grid>
+                        </Grid>
                       </CardContent>
                     </Card>
                   ))
