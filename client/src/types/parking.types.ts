@@ -35,3 +35,21 @@ export interface SaveConfigurationDto {
   spaces: Omit<ParkingSpace, 'id' | 'parking_id' | 'is_free'>[];
   entrance: Omit<ParkingEntrance['location'], 'id' | 'parking_id'>;
 }
+
+export interface Parking {
+  id: number;
+  name: string;
+  description: string;
+  location: {
+    address: string;
+    coordinates: {
+      lat: number;
+      lon: number;
+    };
+  };
+  price_per_hour: number;
+  status: 'pending' | 'active' | 'inactive';
+  average_rating: number;
+  img?: string;
+  gridSize: 'small' | 'medium' | 'large';
+}

@@ -189,28 +189,32 @@ export default function ParkingConstructor() {
     const centerX = Math.round((GRID_SIZES[gridSize].width - 40) / 2 / 20) * 20;
     const centerY = Math.round((GRID_SIZES[gridSize].height - 40) / 2 / 20) * 20;
     
-    setEntrance({
+    setEntrance(prev => ({
+      ...prev,
       x: centerX,
       y: centerY,
       width: 40,
       height: 40
-    });
+    }));
 
-    // Загрузка существующих мест, если есть parkingId
-    if (parkingId) {
+    // Загрузка существующих мест только при монтировании компонента
+    if (parkingId && !spaces.length) {
       const fetchSpaces = async () => {
         try {
           const response = await fetch(`http://localhost:3000/api/parking-lots/${parkingId}/spaces`);
           if (!response.ok) throw new Error('Failed to fetch spaces');
           const data = await response.json();
           setSpaces(data.ParkingSpaces || []);
+          if (data.gridSize) {
+            setGridSize(data.gridSize);
+          }
         } catch (error) {
           console.error('Error fetching spaces:', error);
         }
       };
       fetchSpaces();
     }
-  }, [parkingId, gridSize]);
+  }, [parkingId]);
 
   const handleEntranceDragStop = (x: number, y: number) => {
     const maxX = GRID_SIZES[gridSize].width - 40;
@@ -323,16 +327,18 @@ export default function ParkingConstructor() {
   };
 
   const handleGridSizeChange = (newSize: keyof typeof GRID_SIZES) => {
+    console.log('Changing grid size to:', newSize);
     setGridSize(newSize);
-    // Проверяем, не выходит ли текущее количество мест за новый лимит
     if (spaces.length > GRID_SIZES[newSize].maxSpaces) {
       alert(`Текущее количесто мест (${spaces.length}) превышает лимит для выбранного размера поля (${GRID_SIZES[newSize].maxSpaces}). Удалите лишние места.`);
     }
+    console.log('New grid size:', GRID_SIZES[newSize]);
   };
 
   const handleSaveConfiguration = async () => {
     if (!parkingId || !entrance) return;
     
+    console.log('Отправляем конфигурацию с gridSize:', gridSize);
     try {
       await dispatch(saveSpacesConfiguration({
         parkingId,

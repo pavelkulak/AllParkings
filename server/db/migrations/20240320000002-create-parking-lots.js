@@ -60,6 +60,14 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: true
       },
+      grid_size: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        defaultValue: 'medium',
+        validate: {
+          isIn: [['small', 'medium', 'large']]
+        }
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
