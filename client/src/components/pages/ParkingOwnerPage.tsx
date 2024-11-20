@@ -26,7 +26,7 @@ import {
 import { Add as AddIcon, Description } from "@mui/icons-material";
 import { useEffect, useRef, useState } from "react";
 import Autocomplete from "@mui/material/Autocomplete";
-import ParkingConstructor from "../constructor/ParkingConstructor";
+import ParkingConstructor from '../constructor/ParkingConstructor';
 import { Link, useNavigate } from "react-router-dom";
 import { load } from "@2gis/mapgl";
 import {
@@ -38,7 +38,9 @@ import {
 import { Parking } from "../../types/parking";
 import { LocationButton } from "../map/LocationButton";
 import ReviewsModal from '../modals/ReviewsModal';
+import { Review } from "../../types/review";
 import axiosInstance from "../../services/axiosInstance";
+import Constructor from '../Constructor/Constructor';
 
 interface IParkingOption {
   parking(parking: any): unknown;
@@ -59,8 +61,13 @@ export default function ParkingOwnerPage() {
   const [selectedParking, setSelectedParking] = useState<any>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [parkings, setParkings] = useState<Parking[]>([]);
-    
+  const [isConstructorModalOpen, setIsConstructorModalOpen] = useState(false);
+  const [parkingSpaces, setParkingSpaces] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [selectedReview, setSelectedReview] = useState<Review | null>(null);
+  const [constructorData, setConstructorData] = useState<any>(null);
+  const [constructorLoading, setConstructorLoading] = useState(false);
+  const [constructorError, setConstructorError] = useState<string | null>(null);
 
   const fetchParkings = async () => {
     try {
@@ -115,6 +122,31 @@ export default function ParkingOwnerPage() {
     }
   }, [parkingLots]); // Обновляем данные когда parkingLots изменяется
 
+  // Загрузка данных при открытии модального окна
+  useEffect(() => {
+    const fetchParkingSpaces = async () => {
+      if (!isConstructorModalOpen || !selectedParking?.id) return;
+      
+      setIsLoading(true);
+      setError(null);
+      
+      try {
+        const response = await fetch(`http://localhost:3000/api/parking-lots/${selectedParking.id}/spaces`);
+        if (!response.ok) throw new Error('Failed to fetch parking spaces');
+        
+        const data = await response.json();
+        setParkingSpaces(data);
+      } catch (err) {
+        console.error('Error fetching spaces:', err);
+        setError('Ошибка при загрузке данных парковки');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchParkingSpaces();
+  }, [isConstructorModalOpen, selectedParking?.id]);
+
   const handleDeleteClick = async () => {
     if (!selectedParking) return;
 
@@ -148,20 +180,55 @@ export default function ParkingOwnerPage() {
   };
 
   // Обработчик изменения значения в Autocomplete
-  const handleParkingChange = (
-    _: React.SyntheticEvent,
-    option: IParkingOption | null
-  ) => {
+  const handleParkingChange = async (_: React.SyntheticEvent, option: IParkingOption | null) => {
     if (option) {
-      // Проверяем права доступа (админ или владелец)
-      if (user?.role === 'admin' || option.parking.owner_id === user?.id) {
-        setSelectedParking(option.parking);
-      } else {
-        alert('У вас нет доступа к этой парковке');
-        setSelectedParking(null);
+      setSelectedParking(option.parking);
+      setParkingData({
+        status: option.parking.status || "",
+        name: option.parking.name || "",
+        description: option.parking.description || "",
+        location: {
+          address: option.parking.location?.address || "",
+          coordinates: {
+            lat: option.parking.location?.coordinates?.lat || null,
+            lon: option.parking.location?.coordinates?.lon || null,
+          },
+        },
+        price_per_hour: option.parking.price_per_hour?.toString() || ""
+      });
+
+      // Загружаем данные конструктора при выборе парковки
+      setConstructorLoading(true);
+      setConstructorError(null);
+      
+      try {
+        const response = await fetch(`http://localhost:3000/api/parking-lots/${option.parking.id}/spaces`);
+        if (!response.ok) throw new Error('Failed to fetch parking spaces');
+        
+        const data = await response.json();
+        setConstructorData(data);
+      } catch (error) {
+        console.error('Error loading constructor:', error);
+        setConstructorError('Ошибка при загрузке конструктора');
+      } finally {
+        setConstructorLoading(false);
       }
     } else {
       setSelectedParking(null);
+      setParkingData({
+        status: "",
+        name: "",
+        description: "",
+        location: {
+          address: "",
+          coordinates: {
+            lat: null,
+            lon: null,
+          },
+        },
+        price_per_hour: ""
+      });
+      setConstructorData(null);
     }
   };
 
@@ -174,6 +241,27 @@ export default function ParkingOwnerPage() {
       setIsReviewsModalOpen(true);
     } else {
       alert('У вас нет доступа к отзывам этой парковки');
+    }
+  };
+
+  const handleConstructorClick = async () => {
+    if (!selectedParking?.id) return;
+    
+    setConstructorLoading(true);
+    setConstructorError(null);
+    setIsConstructorModalOpen(true);
+
+    try {
+      const response = await fetch(`http://localhost:3000/api/parking-lots/${selectedParking.id}/spaces`);
+      if (!response.ok) throw new Error('Failed to fetch parking spaces');
+      
+      const data = await response.json();
+      setConstructorData(data);
+    } catch (error) {
+      console.error('Error loading constructor:', error);
+      setConstructorError('Ошибка при загрузке конструктора');
+    } finally {
+      setConstructorLoading(false);
     }
   };
 
@@ -246,8 +334,7 @@ export default function ParkingOwnerPage() {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const userMarkerRef = useRef<any>(null);
   const [mapglAPI, setMapglAPI] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
+  
   useEffect(() => {
     if (addressMethod === "map" && !map) {
       initMap();
@@ -580,9 +667,11 @@ export default function ParkingOwnerPage() {
           maxWidth="xl"
           sx={{
             display: "flex",
-            gap: 4,
-            justifyContent: "space-around",
-            margin: 10,
+            gap: 2,
+            justifyContent: "space-between",
+            margin: { xs: 1, sm: 2, md: 4, lg: 6 },
+            height: 'calc(100vh - 100px)',
+            overflow: 'hidden'
           }}
         >
           <Box
@@ -590,25 +679,45 @@ export default function ParkingOwnerPage() {
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              m: 0,
-              borderRadius: 5,
+              borderRadius: 2,
+              width: "65%",
               height: "100%",
-              width: "60%",
+              overflow: 'hidden'
             }}
           >
-            Тут элемент с местами на парковке
+            {selectedParking && (
+              <>
+                {constructorLoading ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                    <CircularProgress />
+                  </Box>
+                ) : constructorError ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                    <Typography color="error">{constructorError}</Typography>
+                  </Box>
+                ) : constructorData ? (
+                  <ParkingConstructor 
+                    parkingId={selectedParking.id}
+                    isEditable={user?.role === 'admin' || selectedParking.owner_id === user?.id}
+                    initialSpaces={constructorData.ParkingSpaces || []}
+                  />
+                ) : null}
+              </>
+            )}
           </Box>
 
           <Box
             sx={{
               display: "flex",
               flexDirection: "column",
-              alignItems: "center",
-              m: 0,
-              borderRadius: 5,
+              borderRadius: 2,
+              width: "33%",
               height: "100%",
-              width: "40%",
+              overflow: 'auto',
               gap: 1,
+              padding: 2,
+              bgcolor: 'background.paper',
+              boxShadow: 1
             }}
           >
             <Stack direction="row" spacing={2} alignItems="center">
@@ -761,9 +870,18 @@ export default function ParkingOwnerPage() {
             <Button
               fullWidth
               variant="outlined"
-              onClick={handleReviewsClick}
+              onClick={handleConstructorClick}
               disabled={!selectedParking}
               sx={{ mt: 2 }}
+            >
+              Конструктор мест
+            </Button>
+
+            <Button
+              fullWidth
+              variant="outlined"
+              onClick={handleReviewsClick}
+              disabled={!selectedParking}
             >
               Посмотреть отзывы
             </Button>
@@ -804,6 +922,51 @@ export default function ParkingOwnerPage() {
           </Box>
         </Container>
       )}
+
+      <Modal
+        open={isConstructorModalOpen}
+        onClose={() => {
+          setIsConstructorModalOpen(false);
+          setConstructorData(null);
+        }}
+        aria-labelledby="constructor-modal"
+      >
+        <Box sx={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '90%',
+          height: '90%',
+          bgcolor: 'background.paper',
+          boxShadow: 24,
+          p: 4,
+          borderRadius: 2,
+          overflow: 'auto'
+        }}>
+          <Typography variant="h6" component="h2" gutterBottom>
+            Конструктор парковки: {selectedParking?.name}
+          </Typography>
+          
+          {constructorLoading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+              <CircularProgress />
+            </Box>
+          ) : constructorError ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+              <Typography color="error">{constructorError}</Typography>
+            </Box>
+          ) : constructorData ? (
+            <Box sx={{ width: '100%', height: 'calc(100% - 60px)' }}>
+              <ParkingConstructor 
+                parkingId={selectedParking?.id}
+                isEditable={user?.role === 'admin' || selectedParking?.owner_id === user?.id}
+                initialSpaces={constructorData.ParkingSpaces || []}
+              />
+            </Box>
+          ) : null}
+        </Box>
+      </Modal>
 
       <ReviewsModal
         open={isReviewsModalOpen}

@@ -407,4 +407,39 @@ parkingLotsRouter.get("/:id/reviews", verifyAccessToken, async (req, res) => {
   }
 });
 
+// Получение данных для конструктора парковки
+parkingLotsRouter.get('/parking-constructor/:id', async (req, res) => {
+  try {
+    const parkingId = req.params.id;
+    
+    const parkingData = await ParkingLot.findOne({
+      where: { id: parkingId },
+      include: [
+        {
+          model: ParkingSpace,
+          attributes: ['id', 'space_number', 'location', 'is_free'],
+        },
+        {
+          model: ParkingEntrance,
+          attributes: ['id', 'location'],
+        }
+      ]
+    });
+
+    if (!parkingData) {
+      return res.status(404).json({ error: 'Парковка не найдена' });
+    }
+
+    res.json({
+      spaces: parkingData.ParkingSpaces,
+      entrance: parkingData.ParkingEntrance,
+      layout: parkingData.layout // если у вас есть такое поле
+    });
+
+  } catch (error) {
+    console.error('Ошибка при получении данных конструктора:', error);
+    res.status(500).json({ error: 'Ошибка при получении данных конструктора' });
+  }
+});
+
 module.exports = parkingLotsRouter; 
