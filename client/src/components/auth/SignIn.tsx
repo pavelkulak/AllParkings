@@ -1,4 +1,4 @@
-import { FormEvent } from "react";
+import { FormEvent, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { signIn } from "../../redux/thunkActions";
 import type { LoginCredentials } from "../../types/auth.types";
@@ -9,14 +9,19 @@ import {
   Button,
   Typography,
   Stack,
+  InputAdornment,
+  IconButton,
 } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 export default function SignIn() {
   const dispatch = useAppDispatch();
   const { error, status } = useAppSelector((state) => state.auth);
 
    const navigate = useNavigate();
+
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -67,7 +72,19 @@ export default function SignIn() {
               fullWidth
               name="password"
               label="Пароль"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
             <Button
               type="submit"
