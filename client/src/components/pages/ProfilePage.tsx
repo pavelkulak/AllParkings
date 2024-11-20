@@ -270,7 +270,7 @@ export default function ProfilePage() {
     }
   }, [activeTab, dispatch]);
 
-  const handleParkingClick = (parking: any) => {
+  const handleParkingClick = (parking: object) => {
     navigate('/parkings/map', { state: { selectedParking: parking } });
   };
 
@@ -520,7 +520,7 @@ export default function ProfilePage() {
                 onChange={handlePhoneChange}
                 maskChar='_'
               >
-                {(inputProps: any) => (
+                {(inputProps) => (
                   <TextField
                     {...inputProps}
                     fullWidth
@@ -928,7 +928,7 @@ export default function ProfilePage() {
                             onClick={() => {
                               const parkingLot = booking.ParkingSpace?.ParkingLot;
                               if (parkingLot?.id) {
-                                handleParkingClick(parkingLot, true);
+                                handleParkingClick(parkingLot);
                               }
                             }}
                           >

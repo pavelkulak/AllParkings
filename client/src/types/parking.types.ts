@@ -1,17 +1,17 @@
-import { BaseLocation, ParkingLocation, ParkingStatus } from '../types/common.types';
+import { ParkingLocation, ParkingStatus } from '../types/common.types';
 
 export interface ParkingSpace {
   id: number;
   parking_id: number;
   space_number: string;
-  location: BaseLocation & { rotation: number };
+  location: string;
   is_free: boolean;
 }
 
 export interface ParkingEntrance {
   id: number;
   parking_id: number;
-  location: BaseLocation;
+  location: string;
 }
 
 export interface ParkingLot {
