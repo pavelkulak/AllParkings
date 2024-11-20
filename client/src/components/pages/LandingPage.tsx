@@ -8,9 +8,7 @@ import {
   Paper, 
   Tabs, 
   Tab,
-  Stack,
   useTheme,
-  useMediaQuery,
   List,
   ListItem,
   ListItemIcon,
@@ -22,16 +20,13 @@ import { useNavigate } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
 import PaymentIcon from '@mui/icons-material/Payment';
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
-import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 import BusinessIcon from '@mui/icons-material/Business';
 import EditLocationIcon from '@mui/icons-material/EditLocation';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import PhoneIphoneIcon from '@mui/icons-material/PhoneIphone';
 import MapIcon from '@mui/icons-material/Map';
-import SettingsIcon from '@mui/icons-material/Settings';
-import { Star, StarBorder, Favorite, LocationOn } from '@mui/icons-material';
+import { StarBorder, Favorite } from '@mui/icons-material';
 
-import LocalParkingIcon from '@mui/icons-material/LocalParking';
 import parkingImage from '../../assets/images/parking.png';
 import parkingMobileImage from '../../assets/images/Parking_mobile.png';
 import InteractivePark from "../../assets/images/InteractivePark.png";
@@ -41,6 +36,7 @@ import InteractivePark from "../../assets/images/InteractivePark.png";
 
 export const LandingPage = () => {
   const navigate = useNavigate();
+  const theme = useTheme();
   const [activeTab, setActiveTab] = useState(0);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -54,10 +50,11 @@ export const LandingPage = () => {
       description: 'Находите удобные парковки рядом с вашим местоположением'
     },
     {
-      icon: <PaymentIcon sx={{ fontSize: 40, color: 'black' }} />,
+      icon: <PaymentIcon sx={{ fontSize: 40, color: 'white' }} />,
       title: 'Онлайн оплата',
       description: 'Оплачивайте парковку через приложение без лишних хлопот (в разработке)',
-      inDevelopment: true
+      inDevelopment: true,
+      textColor: theme.palette.mode === 'dark' ? 'white' : 'black'
     },
     {
       icon: <StarBorder sx={{ fontSize: 40, color: 'primary.main' }} />,
@@ -67,7 +64,7 @@ export const LandingPage = () => {
     {
       icon: <Favorite sx={{ fontSize: 40, color: 'primary.main' }} />,
       title: 'Избранное',
-      description: 'Сохраняйте любимые парковки для быстрого доступа'
+      description: 'Сохрайте любимые парковки для быстрого доступа'
     }
   ];
 
@@ -88,13 +85,13 @@ export const LandingPage = () => {
       description: 'Управляйте схемой парковки и количеством мест'
     },
     {
-      icon: <AssessmentIcon sx={{ fontSize: 40, color: 'black' }} />,
+      icon: <AssessmentIcon sx={{ fontSize: 40, color: 'white' }} />,
       title: 'Статистика',
       description: 'Отслеживайте загруженность и доход',
       inDevelopment: true
     },
     {
-      icon: <PaymentIcon sx={{ fontSize: 40, color: 'black' }} />,
+      icon: <PaymentIcon sx={{ fontSize: 40, color: 'white' }} />,
       title: 'Управление ценами',
       description: 'Гибкая настройка тарифов',
       inDevelopment: true
@@ -106,7 +103,7 @@ export const LandingPage = () => {
       {/* Hero секция */}
       <Box
         sx={{
-          bgcolor: "primary.main",
+          bgcolor: theme.palette.mode === 'dark' ? "grey.900" : "primary.main",
           color: "white",
           py: 8,
         }}
@@ -125,10 +122,10 @@ export const LandingPage = () => {
                 size="large"
                 sx={{
                   mt: 4,
-                  bgcolor: "white",
-                  color: "primary.main",
+                  bgcolor: theme.palette.mode === 'dark' ? "grey.800" : "white",
+                  color: theme.palette.mode === 'dark' ? "white" : "primary.main",
                   "&:hover": {
-                    bgcolor: "grey.100",
+                    bgcolor: theme.palette.mode === 'dark' ? "grey.700" : "grey.100",
                   },
                 }}
                 onClick={() => navigate("/parkings/map")}
@@ -181,18 +178,21 @@ export const LandingPage = () => {
                       textAlign: "center",
                       position: "relative",
                       bgcolor: feature.inDevelopment
-                        ? "warning.light"
+                        ? theme.palette.mode === 'dark' ? "#f08b18" : "warning.light"
                         : "background.paper",
                       display: "flex",
                       flexDirection: "column",
                     }}
                   >
                     <Box sx={{ mb: 2 }}>{feature.icon}</Box>
-                    <Typography variant="h6" sx={{ mb: 2 }}>
+                    <Typography
+                      variant="h6"
+                      sx={{ mb: 2, color: feature.textColor }}
+                    >
                       {feature.title}
                     </Typography>
                     <Typography
-                      color={feature.inDevelopment ? "black" : "text.secondary"}
+                      sx={{ color: feature.textColor }}
                     >
                       {feature.description}
                     </Typography>
@@ -219,7 +219,7 @@ export const LandingPage = () => {
             </Grid>
 
             {/* Секция поиска машины */}
-            <Box sx={{ bgcolor: "grey.100", py: 8, mt: 8 }}>
+            <Box sx={{ bgcolor: theme.palette.mode === 'dark' ? "grey.900" : "grey.100", py: 8, mt: 8 }}>
               <Container maxWidth="lg">
                 <Grid container spacing={4} alignItems="center">
                   <Grid item xs={12} md={6}>
@@ -228,7 +228,7 @@ export const LandingPage = () => {
                     </Typography>
                     <Typography variant="body1" paragraph>
                       Благодаря интерактивной схеме парковки, вы всегда будете
-                      знать, где оставили свой автомобиль. Ваше место парковки
+                      знать, где оставили свой автобиль. Ваше место парковки
                       будет сохранено в приложении и вы легко найдете его при
                       возвращении.
                     </Typography>
@@ -290,18 +290,21 @@ export const LandingPage = () => {
                       textAlign: "center",
                       position: "relative",
                       bgcolor: feature.inDevelopment
-                        ? "warning.light"
+                        ? theme.palette.mode === 'dark' ? "#f08b18" : "warning.light"
                         : "background.paper",
                       display: "flex",
                       flexDirection: "column",
                     }}
                   >
                     <Box sx={{ mb: 2 }}>{feature.icon}</Box>
-                    <Typography variant="h6" sx={{ mb: 2 }}>
+                    <Typography
+                      variant="h6"
+                      sx={{ mb: 2, color: feature.textColor }}
+                    >
                       {feature.title}
                     </Typography>
                     <Typography
-                      color={feature.inDevelopment ? "black" : "text.secondary"}
+                      sx={{ color: feature.textColor }}
                     >
                       {feature.description}
                     </Typography>
@@ -331,7 +334,7 @@ export const LandingPage = () => {
       </Container>
 
       {/* Секция о мобильном приложении */}
-      <Box sx={{ bgcolor: "grey.100", py: 8, mt: 8 }}>
+      <Box sx={{ bgcolor: theme.palette.mode === 'dark' ? "grey.900" : "grey.100", py: 8, mt: 8 }}>
         <Container maxWidth="lg">
           <Grid container spacing={4} alignItems="center">
             <Grid item xs={12} md={6}>

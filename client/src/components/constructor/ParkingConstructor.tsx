@@ -15,7 +15,8 @@ import {
   FormControl,
   InputLabel,
   Select,
-  MenuItem
+  MenuItem,
+  useTheme
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RotateRightIcon from '@mui/icons-material/RotateRight';
@@ -400,6 +401,8 @@ export default function ParkingConstructor() {
     console.log('temporaryRow зменился:', temporaryRow);
   }, [temporaryRow]);
 
+  const theme = useTheme();
+
   return (
     <Box sx={{ p: 3 }}>
       <Stack direction="row" spacing={2} mb={2} alignItems="center">
@@ -434,7 +437,8 @@ export default function ParkingConstructor() {
   sx={{ 
     width: GRID_SIZES[gridSize].width, 
     height: GRID_SIZES[gridSize].height,
-    transition: 'width 0.3s ease, height 0.3s ease'
+    transition: 'width 0.3s ease, height 0.3s ease',
+    bgcolor: theme.palette.mode === 'dark' ? 'grey.400' : 'white'
   }}
 >
         {entrance && (

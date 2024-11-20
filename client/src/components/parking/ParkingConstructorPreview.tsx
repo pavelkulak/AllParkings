@@ -78,14 +78,14 @@ export default function ParkingConstructorPreview({ parkingId }: ParkingConstruc
             height: 200,
             objectFit: 'cover',
             borderRadius: 1,
-            mb: 2
+            mb: 2,
           }}
         />
       )}
 
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
-          <CircularProgress />
+          <CircularProgress/>
         </Box>
       ) : (
         <UserParkingScheme

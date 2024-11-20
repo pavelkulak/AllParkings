@@ -27,7 +27,7 @@ export default function Root() {
         display: 'flex',
         flexDirection: 'column',
         position: 'relative',
-        paddingBottom: '200px', // Добавляем отступ для футера
+        paddingBottom: '200px',
       }}
     >
       <NavBar user={user} handleSignOut={handleSignOut} />
