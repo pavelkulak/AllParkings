@@ -27,7 +27,6 @@ import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { IconButton, InputAdornment } from '@mui/material';
 import LightModeSharpIcon from '@mui/icons-material/LightModeSharp';
 import DarkModeSharpIcon from '@mui/icons-material/DarkModeSharp';
-import { useTheme } from '@mui/material/styles';
 import InfoIcon from '@mui/icons-material/Info';
 import { Tooltip } from '@mui/material';
 import InputMask from 'react-input-mask';
@@ -41,6 +40,7 @@ import { Tabs, Tab } from '@mui/material';
 import DirectionsIcon from '@mui/icons-material/Directions';
 import { ParkingSpacePreview } from '../parking/ParkingSpacePreview';
 import MapIcon from '@mui/icons-material/Map';
+import { useThemeContext } from '../theme/ThemeContext';
 
 export default function ProfilePage() {
   const { user } = useAppSelector((state) => state.auth);
@@ -69,10 +69,7 @@ export default function ProfilePage() {
   const [showParkingModal, setShowParkingModal] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
 
-  const theme = useTheme();
-  // Изменение темы на будущее
-  // const toggleTheme = () => {
-  // };
+  const { mode, toggleTheme } = useThemeContext();
 
   const handleDeleteAccount = () => {
     if (
@@ -700,7 +697,7 @@ export default function ProfilePage() {
                 value={confirmPassword}
                 onChange={handleConfirmPasswordChange}
                 size='small'
-                label='Подтвердите пароль'
+                label='Подтвердите парль'
                 variant='standard'
                 required
                 error={!!confirmPasswordError}
@@ -741,8 +738,8 @@ export default function ProfilePage() {
               <LightModeSharpIcon />
               <Typography variant='body2'>Light</Typography>
               <Switch
-                // checked={theme.palette.mode === 'dark'}
-                // onChange={toggleTheme}
+                checked={mode === 'dark'}
+                onChange={toggleTheme}
                 color='default'
               />
               <DarkModeSharpIcon />

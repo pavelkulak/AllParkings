@@ -8,8 +8,8 @@ function Footer() {
       component="footer"
       sx={{
         width: "100%",
-        backgroundColor: "primary.main",
-        color: "white",
+        backgroundColor: (theme) => theme.palette.background.footer,
+        color: (theme) => theme.palette.mode === 'dark' ? '#fff' : '#fff',
         position: 'absolute',
         bottom: 0,
         left: 0,

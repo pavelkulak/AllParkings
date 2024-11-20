@@ -25,7 +25,6 @@ import MapIcon from '@mui/icons-material/Map';
 import AddLocationIcon from '@mui/icons-material/AddLocation';
 import ChatIcon from '@mui/icons-material/Chat';
 import { useAppSelector, useAppDispatch } from '../../redux/hooks';
-import { clearUnreadCount } from '../../redux/slices/chatSlice';
 
 interface NavBarProps {
   user: IUser | null;
@@ -44,11 +43,12 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const theme = useTheme();
-  const unreadCount = useAppSelector((state) => state.chat.unreadCount);
-  const dispatch = useAppDispatch();
 
   return (
-    <AppBar position="static" sx={{ fontFamily: "Merriweather" }}>
+    <AppBar position="static" sx={{ 
+      fontFamily: "Merriweather",
+      bgcolor: (theme) => theme.palette.background.header
+    }}>
       <Toolbar disableGutters>
         <Box
           sx={{
@@ -62,7 +62,7 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
             to="/"
             sx={{
               padding: "10px 20px",
-              backgroundColor: "primary.main",
+              backgroundColor: (theme) => theme.palette.background.header,
               borderRadius: "5px",
             }}
           >
