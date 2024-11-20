@@ -7,6 +7,16 @@ module.exports = {
       'Users',
       [
         {
+          name: 'Admin',
+          surname: 'System',
+          phone: '88005553535',
+          email: 'admin@parking.com',
+          password: hashSync('admin123', 10),
+          role: 'admin',
+          createdAt: new Date(),
+          updatedAt: new Date()
+        },
+        {
           name: 'Админ',
           surname: 'Админов',
           patronymic: 'Админович',
