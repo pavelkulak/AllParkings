@@ -12,7 +12,9 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
-  
+  Snackbar,
+  Alert,
+  LinearProgress,
 } from '@mui/material';
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -77,6 +79,15 @@ export default function ProfilePage() {
 
   const theme = useTheme();
 
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
+  const [progress, setProgress] = useState(100);
+
+  const handleCloseSnackbar = () => {
+    setOpenSnackbar(false);
+  };
+
   const handleDeleteAccount = () => {
     if (
       window.confirm(
@@ -137,37 +148,54 @@ export default function ProfilePage() {
 
     const cleanedPhone = cleanPhoneNumber(phone);
 
-    dispatch(
-      updateUserProfile({
-        surname,
-        name,
-        patronymic,
-        phone: cleanedPhone,
-      }),
-    );
+    dispatch(updateUserProfile({
+      surname,
+      name,
+      patronymic,
+      phone: cleanedPhone,
+    }))
+      .unwrap()
+      .then(() => {
+        setSnackbarMessage('Данные успешно обновлены');
+        setSnackbarSeverity('success');
+        setOpenSnackbar(true);
+      })
+      .catch((error) => {
+        setSnackbarMessage(error || 'Произошла ошибка при обновлении данных');
+        setSnackbarSeverity('error');
+        setOpenSnackbar(true);
+      });
   };
 
   const handleChangePassword = () => {
     if (!currentPassword || !newPassword || !confirmPassword) {
-      alert('Пожалуйста, заполните все поля');
+      setSnackbarMessage('Пожалуйста, заполните все поля');
+      setSnackbarSeverity('error');
+      setOpenSnackbar(true);
       return;
     }
 
     const passwordError = validatePassword(newPassword);
     if (passwordError) {
-      alert(passwordError);
+      setSnackbarMessage(passwordError);
+      setSnackbarSeverity('error');
+      setOpenSnackbar(true);
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      alert('Новый пароль и подтверждение не совпадают');
+      setSnackbarMessage('Новый пароль и подтверждение не совпадают');
+      setSnackbarSeverity('error');
+      setOpenSnackbar(true);
       return;
     }
 
     dispatch(changePassword({ currentPassword, newPassword }))
       .unwrap()
       .then(() => {
-        alert('Пароль успешно изменен');
+        setSnackbarMessage('Пароль успешно изменен');
+        setSnackbarSeverity('success');
+        setOpenSnackbar(true);
         setCurrentPassword('');
         setNewPassword('');
         setConfirmPassword('');
@@ -175,7 +203,9 @@ export default function ProfilePage() {
         setConfirmPasswordError('');
       })
       .catch((error) => {
-        alert(error || 'Ошибка при изменении пароля');
+        setSnackbarMessage(error || 'Ошибка при изменении пароля');
+        setSnackbarSeverity('error');
+        setOpenSnackbar(true);
       });
   };
 
@@ -277,6 +307,25 @@ export default function ProfilePage() {
     navigate('/parkings/map', { state: { selectedParking: parking } });
   };
 
+  useEffect(() => {
+    if (openSnackbar) {
+      setProgress(100);
+      const timer = setInterval(() => {
+        setProgress((prevProgress) => {
+          if (prevProgress <= 0) {
+            clearInterval(timer);
+            return 0;
+          }
+          return prevProgress - (100 / 60);
+        });
+      }, 100);
+
+      return () => {
+        clearInterval(timer);
+      };
+    }
+  }, [openSnackbar]);
+    
   const [gridSize, setGridSize] = useState('medium');
 
   return (
@@ -1003,6 +1052,23 @@ export default function ProfilePage() {
                               onClick={() => {
                                 setSelectedBooking(booking);
                                 setShowParkingModal(true);
+                              }
+                            }}
+                          >
+                            Показать схему парковки
+                          </Button> 
+                          <Button
+                            variant="contained"
+                            startIcon={<DirectionsIcon />}
+                            onClick={() => {
+                              const parkingLot = booking.ParkingSpace?.ParkingLot;
+                              if (parkingLot?.id) {
+                                handleParkingClick(parkingLot, true);
+                              }
+                            }}
+                          >
+                            Построить маршрут
+                          </Button>
                               }}
                             >
                               Схема
@@ -1157,6 +1223,48 @@ export default function ProfilePage() {
           </DialogContent>
         </Dialog>
       )}
+
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        sx={{
+          mt: 7,
+        }}
+      >
+        <Box sx={{ position: 'relative' }}>
+          <Alert
+            onClose={handleCloseSnackbar}
+            severity={snackbarSeverity}
+            variant="filled"
+            sx={{
+              width: '100%',
+              borderRadius: 2,
+              '& .MuiAlert-message': {
+                minWidth: '200px',
+              },
+            }}
+          >
+            {snackbarMessage}
+            <LinearProgress
+              variant="determinate"
+              value={progress}
+              sx={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: 2,
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                '& .MuiLinearProgress-bar': {
+                  backgroundColor: 'rgba(255, 255, 255, 0.5)',
+                },
+              }}
+            />
+          </Alert>
+        </Box>
+      </Snackbar>
     </Box>
   );
 }
