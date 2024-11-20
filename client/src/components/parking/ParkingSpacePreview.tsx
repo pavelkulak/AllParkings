@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Box, CircularProgress, Typography, Stack } from '@mui/material';
+import { Box, CircularProgress, Typography } from '@mui/material';
 import { ConstructorGrid, GRID_SIZES } from '../constructor/ParkingConstructor';
-import { ParkingSpace, ParkingEntrance } from '../../types/parking';
+import { ParkingSpace, ParkingEntrance } from '../../types/parking.types';
 
 interface ParkingSpacePreviewProps {
   parkingId: number;
