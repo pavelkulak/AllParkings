@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { getBookingHistory, getActiveBookings } from '../bookingThunks';
+import { getBookingHistory, getActiveBookings, cancelBooking } from '../bookingThunks';
 
 interface BookingState {
   activeBookings: any[];
@@ -34,6 +34,19 @@ const bookingSlice = createSlice({
       })
       .addCase(getActiveBookings.fulfilled, (state, action) => {
         state.activeBookings = action.payload;
+      })
+      .addCase(cancelBooking.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(cancelBooking.fulfilled, (state, action) => {
+        state.status = 'idle';
+        state.activeBookings = state.activeBookings.filter(
+          booking => booking.id !== action.payload
+        );
+      })
+      .addCase(cancelBooking.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.error.message;
       });
   }
 });

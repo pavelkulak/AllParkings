@@ -37,3 +37,15 @@ export const getActiveBookings = createAsyncThunk(
     return response.data;
   }
 );
+
+export const cancelBooking = createAsyncThunk(
+  'booking/cancel',
+  async (bookingId: number, { rejectWithValue }) => {
+    try {
+      await axiosInstance.post(`/bookings/${bookingId}/cancel`);
+      return bookingId;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.error || 'Ошибка при отмене бронирования');
+    }
+  }
+);

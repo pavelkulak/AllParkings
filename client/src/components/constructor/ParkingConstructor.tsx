@@ -189,28 +189,32 @@ export default function ParkingConstructor() {
     const centerX = Math.round((GRID_SIZES[gridSize].width - 40) / 2 / 20) * 20;
     const centerY = Math.round((GRID_SIZES[gridSize].height - 40) / 2 / 20) * 20;
     
-    setEntrance({
+    setEntrance(prev => ({
+      ...prev,
       x: centerX,
       y: centerY,
       width: 40,
       height: 40
-    });
+    }));
 
-    // Загрузка существующих мест, если есть parkingId
-    if (parkingId) {
+    // Загрузка существующих мест только при монтировании компонента
+    if (parkingId && !spaces.length) {
       const fetchSpaces = async () => {
         try {
           const response = await fetch(`http://localhost:3000/api/parking-lots/${parkingId}/spaces`);
           if (!response.ok) throw new Error('Failed to fetch spaces');
           const data = await response.json();
           setSpaces(data.ParkingSpaces || []);
+          if (data.gridSize) {
+            setGridSize(data.gridSize);
+          }
         } catch (error) {
           console.error('Error fetching spaces:', error);
         }
       };
       fetchSpaces();
     }
-  }, [parkingId, gridSize]);
+  }, [parkingId]);
 
   const handleEntranceDragStop = (x: number, y: number) => {
     const maxX = GRID_SIZES[gridSize].width - 40;
@@ -323,21 +327,24 @@ export default function ParkingConstructor() {
   };
 
   const handleGridSizeChange = (newSize: keyof typeof GRID_SIZES) => {
+    console.log('Changing grid size to:', newSize);
     setGridSize(newSize);
-    // Проверяем, не выходит ли текущее количество мест за новый лимит
     if (spaces.length > GRID_SIZES[newSize].maxSpaces) {
       alert(`Текущее количесто мест (${spaces.length}) превышает лимит для выбранного размера поля (${GRID_SIZES[newSize].maxSpaces}). Удалите лишние места.`);
     }
+    console.log('New grid size:', GRID_SIZES[newSize]);
   };
 
   const handleSaveConfiguration = async () => {
     if (!parkingId || !entrance) return;
     
+    console.log('Отправляем конфигурацию с gridSize:', gridSize);
     try {
       await dispatch(saveSpacesConfiguration({
         parkingId,
         spaces,
-        entrance
+        entrance,
+        gridSize
       })).unwrap();
       
       alert('Конфигурация парковки успешно сохранена');
@@ -404,36 +411,68 @@ export default function ParkingConstructor() {
   const theme = useTheme();
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Stack direction="row" spacing={2} mb={2} alignItems="center">
-        <Button variant="contained" onClick={handleAddSpace}>
-          Добавить место
-        </Button>
-        <Button 
-          variant="contained" 
-          onClick={() => setIsRowDialogOpen(true)}
-          startIcon={<AddIcon />}
+    <Box 
+      sx={{ 
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        minHeight: 'calc(100vh - 64px)',
+        p: 3,
+        mt: 4
+      }}
+    >
+      <Box sx={{ width: '100%', maxWidth: 1200, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <Stack 
+          direction="row" 
+          spacing={2} 
+          mb={4} 
+          sx={{
+            width: '100%',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            gap: 2
+          }}
         >
-          Добавить ряд
-        </Button>
-        <FormControl sx={{ minWidth: 200 }}>
-          <InputLabel>Размер поля</InputLabel>
-          <Select
-            value={gridSize}
-            label="Размер поля"
-            onChange={(e) => handleGridSizeChange(e.target.value as keyof typeof GRID_SIZES)}
+          <Button 
+            variant="contained" 
+            onClick={handleAddSpace}
+            startIcon={<AddIcon />}
+            sx={{ minWidth: '140px', height: '36px' }}
           >
-            <MenuItem value="small">Малое (до 20 мест)</MenuItem>
-            <MenuItem value="medium">Среднее (до 40 мест)</MenuItem>
-            <MenuItem value="large">Большое (до 50 мест)</MenuItem>
-          </Select>
-        </FormControl>
-        <Button variant="contained" onClick={handleSaveConfiguration}>
-          Сохранить конфигурацию
-        </Button>
-      </Stack>
-
-      <ConstructorGrid 
+            Добавить место
+          </Button>
+          <Button 
+            variant="contained" 
+            onClick={() => setIsRowDialogOpen(true)}
+            startIcon={<AddIcon />}
+            sx={{ minWidth: '140px', height: '36px' }}
+          >
+            Добавить ряд
+          </Button>
+          <FormControl sx={{ minWidth: 200, height: '36px' }}>
+            <InputLabel>Размер поля</InputLabel>
+            <Select
+              value={gridSize}
+              label="Размер поля"
+              onChange={(e) => handleGridSizeChange(e.target.value as keyof typeof GRID_SIZES)}
+              sx={{ height: '36px' }}
+            >
+              <MenuItem value="small">Малое (до 20 мест)</MenuItem>
+              <MenuItem value="medium">Среднее (до 40 мест)</MenuItem>
+              <MenuItem value="large">Большое (до 50 мест)</MenuItem>
+            </Select>
+          </FormControl>
+          <Button 
+            variant="contained" 
+            onClick={handleSaveConfiguration}
+            sx={{ minWidth: '140px', height: '36px' }}
+          >
+            Сохранить конфигурацию
+          </Button>
+        </Stack>
+        
+        <ConstructorGrid 
   sx={{ 
     width: GRID_SIZES[gridSize].width, 
     height: GRID_SIZES[gridSize].height,
@@ -441,161 +480,161 @@ export default function ParkingConstructor() {
     bgcolor: theme.palette.mode === 'dark' ? 'grey.400' : 'white'
   }}
 >
-        {entrance && (
-          <Draggable
-            grid={[20, 20]}
-            position={{ x: entrance.x, y: entrance.y }}
-            onStop={(e, data) => handleEntranceDragStop(data.x, data.y)}
-            bounds={{
-              left: 0,
-              top: 0,
-              right: GRID_SIZES[gridSize].width - 40,
-              bottom: GRID_SIZES[gridSize].height - 40
-            }}
-          >
-            <Box
-              sx={{
-                position: 'absolute',
-                width: '40px',
-                height: '40px',
-                bgcolor: 'warning.main',
-                border: '1px solid',
-                borderColor: 'grey.300',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'move',
-                color: 'white'
+          {entrance && (
+            <Draggable
+              grid={[20, 20]}
+              position={{ x: entrance.x, y: entrance.y }}
+              onStop={(e, data) => handleEntranceDragStop(data.x, data.y)}
+              bounds={{
+                left: 0,
+                top: 0,
+                right: GRID_SIZES[gridSize].width - 40,
+                bottom: GRID_SIZES[gridSize].height - 40
               }}
             >
-              <Typography>Вход</Typography>
-            </Box>
-          </Draggable>
-        )}
-        
-        {temporaryRow && (
-          <Draggable
-            grid={[20, 20]}
-            position={temporaryRow.position}
-            bounds={{
-              left: 0,
-              top: 0,
-              right: GRID_SIZES[gridSize].width - (
-                temporaryRow.spaces[0].rotation === 90 
-                  ? 80 
-                  : temporaryRow.spaces.length * 60
-              ),
-              bottom: GRID_SIZES[gridSize].height - (
-                temporaryRow.spaces[0].rotation === 90 
-                  ? temporaryRow.spaces.length * 60
-                  : 80
-              )
-            }}
-            onStop={(e, data) => {
-              const newX = Math.round(data.x / 20) * 20;
-              const newY = Math.round(data.y / 20) * 20;
-              setTemporaryRow({
-                ...temporaryRow,
-                position: { x: newX, y: newY }
-              });
-            }}
-          >
-            <Box sx={{ position: 'absolute', cursor: 'move' }}>
-              {temporaryRow.spaces.map((space, index) => {
-                const offset = space.rotation === 90 
-                  ? { x: 0, y: index * 60 }
-                  : { x: index * 60, y: 0 };
-
-                return (
-                  <Box
-                    key={space.id}
-                    sx={{
-                      position: 'absolute',
-                      width: 40,
-                      height: 80,
-                      transform: `rotate(${space.rotation}deg)`,
-                      bgcolor: 'rgba(25, 118, 210, 0.2)',
-                      border: '2px solid #1976d2',
-                      borderRadius: 1,
-                      transformOrigin: 'center',
-                      left: offset.x,
-                      top: offset.y
-                    }}
-                  />
-                );
-              })}
-            </Box>
-          </Draggable>
-        )}
-        
-        {spaces.map((space) => (
-          <Draggable
-            key={space.id}
-            grid={[20, 20]}
-            position={{ x: space.x, y: space.y }}
-            onStart={handleDragStart}
-            onStop={(e, data) => handleDragStop(space.id, data.x, data.y)}
-            bounds={{
-              left: 0,
-              top: 0,
-              right: GRID_SIZES[gridSize].width - (space.rotation === 90 ? 80 : 40),
-              bottom: GRID_SIZES[gridSize].height - (space.rotation === 90 ? 40 : 80)
-            }}
-          >
-            <ParkingSpotWrapper>
-              <ParkingSpot
-                rotation={space.rotation}
-                elevation={3}
-                onClick={() => handleSpaceClick(space)}
+              <Box
+                sx={{
+                  position: 'absolute',
+                  width: '40px',
+                  height: '40px',
+                  bgcolor: 'warning.main',
+                  border: '1px solid',
+                  borderColor: 'grey.300',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'move',
+                  color: 'white'
+                }}
               >
-                <IconButton 
-                  size="small"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDelete(space.id);
-                  }}
-                  sx={{ alignSelf: 'flex-end' }}
-                >
-                  <DeleteIcon />
-                </IconButton>
-                <Typography>{space.number}</Typography>
-                <IconButton 
-                  size="small" 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleRotate(space.id);
-                  }}
-                >
-                  <RotateRightIcon />
-                </IconButton>
-              </ParkingSpot>
-            </ParkingSpotWrapper>
-          </Draggable>
-        ))}
-      </ConstructorGrid>
+                <Typography>Вход</Typography>
+              </Box>
+            </Draggable>
+          )}
+          
+          {temporaryRow && (
+            <Draggable
+              grid={[20, 20]}
+              position={temporaryRow.position}
+              bounds={{
+                left: 0,
+                top: 0,
+                right: GRID_SIZES[gridSize].width - (
+                  temporaryRow.spaces[0].rotation === 90 
+                    ? 80 
+                    : temporaryRow.spaces.length * 60
+                ),
+                bottom: GRID_SIZES[gridSize].height - (
+                  temporaryRow.spaces[0].rotation === 90 
+                    ? temporaryRow.spaces.length * 60
+                    : 80
+                )
+              }}
+              onStop={(e, data) => {
+                const newX = Math.round(data.x / 20) * 20;
+                const newY = Math.round(data.y / 20) * 20;
+                setTemporaryRow({
+                  ...temporaryRow,
+                  position: { x: newX, y: newY }
+                });
+              }}
+            >
+              <Box sx={{ position: 'absolute', cursor: 'move' }}>
+                {temporaryRow.spaces.map((space, index) => {
+                  const offset = space.rotation === 90 
+                    ? { x: 0, y: index * 60 }
+                    : { x: index * 60, y: 0 };
 
-      {temporaryRow && (
-        <TemporaryRowControls direction="row" spacing={1}>
-          <Button 
-            variant="contained" 
-            color="success" 
-            onClick={handleConfirmRow}
-            startIcon={<CheckIcon />}
-          >
-            Подтвердить
-          </Button>
-          <Button 
-            variant="contained" 
-            color="error" 
-            onClick={handleCancelRow}
-            startIcon={<ClearIcon />}
-          >
-            Отменить
-          </Button>
-        </TemporaryRowControls>
-      )}
+                  return (
+                    <Box
+                      key={space.id}
+                      sx={{
+                        position: 'absolute',
+                        width: 40,
+                        height: 80,
+                        transform: `rotate(${space.rotation}deg)`,
+                        bgcolor: 'rgba(25, 118, 210, 0.2)',
+                        border: '2px solid #1976d2',
+                        borderRadius: 1,
+                        transformOrigin: 'center',
+                        left: offset.x,
+                        top: offset.y
+                      }}
+                    />
+                  );
+                })}
+              </Box>
+            </Draggable>
+          )}
+          
+          {spaces.map((space) => (
+            <Draggable
+              key={space.id}
+              grid={[20, 20]}
+              position={{ x: space.x, y: space.y }}
+              onStart={handleDragStart}
+              onStop={(e, data) => handleDragStop(space.id, data.x, data.y)}
+              bounds={{
+                left: 0,
+                top: 0,
+                right: GRID_SIZES[gridSize].width - (space.rotation === 90 ? 80 : 40),
+                bottom: GRID_SIZES[gridSize].height - (space.rotation === 90 ? 40 : 80)
+              }}
+            >
+              <ParkingSpotWrapper>
+                <ParkingSpot
+                  rotation={space.rotation}
+                  elevation={3}
+                  onClick={() => handleSpaceClick(space)}
+                >
+                  <IconButton 
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(space.id);
+                    }}
+                    sx={{ alignSelf: 'flex-end' }}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                  <Typography>{space.number}</Typography>
+                  <IconButton 
+                    size="small" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRotate(space.id);
+                    }}
+                  >
+                    <RotateRightIcon />
+                  </IconButton>
+                </ParkingSpot>
+              </ParkingSpotWrapper>
+            </Draggable>
+          ))}
+        </ConstructorGrid>
 
-      <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
+        {temporaryRow && (
+          <TemporaryRowControls direction="row" spacing={1}>
+            <Button 
+              variant="contained" 
+              color="success" 
+              onClick={handleConfirmRow}
+              startIcon={<CheckIcon />}
+            >
+              Подтвердить
+            </Button>
+            <Button 
+              variant="contained" 
+              color="error" 
+              onClick={handleCancelRow}
+              startIcon={<ClearIcon />}
+            >
+              Отменить
+            </Button>
+          </TemporaryRowControls>
+        )}
+
+        <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
   <form onSubmit={handleSaveSpace}>
     <DialogTitle>Настройки парковочного места</DialogTitle>
     <DialogContent>
@@ -620,6 +659,7 @@ export default function ParkingConstructor() {
   onClose={() => setIsRowDialogOpen(false)}
   onConfirm={handleAddRow}
 />
+      </Box>
     </Box>
   );
 }

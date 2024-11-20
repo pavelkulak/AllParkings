@@ -7,8 +7,11 @@ router.get('/parking-lots/:id/configuration', async (req, res) => {
   try {
     const parkingId = req.params.id;
 
-    // Получаем все места и вход для данной парковки
-    const [spaces, entrance] = await Promise.all([
+    // Получаем парковку, все места и вход
+    const [parkingLot, spaces, entrance] = await Promise.all([
+      ParkingLot.findByPk(parkingId, {
+        attributes: ['grid_size']
+      }),
       ParkingSpace.findAll({
         where: { parkingId },
         attributes: ['id', 'number', 'x', 'y', 'rotation', 'width', 'height']
@@ -19,7 +22,11 @@ router.get('/parking-lots/:id/configuration', async (req, res) => {
       })
     ]);
 
-    res.json({ spaces, entrance });
+    res.json({ 
+      spaces, 
+      entrance,
+      gridSize: parkingLot?.grid_size || 'medium'
+    });
   } catch (error) {
     console.error('Error fetching parking configuration:', error);
     res.status(500).json({ error: 'Failed to fetch parking configuration' });
@@ -32,7 +39,38 @@ router.put('/parking-lots/:id/configuration', async (req, res) => {
   
   try {
     const parkingId = req.params.id;
-    const { spaces, entrance } = req.body;
+    const { spaces, entrance, gridSize } = req.body;
+    
+    console.log('Получен запрос на сохранение конфигурации:');
+    console.log('parkingId:', parkingId);
+    console.log('gridSize:', gridSize);
+
+    // Обновляем gridSize в ParkingLot
+    const [updatedRows] = await ParkingLot.update(
+      { 
+        grid_size: gridSize,
+        updatedAt: new Date()
+      },
+      { 
+        where: { id: parkingId },
+        transaction: t
+      }
+    );
+
+    if (updatedRows === 0) {
+      throw new Error('Не удалось обновить размер сетки парковки');
+    }
+
+    // Проверяем обновление внутри транзакции
+    const parkingLot = await ParkingLot.findByPk(parkingId, { 
+      transaction: t,
+      attributes: ['id', 'grid_size']
+    });
+
+    console.log('Проверка после обновления:', {
+      id: parkingLot.id,
+      grid_size: parkingLot.grid_size
+    });
 
     // Обновляем или создаем места
     await ParkingSpace.destroy({ where: { parkingId }, transaction: t });
@@ -71,11 +109,14 @@ router.put('/parking-lots/:id/configuration', async (req, res) => {
     }
 
     await t.commit();
-    res.json({ success: true });
+    res.json({ 
+      success: true,
+      gridSize: parkingLot.grid_size 
+    });
   } catch (error) {
     await t.rollback();
-    console.error('Error saving parking configuration:', error);
-    res.status(500).json({ error: 'Failed to save parking configuration' });
+    console.error('Ошибка при сохранении:', error);
+    res.status(500).json({ error: error.message });
   }
 });
 

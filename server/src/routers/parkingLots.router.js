@@ -63,6 +63,7 @@ parkingLotsRouter.get('/:id/spaces', async (req, res) => {
   
   try {
     const parkingLot = await ParkingLot.findByPk(req.params.id, {
+      attributes: ['id', 'grid_size'],
       include: [
         {
           model: ParkingSpace,
@@ -79,6 +80,7 @@ parkingLotsRouter.get('/:id/spaces', async (req, res) => {
     if (parkingLot) {
       console.log('Количество пространств:', parkingLot.ParkingSpaces?.length || 0);
       console.log('Наличие входа:', !!parkingLot.ParkingEntrance);
+      console.log('Размер сетки:', parkingLot.grid_size);
     }
 
     if (!parkingLot) {
@@ -86,7 +88,10 @@ parkingLotsRouter.get('/:id/spaces', async (req, res) => {
       return res.status(404).json({ error: 'Парковка не найдена' });
     }
 
-    res.json(parkingLot);
+    res.json({
+      ...parkingLot.toJSON(),
+      gridSize: parkingLot.grid_size || 'medium'
+    });
   } catch (error) {
     console.error('Ошибка при получении парковки:', error);
     res.status(500).json({ error: 'Ошибка при получении парковки' });
@@ -205,7 +210,8 @@ parkingLotsRouter.post('/', verifyAccessToken, upload.single('img'), async (req,
       capacity: 0,
       price_per_hour: Number(price_per_hour),
       status: 'pending',
-      img: req.file ? req.file.filename : null
+      img: req.file ? req.file.filename : null,
+      grid_size: req.body.grid_size || 'medium'
     });
 
     console.log('Created parking:', parkingLot.toJSON());
@@ -245,8 +251,13 @@ parkingLotsRouter.post('/:id/spaces', verifyAccessToken, async (req, res) => {
       return res.status(404).json({ error: 'Парковка не найдена' });
     }
 
-    // Транзакция для атомарной операции
     const result = await sequelize.transaction(async (t) => {
+      // Обновляем grid_size и capacity
+      await parkingLot.update({
+        grid_size: req.body.gridSize, // Получаем gridSize из тела запроса
+        capacity: req.body.spaces.length
+      }, { transaction: t });
+
       // Удаляем старые места и вход
       await ParkingSpace.destroy({
         where: { parking_id: parkingLot.id },
@@ -274,12 +285,19 @@ parkingLotsRouter.post('/:id/spaces', verifyAccessToken, async (req, res) => {
         }, { transaction: t })
       ));
 
-      await parkingLot.update({
-        capacity: req.body.spaces.length
+      // Получаем обновленную парковку для проверки
+      const updatedParkingLot = await ParkingLot.findByPk(parkingLot.id, {
+        transaction: t,
+        attributes: ['id', 'grid_size']
+      });
 
-      }, { transaction: t });
+      console.log('Обновленный grid_size:', updatedParkingLot.grid_size);
 
-      return { spaces: createdSpaces, entrance };
+      return { 
+        spaces: createdSpaces, 
+        entrance, 
+        gridSize: updatedParkingLot.grid_size 
+      };
     });
 
     res.status(201).json(result);
@@ -322,8 +340,8 @@ parkingLotsRouter.get('/:id/available-spaces', async (req, res) => {
             [Op.or]: [
               {
                 [Op.and]: [
-                  { start_time: { [Op.lte]: exit_time } },
-                  { end_time: { [Op.gte]: entry_time } }
+                  { start_time: { [Op.lt]: new Date(exit_time) } },
+                  { end_time: { [Op.gt]: new Date(entry_time) } }
                 ]
               }
             ]
@@ -335,7 +353,10 @@ parkingLotsRouter.get('/:id/available-spaces', async (req, res) => {
     // Помечаем занятые места
     const spaces = parkingLot.ParkingSpaces.map(space => ({
       ...space.toJSON(),
-      is_free: !bookings.some(booking => booking.space_id === space.id)
+      is_free: !bookings.some(booking => 
+        booking.space_id === space.id && 
+        booking.status === 'confirmed'
+      )
     }));
 
     res.json({

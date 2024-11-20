@@ -297,6 +297,7 @@ export default function CreateParkingForm() {
       formData.append('location', JSON.stringify(parkingData.location));
       formData.append('price_per_hour', parkingData.price_per_hour.toString());
       formData.append('status', 'pending');
+      formData.append('grid_size', 'medium');
 
       if (files.length > 0) {
         formData.append('img', files[0]);

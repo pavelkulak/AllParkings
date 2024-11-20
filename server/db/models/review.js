@@ -27,10 +27,10 @@ module.exports = (sequelize, DataTypes) => {
       }
     },
     rating: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.DECIMAL(2,1),
       allowNull: false,
       validate: {
-        min: 1,
+        min: 0,
         max: 5
       }
     },
