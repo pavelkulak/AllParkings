@@ -18,7 +18,6 @@ img, picture, video, canvas, svg:not(.MuiRating-icon svg):not(.MuiSvgIcon-root) 
   max-width: 100%;
 }
 
-/* Добавим специальные стили для иконок Material-UI */
 .MuiRating-icon svg,
 .MuiSvgIcon-root {
   display: inline-block;

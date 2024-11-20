@@ -453,7 +453,7 @@ export default function ProfilePage() {
                 value={name}
                 onChange={handleNameChange}
                 size='small'
-                label='мя'
+                label='Имя'
                 variant='standard'
                 required
                 error={!!nameError}

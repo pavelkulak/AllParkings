@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, Box, Typography, Button, Rating, Stack, CircularProgress, DialogTitle, IconButton } from '@mui/material';
+import { Dialog, DialogContent, Box, Typography, Button, Rating, Stack, CircularProgress, DialogTitle, IconButton, useTheme } from '@mui/material';
 import { Parking } from '../../types/parking';
 import { ParkingSpace } from '../../types/parking';
 import { ConstructorGrid, GRID_SIZES } from '../constructor/ParkingConstructor';
@@ -192,6 +192,7 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
     }
   }, [parking, open]);
 
+
   useEffect(() => {
     console.log('ParkingModal - текущий gridSize:', gridSize);
     console.log('ParkingModal - применяемые размеры:', {
@@ -199,6 +200,7 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
       height: GRID_SIZES[gridSize].height
     });
   }, [gridSize]);
+
 
   if (!parking) return null;
 
@@ -242,15 +244,17 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
             sx={{
               width: '100%',
               height: 200,
-              bgcolor: 'grey.200',
+              bgcolor: 'grey.600',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               mb: 2
             }}
           >
+
             <Typography color="text.secondary">
               изображение осутствует
+
             </Typography>
           </Box>
         )}
@@ -319,7 +323,7 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
             </Stack>
           </Stack>
         ) : (
-          <Stack spacing={2}>
+          <Stack spacing={2} >
             <Button onClick={() => {
               setShowSpaces(false);
               setSpaces([]);
@@ -334,7 +338,7 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
                 display: 'flex',
                 justifyContent: 'center',
                 gap: 2,
-                flexWrap: 'wrap'
+                flexWrap: 'wrap',
               }}>
                 <TimeSelectionSection onTimeSelect={handleTimeSelect} />
               </Box>
@@ -519,7 +523,6 @@ const TimeSelectionSection = ({ onTimeSelect }: TimeSelectionSectionProps) => {
 
   const handleExitTimeChange = (date: Date) => {
     setExit(date);
-    // Сбрасываем время выезда при изменении даты
     setExitTime(null);
   };
 
@@ -533,12 +536,14 @@ const TimeSelectionSection = ({ onTimeSelect }: TimeSelectionSectionProps) => {
     }
   };
 
+  const theme = useTheme();
+
   return (
     <Box sx={{ 
       display: 'flex', 
       gap: 2,
       justifyContent: 'center',
-      flexWrap: 'wrap'
+      flexWrap: 'wrap',
     }}>
       <TimeSelector
         label="Заезд"

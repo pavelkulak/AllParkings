@@ -14,6 +14,7 @@ export default function Root() {
   const handleSignOut = async () => {
     try {
       await dispatch(signOut()).unwrap();
+      localStorage.removeItem('themeMode');
       window.location.href = '/signin';
     } catch (error) {
       console.error('Ошибка при выходе:', error);
