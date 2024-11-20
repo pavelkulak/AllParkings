@@ -62,7 +62,6 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
             to="/"
             sx={{
               padding: "10px 20px",
-              backgroundColor: (theme) => theme.palette.background.header,
               borderRadius: "5px",
             }}
           >
@@ -226,14 +225,6 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
 
                 {user?.role === "admin" && (
                   <>
-                    <Box
-                      sx={{
-                        width: "100%",
-                        height: "3px",
-                        backgroundColor: "secondary.main",
-                        margin: "4px 0",
-                      }}
-                    />
                     <MenuItem
                       component={Link}
                       to="/admin"

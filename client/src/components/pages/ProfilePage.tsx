@@ -41,6 +41,7 @@ import DirectionsIcon from '@mui/icons-material/Directions';
 import { ParkingSpacePreview } from '../parking/ParkingSpacePreview';
 import MapIcon from '@mui/icons-material/Map';
 import { useThemeContext } from '../theme/ThemeContext';
+import { useTheme } from '@mui/material/styles';
 
 export default function ProfilePage() {
   const { user } = useAppSelector((state) => state.auth);
@@ -70,6 +71,8 @@ export default function ProfilePage() {
   const [selectedBooking, setSelectedBooking] = useState(null);
 
   const { mode, toggleTheme } = useThemeContext();
+
+  const theme = useTheme();
 
   const handleDeleteAccount = () => {
     if (

@@ -1,4 +1,4 @@
-import { PaletteMode } from '@mui/material';
+import { PaletteMode } from "@mui/material";
 
 export const getDesignTokens = (mode: PaletteMode) => ({
   typography: {
@@ -16,6 +16,8 @@ export const getDesignTokens = (mode: PaletteMode) => ({
       background: {
         default: "#fff",
         paper: "#fff",
+        header: "#1976d2",
+        footer: "#1976d2",
       },
     } : {
       primary: {

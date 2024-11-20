@@ -1,4 +1,4 @@
-import { Box, Typography, Stack } from '@mui/material';
+import { Box, Typography, Stack, useTheme } from '@mui/material';
 import { ConstructorGrid, GRID_SIZES } from '../constructor/ParkingConstructor';
 import { ParkingSpace, ParkingEntrance } from '../../types/parking';
 import styled from '@emotion/styled';
@@ -38,6 +38,8 @@ interface UserParkingSchemeProps {
 }
 
 export const UserParkingScheme = ({ spaces, entrance, userSpaceId }: UserParkingSchemeProps) => {
+  const theme = useTheme();
+
   const parsedSpaces = spaces.map(space => ({
     ...space,
     location: typeof space.location === 'string' ? JSON.parse(space.location) : space.location
@@ -54,7 +56,8 @@ export const UserParkingScheme = ({ spaces, entrance, userSpaceId }: UserParking
         sx={{ 
           width: GRID_SIZES.medium.width, 
           height: GRID_SIZES.medium.height,
-          margin: '0 auto'
+          margin: '0 auto',
+          bgcolor: theme.palette.mode === 'dark' ? 'grey.400' : 'white'        
         }}
       >
         {parsedEntrance && (
@@ -83,7 +86,7 @@ export const UserParkingScheme = ({ spaces, entrance, userSpaceId }: UserParking
             key={space.id}
             style={{
               left: space.location.x,
-              top: space.location.y
+              top: space.location.y,
             }}
           >
             <ParkingSpot

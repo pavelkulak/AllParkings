@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Box, CircularProgress, Typography } from '@mui/material';
+import { Box, CircularProgress, Typography, useTheme } from '@mui/material';
 import { ConstructorGrid, GRID_SIZES } from '../constructor/ParkingConstructor';
 import { ParkingSpace, ParkingEntrance } from '../../types/parking.types';
 
@@ -12,6 +12,8 @@ export const ParkingSpacePreview = ({ parkingId, highlightedSpaceId }: ParkingSp
   const [spaces, setSpaces] = useState<ParkingSpace[]>([]);
   const [entrance, setEntrance] = useState<ParkingEntrance | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const theme = useTheme();
 
   useEffect(() => {
     const fetchSpaces = async () => {
@@ -47,7 +49,7 @@ export const ParkingSpacePreview = ({ parkingId, highlightedSpaceId }: ParkingSp
       </Box>
     );
   }
-
+  
   return (
     <Box>
       <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 2 }}>
@@ -66,7 +68,7 @@ export const ParkingSpacePreview = ({ parkingId, highlightedSpaceId }: ParkingSp
             width: 20, 
             height: 20, 
             bgcolor: '#90EE90',
-            borderRadius: 1
+            borderRadius: 1,
           }} />
           <Typography variant="body2">Остальные места</Typography>
         </Box>
@@ -76,6 +78,7 @@ export const ParkingSpacePreview = ({ parkingId, highlightedSpaceId }: ParkingSp
         sx={{
           width: GRID_SIZES.medium.width,
           height: GRID_SIZES.medium.height,
+          bgcolor: theme.palette.mode === 'dark' ? 'grey.400' : 'white'
         }}
       >
         {spaces.map((space) => (

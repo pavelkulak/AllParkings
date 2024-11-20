@@ -10,7 +10,7 @@ export const Footer = () => {
         py: 3,
         px: 2,
         mt: 'auto',
-        backgroundColor: theme.palette.background.footer,
+        // backgroundColor: theme.palette.background.footer,
         color: theme.palette.mode === 'dark' ? '#fff' : 'inherit'
       }}
     >

@@ -9,7 +9,7 @@ import {
   Button, 
   Typography,
   Dialog,
-  DialogContent 
+  DialogContent, 
 } from '@mui/material';
 import ParkingConstructorPreview from '../parking/ParkingConstructorPreview';
 
@@ -65,7 +65,7 @@ export default function PendingParkings() {
         maxWidth="lg"
         fullWidth
       >
-        <DialogContent>
+        <DialogContent >
           {selectedParking && (
             <ParkingConstructorPreview parkingId={selectedParking.id} />
           )}
