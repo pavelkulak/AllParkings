@@ -274,6 +274,8 @@ export default function ProfilePage() {
     navigate('/parkings/map', { state: { selectedParking: parking } });
   };
 
+  const [gridSize, setGridSize] = useState('medium');
+
   return (
     <Box
       sx={{
@@ -1044,8 +1046,18 @@ export default function ProfilePage() {
   <Dialog 
     open={showParkingModal} 
     onClose={() => setShowParkingModal(false)}
-    maxWidth="lg"
-    fullWidth
+    maxWidth={false}
+    PaperProps={{
+      sx: {
+        width: (theme) => ({
+          small: '700px',
+          medium: '900px',
+          large: '1100px'
+        })[gridSize],
+        maxWidth: '90vw',
+        maxHeight: '90vh'
+      }
+    }}
   >
           <DialogTitle>
             Схема парковки
@@ -1061,6 +1073,7 @@ export default function ProfilePage() {
             <ParkingSpacePreview 
               parkingId={Number(selectedBooking.ParkingSpace.ParkingLot.id)}
               highlightedSpaceId={Number(selectedBooking.space_id)}
+              onGridSizeChange={setGridSize}
             />
           </DialogContent>
         </Dialog>

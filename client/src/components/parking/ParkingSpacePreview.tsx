@@ -5,13 +5,19 @@ import { ParkingSpace, ParkingEntrance } from '../../types/parking.types';
 
 interface ParkingSpacePreviewProps {
   parkingId: number;
-  highlightedSpaceId?: number;
+  highlightedSpaceId: number;
+  onGridSizeChange?: (size: string) => void;
 }
 
-export const ParkingSpacePreview = ({ parkingId, highlightedSpaceId }: ParkingSpacePreviewProps) => {
+export const ParkingSpacePreview = ({ 
+  parkingId, 
+  highlightedSpaceId,
+  onGridSizeChange 
+}: ParkingSpacePreviewProps) => {
   const [spaces, setSpaces] = useState<ParkingSpace[]>([]);
   const [entrance, setEntrance] = useState<ParkingEntrance | null>(null);
   const [loading, setLoading] = useState(true);
+  const [gridSize, setGridSize] = useState('medium');
 
   const theme = useTheme();
 
@@ -21,6 +27,7 @@ export const ParkingSpacePreview = ({ parkingId, highlightedSpaceId }: ParkingSp
         const response = await fetch(`http://localhost:3000/api/parking-lots/${parkingId}/spaces`);
         const data = await response.json();
         
+        setGridSize(data.gridSize || 'medium');
         setSpaces(data.ParkingSpaces || []);
         setEntrance(data.ParkingEntrance || null);
       } catch (error) {
@@ -32,6 +39,10 @@ export const ParkingSpacePreview = ({ parkingId, highlightedSpaceId }: ParkingSp
 
     fetchSpaces();
   }, [parkingId]);
+
+  useEffect(() => {
+    onGridSizeChange?.(gridSize);
+  }, [gridSize, onGridSizeChange]);
 
   const getSpaceColor = (space: ParkingSpace) => {
     if (+space.id === highlightedSpaceId) {
@@ -76,8 +87,8 @@ export const ParkingSpacePreview = ({ parkingId, highlightedSpaceId }: ParkingSp
 
       <ConstructorGrid
         sx={{
-          width: GRID_SIZES.medium.width,
-          height: GRID_SIZES.medium.height,
+          width: GRID_SIZES[gridSize].width,
+          height: GRID_SIZES[gridSize].height,
           bgcolor: theme.palette.mode === 'dark' ? 'grey.400' : 'white'
         }}
       >
