@@ -221,14 +221,14 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
             sx={{
               width: '100%',
               height: 200,
-              bgcolor: 'grey.200',
+              bgcolor: 'grey.600',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               mb: 2
             }}
           >
-            <Typography color="text.secondary" sx={{bgcolor: theme.palette.mode === 'dark' ? 'grey.400' : 'white'}}>
+            <Typography color="text.secondary" sx={{bgcolor: theme.palette.mode === 'dark' ? 'grey.600' : 'white'}}>
               изображение отсутствует
             </Typography>
           </Box>
