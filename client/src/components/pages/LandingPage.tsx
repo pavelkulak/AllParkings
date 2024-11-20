@@ -45,26 +45,28 @@ export const LandingPage = () => {
 
   const driverFeatures = [
     {
-      icon: <SearchIcon sx={{ fontSize: 40, color: 'primary.main' }} />,
-      title: 'Поиск парковок',
-      description: 'Находите удобные парковки рядом с вашим местоположением'
+      icon: <SearchIcon sx={{ fontSize: 40, color: "primary.main" }} />,
+      title: "Поиск парковок",
+      description: "Находите удобные парковки рядом с вашим местоположением",
+    },
+
+    {
+      icon: <StarBorder sx={{ fontSize: 40, color: "primary.main" }} />,
+      title: "Отзывы и оценки",
+      description: "Делитесь своим опытом и читайте отзывы других водителей",
     },
     {
-      icon: <PaymentIcon sx={{ fontSize: 40, color: 'white' }} />,
-      title: 'Онлайн оплата',
-      description: 'Оплачивайте парковку через приложение без лишних хлопот (в разработке)',
+      icon: <Favorite sx={{ fontSize: 40, color: "primary.main" }} />,
+      title: "Избранное",
+      description: "Сохрайте любимые парковки для быстрого доступа",
+    },
+    {
+      icon: <PaymentIcon sx={{ fontSize: 40, color: "white" }} />,
+      title: "Онлайн оплата",
+      description:
+        "Оплачивайте парковку через приложение без лишних хлопот (в разработке)",
       inDevelopment: true,
-      textColor: theme.palette.mode === 'dark' ? 'white' : 'black'
-    },
-    {
-      icon: <StarBorder sx={{ fontSize: 40, color: 'primary.main' }} />,
-      title: 'Отзывы и оценки',
-      description: 'Делитесь своим опытом и читайте отзывы других водителей'
-    },
-    {
-      icon: <Favorite sx={{ fontSize: 40, color: 'primary.main' }} />,
-      title: 'Избранное',
-      description: 'Сохрайте любимые парковки для быстрого доступа'
+      textColor: theme.palette.mode === "dark" ? "white" : "black",
     }
   ];
 
