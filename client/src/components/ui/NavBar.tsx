@@ -153,7 +153,12 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
                   vertical: "top",
                   horizontal: "left",
                 }}
-                sx={{ margin: 1.2 }}
+                sx={{ margin: 1.2,
+                  '& .MuiMenu-paper': {
+                    marginLeft: '-10px'
+                  }
+                 }}
+                disableScrollLock
               >
                 <MenuItem
                   sx={{
