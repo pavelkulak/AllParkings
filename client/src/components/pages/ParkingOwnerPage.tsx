@@ -22,6 +22,7 @@ import {
   CardContent,
   Rating,
   Card,
+  Grid,
 } from "@mui/material";
 import { Add as AddIcon, Description } from "@mui/icons-material";
 import { useEffect, useRef, useState } from "react";
@@ -39,6 +40,7 @@ import { Parking } from "../../types/parking";
 import { LocationButton } from "../map/LocationButton";
 import ReviewsModal from '../modals/ReviewsModal';
 import axiosInstance from "../../services/axiosInstance";
+import ParkingEditor from '../parking/ParkingEditor';
 
 interface IParkingOption {
   parking(parking: any): unknown;
@@ -612,19 +614,13 @@ export default function ParkingOwnerPage() {
             margin: 10,
           }}
         >
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              m: 0,
-              borderRadius: 5,
-              height: "100%",
-              width: "60%",
-            }}
-          >
-            Тут элемент с местами на парковке
-          </Box>
+          <Grid item xs={12} md={6}>
+            {selectedParking && (
+              <ParkingEditor 
+                parkingId={selectedParking.id}
+              />
+            )}
+          </Grid>
 
           <Box
             sx={{

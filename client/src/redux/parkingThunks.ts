@@ -48,10 +48,10 @@ export const getOwnerParkings = createAsyncThunk<ParkingLot[]>(
 
 export const saveSpacesConfiguration = createAsyncThunk<
   { spaces: ParkingSpace[]; entrance: ParkingEntrance }, 
-  { parkingId: string; spaces: ParkingSpace[]; entrance: Entrance }
+  { parkingId: string; spaces: ParkingSpace[]; entrance: Entrance; gridSize: string }
 >(
   'parking/saveSpaces',
-  async ({ parkingId, spaces, entrance }) => {
+  async ({ parkingId, spaces, entrance, gridSize }) => {
     const formattedSpaces = spaces.map(space => ({
       space_number: space.number,
       location: JSON.stringify({ x: space.x, y: space.y, rotation: space.rotation })
@@ -61,7 +61,8 @@ export const saveSpacesConfiguration = createAsyncThunk<
       `/parking-lots/${parkingId}/spaces`,
       { 
         spaces: formattedSpaces,
-        entrance: JSON.stringify({ x: entrance.x, y: entrance.y })
+        entrance: JSON.stringify({ x: entrance.x, y: entrance.y }),
+        gridSize
       }
     );
     return response.data;

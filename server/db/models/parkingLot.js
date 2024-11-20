@@ -61,6 +61,14 @@ module.exports = (sequelize, DataTypes) => {
     img: {
       type: DataTypes.STRING,
       allowNull: true
+    },
+    grid_size: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: 'medium',
+      validate: {
+        isIn: [['small', 'medium', 'large']]
+      }
     }
   }, {
     sequelize,

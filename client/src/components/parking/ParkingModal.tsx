@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, Box, Typography, Button, Rating, Stack, CircularProgress, DialogTitle, IconButton, useTheme } from '@mui/material';
 import { Parking } from '../../types/parking';
 import { ParkingSpace } from '../../types/parking';
-import { ConstructorGrid } from '../constructor/ParkingConstructor';
-import { GRID_SIZES } from '../constructor/ParkingConstructor';
+import { ConstructorGrid, GRID_SIZES } from '../constructor/ParkingConstructor';
 import { BookingDialog } from './BookingDialog';
 import CloseIcon from '@mui/icons-material/Close';
 import { Star, StarBorder } from '@mui/icons-material';
@@ -18,6 +17,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
 import { TimeSelector } from './TimeSelector';
+import { styled } from '@mui/system';
 
 interface ParkingModalProps {
   parking: Parking | null;
@@ -25,6 +25,17 @@ interface ParkingModalProps {
   onClose: () => void;
   onBuildRoute?: () => void;
 }
+
+const ParkingGrid = styled(Box)`
+  border: 1px solid #ccc;
+  position: relative;
+  background-size: 20px 20px;
+  background-image: 
+    linear-gradient(to right, rgba(0, 0, 0, 0.1) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+  margin: 20px auto;
+  transform-origin: top left;
+`;
 
 export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingModalProps) => {
   const [showSpaces, setShowSpaces] = useState(false);
@@ -35,6 +46,8 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
   const [selectedSpace, setSelectedSpace] = useState<ParkingSpace | null>(null);
   const [entryTime, setEntryTime] = useState<Date | null>(null);
   const [exitTime, setExitTime] = useState<Date | null>(null);
+  const [gridSize, setGridSize] = useState<keyof typeof GRID_SIZES>('medium');
+  const [isGridSizeLoaded, setIsGridSizeLoaded] = useState(false);
 
   const BASE_IMG_URL = 'http://localhost:3000/api/img/parking/';
 
@@ -72,36 +85,20 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
   };
 
   const fetchParkingSpaces = async (parkingId: number) => {
-    console.log('Начало fetchParkingSpaces для parkingId:', parkingId);
     try {
       setLoading(true);
-      console.log('Отправка запроса к API...');
+      setIsGridSizeLoaded(false);
       
       const response = await fetch(`http://localhost:3000/api/parking-lots/${parkingId}/spaces`);
-      console.log('Получен ответ от сервера:', response.status);
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Ошибка от сервера:', errorData);
-        throw new Error('Ошибка загрузки мест');
-      }
-      
       const data = await response.json();
-      console.log('Полученные данные:', JSON.stringify(data, null, 2));
-      console.log('ParkingSpaces:', data.ParkingSpaces);
-      console.log('ParkingEntrance:', data.ParkingEntrance);
       
-      setSpaces(data.ParkingSpaces || []);
-      console.log('Установлены места:', data.ParkingSpaces?.length || 0);
-      
-      setEntrance(data.ParkingEntrance || null);
-      console.log('Установлен вход:', data.ParkingEntrance ? 'да' : 'нет');
+      setGridSize(data.gridSize || 'medium');
+      setIsGridSizeLoaded(true);
       
     } catch (error) {
       console.error('Ошибка при загрузке данных:', error);
     } finally {
       setLoading(false);
-      console.log('Загрузка завершена');
     }
   };
 
@@ -123,23 +120,23 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
   const checkAvailableSpaces = async (parkingId: number, entry: Date, exit: Date) => {
     try {
       setLoading(true);
+      
       const response = await fetch(
-        `http://localhost:3000/api/parking-lots/${parkingId}/available-spaces?` + 
+        `http://localhost:3000/api/parking-lots/${parkingId}/spaces?` + 
         `entry_time=${entry.toISOString()}&exit_time=${exit.toISOString()}`
       );
       
-      if (!response.ok) {
-        throw new Error('Ошибка при получении мест');
-      }
-      
       const data = await response.json();
-      console.log('Полученные данные:', data);
+      console.log('Полученные данные о местах:', {
+        totalSpaces: data.ParkingSpaces?.length,
+        freeSpaces: data.ParkingSpaces?.filter(s => s.is_free).length
+      });
       
       setSpaces(data.ParkingSpaces || []);
       setEntrance(data.ParkingEntrance || null);
+      
     } catch (error) {
       console.error('Ошибка при проверке доступности:', error);
-      setSpaces([]);
     } finally {
       setLoading(false);
     }
@@ -149,6 +146,13 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
     if (!entryTime || !exitTime) {
       return;
     }
+    
+    console.log('Клик по месту:', {
+      spaceId: space.id,
+      isFree: space.is_free,
+      selectedTime: { entryTime, exitTime }
+    });
+    
     if (space.is_free) {
       setSelectedSpace(space);
     } else {
@@ -161,13 +165,24 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
     
     setEntryTime(entry);
     setExitTime(exit);
-    setShowSpaces(true);
     
     try {
-      await checkAvailableSpaces(parking.id, entry, exit);
+      setLoading(true);
+      const response = await fetch(
+        `http://localhost:3000/api/parking-lots/${parking.id}/available-spaces?` + 
+        `entry_time=${entry.toISOString()}&exit_time=${exit.toISOString()}`
+      );
+      
+      const data = await response.json();
+      setSpaces(data.ParkingSpaces || []);
+      setEntrance(data.ParkingEntrance || null);
+      setShowSpaces(true);
+      
     } catch (error) {
       console.error('Ошибка при проверке доступности:', error);
       setShowSpaces(false);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -177,7 +192,15 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
     }
   }, [parking, open]);
 
-  const theme = useTheme();
+
+  useEffect(() => {
+    console.log('ParkingModal - текущий gridSize:', gridSize);
+    console.log('ParkingModal - применяемые размеры:', {
+      width: GRID_SIZES[gridSize].width,
+      height: GRID_SIZES[gridSize].height
+    });
+  }, [gridSize]);
+
 
   if (!parking) return null;
 
@@ -228,8 +251,10 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
               mb: 2
             }}
           >
-            <Typography color="text.secondary" sx={{bgcolor: theme.palette.mode === 'dark' ? 'grey.600' : 'white'}}>
-              изображение отсутствует
+
+            <Typography color="text.secondary">
+              изображение осутствует
+
             </Typography>
           </Box>
         )}
@@ -326,7 +351,7 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
                   Время: {entryTime.toLocaleString()} - {exitTime.toLocaleString()}
                 </Typography>
                 
-                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 2 }}>
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb:0.5}}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Box sx={{ 
                       width: 20, 
@@ -335,10 +360,10 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
                       border: '2px solid #03c503',
                       borderRadius: 1
                     }} />
-                    <Typography variant="body2">Свободно</Typography>
+                    <Typography variant="body2">Свободн</Typography>
                   </Box>
                   
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1,}}>
                     <Box sx={{ 
                       width: 20, 
                       height: 20, 
@@ -350,82 +375,105 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
                   </Box>
                 </Box>
 
-                {loading ? (
+                {loading || !isGridSizeLoaded ? (
                   <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                     <CircularProgress />
                   </Box>
                 ) : (
-                  <ConstructorGrid
-                    sx={{
-                      width: GRID_SIZES.medium.width,
-                      height: GRID_SIZES.medium.height,
-                    }}
-                  >
-                    {entrance && (
-                      <Box
-                        key="entrance"
+                  <Box sx={{ 
+                    maxWidth: '100%', 
+                    maxHeight: '70vh',
+                    overflow: 'auto',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    px: 2,
+                    pb: 2
+                    
+                  }}>
+                    <Box sx={{
+                      width: '800px',
+                      height: '600px',
+                      position: 'relative'
+                    }}>
+                      <ConstructorGrid
                         sx={{
-                          position: 'absolute',
-                          left: JSON.parse(entrance.location).x,
-                          top: JSON.parse(entrance.location).y,
-                          width: 40,
-                          height: 40,
-                          bgcolor: 'warning.main',
-                          border: '1px solid',
-                          borderColor: 'grey.300',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: 'white'
+                          width: GRID_SIZES[gridSize].width,
+                          height: GRID_SIZES[gridSize].height,
+                          transform: `scale(${Math.min(
+                            800 / GRID_SIZES[gridSize].width,
+                            596 / GRID_SIZES[gridSize].height
+                          )})`,
+                          transformOrigin: 'top left',
+                          bgcolor: 'background.paper'
                         }}
                       >
-                        <Typography>Вход</Typography>
-                      </Box>
-                    )}
-
-                    {spaces.map((space) => {
-                      const location = typeof space.location === 'string' 
-                        ? JSON.parse(space.location) 
-                        : space.location;
-
-                      return (
-                        <Box
-                          key={space.id}
-                          sx={{
-                            position: 'absolute',
-                            left: location.x,
-                            top: location.y,
-                            width: 40,
-                            height: 80,
-                            transform: `rotate(${location.rotation}deg)`,
-                            bgcolor: space.is_free ? 'rgba(3, 197, 3, 0.2)' : 'rgba(211, 47, 47, 0.2)',
-                            border: '2px solid',
-                            borderRadius: 4,
-                            borderColor: space.is_free ? '#03c503' : '#d32f2f',
-                            cursor: space.is_free ? 'pointer' : 'not-allowed',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            '&:hover': {
-                              opacity: space.is_free ? 0.8 : 1
-                            }
-                          }}
-                          onClick={() => {
-                            handleSpaceClick(space);
-                          }}
-                        >
-                          <Typography
+                        {entrance && (
+                          <Box
+                            key="entrance"
                             sx={{
-                              color: 'black',
-                              fontSize: '0.8rem'
+                              position: 'absolute',
+                              left: JSON.parse(entrance.location).x,
+                              top: JSON.parse(entrance.location).y,
+                              width: 40,
+                              height: 40,
+                              bgcolor: 'warning.main',
+                              border: '1px solid',
+                              borderColor: 'grey.300',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: 'white'
                             }}
                           >
-                            {space.space_number}
-                          </Typography>
-                        </Box>
-                      );
-                    })}
-                  </ConstructorGrid>
+                            <Typography>Вход</Typography>
+                          </Box>
+                        )}
+
+                        {spaces.map((space) => {
+                          const location = typeof space.location === 'string' 
+                            ? JSON.parse(space.location) 
+                            : space.location;
+
+                          return (
+                            <Box
+                              key={space.id}
+                              sx={{
+                                position: 'absolute',
+                                left: location.x,
+                                top: location.y,
+                                width: 40,
+                                height: 80,
+                                transform: `rotate(${location.rotation}deg)`,
+                                bgcolor: space.is_free ? 'rgba(3, 197, 3, 0.2)' : 'rgba(211, 47, 47, 0.2)',
+                                border: '2px solid',
+                                borderRadius: 4,
+                                borderColor: space.is_free ? '#03c503' : '#d32f2f',
+                                cursor: space.is_free ? 'pointer' : 'not-allowed',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                '&:hover': {
+                                  opacity: space.is_free ? 0.8 : 1
+                                }
+                              }}
+                              onClick={() => {
+                                handleSpaceClick(space);
+                              }}
+                            >
+                              <Typography
+                                sx={{
+                                  color: 'black',
+                                  fontSize: '0.8rem'
+                                }}
+                              >
+                                {space.space_number}
+                              </Typography>
+                            </Box>
+                          );
+                        })}
+                      </ConstructorGrid>
+                    </Box>
+                  </Box>
                 )}
                 {selectedSpace && parking && entryTime && exitTime && (
                   <BookingDialog

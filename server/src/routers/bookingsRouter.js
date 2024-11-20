@@ -128,4 +128,35 @@ bookingsRouter.get('/active', verifyAccessToken, async (req, res) => {
   }
 });
 
+bookingsRouter.post('/:id/cancel', verifyAccessToken, async (req, res) => {
+  try {
+    const bookingId = parseInt(req.params.id);
+    const userId = res.locals.user.id;
+
+    const booking = await Booking.findByPk(bookingId);
+
+    if (!booking) {
+      return res.status(404).json({ message: 'Бронирование не найдено' });
+    }
+
+    if (booking.user_id !== userId) {
+      return res.status(403).json({ message: 'Нет доступа к этому бронированию' });
+    }
+
+    const now = new Date();
+    if (new Date(booking.start_time) < now) {
+      return res.status(400).json({ 
+        message: 'Нельзя отменить бронирование, которое уже началось' 
+      });
+    }
+
+    await booking.destroy();
+
+    res.json({ message: 'Бронирование успешно отменено' });
+  } catch (error) {
+    console.error('Ошибка при отмене бронирования:', error);
+    res.status(500).json({ message: 'Внутренняя ошибка сервера' });
+  }
+});
+
 module.exports = bookingsRouter;
