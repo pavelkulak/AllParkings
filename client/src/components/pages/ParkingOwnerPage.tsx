@@ -147,21 +147,48 @@ export default function ParkingOwnerPage() {
     }
   };
 
-  // Обработчик изменения значения в Autocomplete
+  // Обработчик выбора парковки в Autocomplete
   const handleParkingChange = (
     _: React.SyntheticEvent,
     option: IParkingOption | null
   ) => {
     if (option) {
-      // Проверяем права доступа (админ или владелец)
+      // Проверяем права доступа
       if (user?.role === 'admin' || option.parking.owner_id === user?.id) {
         setSelectedParking(option.parking);
+        // Устанавливаем данные выбранной парковки
+        setParkingData({
+          status: option.parking.status,
+          name: option.parking.name,
+          description: option.parking.description || "",
+          location: {
+            address: option.parking.location?.address || "",
+            coordinates: {
+              lat: option.parking.location?.coordinates?.lat || null,
+              lon: option.parking.location?.coordinates?.lon || null,
+            },
+          },
+          price_per_hour: option.parking.price_per_hour?.toString() || ""
+        });
       } else {
         alert('У вас нет доступа к этой парковке');
         setSelectedParking(null);
       }
     } else {
       setSelectedParking(null);
+      setParkingData({
+        status: "",
+        name: "",
+        description: "",
+        location: {
+          address: "",
+          coordinates: {
+            lat: null,
+            lon: null,
+          },
+        },
+        price_per_hour: ""
+      });
     }
   };
 
@@ -179,15 +206,14 @@ export default function ParkingOwnerPage() {
 
   const [isSaving, setIsSaving] = useState(false);
 
+  // Обработчик сохранения изменений
   const handleSaveChanges = async () => {
     if (!selectedParking) return;
 
     try {
-      // Включаем индикатор загрузки
       setIsSaving(true);
 
-      // Отправляем запрос на обновление
-      const updatedData = await dispatch(
+      await dispatch(
         updateMyParkings({
           id: selectedParking.id,
           name: parkingData.name,
@@ -200,20 +226,22 @@ export default function ParkingOwnerPage() {
             },
           },
           price_per_hour: Number(parkingData.price_per_hour),
+          status: selectedParking.status // Сохраняем текущий статус
         })
       ).unwrap();
 
-      // Имитируем задержку
       await new Promise((resolve) => setTimeout(resolve, 3000));
-
-      // Получаем обновленный список парковок
+      
+      // Обновляем список парковок
       const parkings = await dispatch(getMyParkings()).unwrap();
-
-      const updatedParking = parkings.find((p) => p.id === selectedParking.id);
-
+      
+      // Находим обновленную парковку
+      const updatedParking = parkings.find(p => p.id === selectedParking.id);
       if (updatedParking) {
         setSelectedParking(updatedParking);
+        // Обновляем данные текущей парковки
         setParkingData({
+          status: updatedParking.status,
           name: updatedParking.name,
           description: updatedParking.description || "",
           location: {
@@ -223,14 +251,13 @@ export default function ParkingOwnerPage() {
               lon: updatedParking.location?.coordinates?.lon || null,
             },
           },
-          price_per_hour: updatedParking.price_per_hour.toString(),
+          price_per_hour: updatedParking.price_per_hour?.toString() || ""
         });
       }
     } catch (error) {
       console.error("Ошибка при сохранении изменений:", error);
       setError("Ошибка при сохранении изменений");
     } finally {
-      // Выключаем индикатор загрузки
       setIsSaving(false);
     }
   };
