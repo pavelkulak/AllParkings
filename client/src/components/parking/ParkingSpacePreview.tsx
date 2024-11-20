@@ -92,28 +92,33 @@ export const ParkingSpacePreview = ({
           bgcolor: theme.palette.mode === 'dark' ? 'grey.400' : 'white'
         }}
       >
-        {spaces.map((space) => (
-          <Box
-          key={space.id}
-          sx={{
-            position: 'absolute',
-            left: JSON.parse(space.location).x,
-            top: JSON.parse(space.location).y,
-            width: 40,
-            height: 80,
-            bgcolor: getSpaceColor(space),
-            border: '1px solid',
-            borderColor: 'grey.300',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: 4,
-            color: space.id === highlightedSpaceId ? 'white' : 'inherit',
-          }}
-        >
-          {getSpaceLabel(space)}
-        </Box>
-        ))}
+        {spaces.map((space) => {
+          const location = JSON.parse(space.location);
+          
+          return (
+            <Box
+              key={space.id}
+              sx={{
+                position: 'absolute',
+                left: location.x,
+                top: location.y,
+                width: 40,
+                height: 80,
+                transform: `rotate(${location.rotation}deg)`,
+                bgcolor: getSpaceColor(space),
+                border: '1px solid',
+                borderColor: 'grey.300',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: 4,
+                color: space.id === highlightedSpaceId ? 'white' : 'inherit',
+              }}
+            >
+              {getSpaceLabel(space)}
+            </Box>
+          );
+        })}
         {entrance && (
           <Box
             sx={{
