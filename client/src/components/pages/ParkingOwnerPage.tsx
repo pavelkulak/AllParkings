@@ -41,6 +41,8 @@ import { LocationButton } from "../map/LocationButton";
 import ReviewsModal from '../modals/ReviewsModal';
 import axiosInstance from "../../services/axiosInstance";
 import ParkingEditor from '../parking/ParkingEditor';
+import { FileUploader } from '../common/FileUploader';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
 interface IParkingOption {
   parking(parking: any): unknown;
@@ -214,23 +216,19 @@ export default function ParkingOwnerPage() {
 
     try {
       setIsSaving(true);
+      const formData = new FormData();
+      
+      formData.append('name', parkingData.name);
+      formData.append('description', parkingData.description);
+      formData.append('location', JSON.stringify(parkingData.location));
+      formData.append('price_per_hour', parkingData.price_per_hour);
+      formData.append('status', selectedParking.status);
+      
+      if (files.length > 0) {
+        formData.append('image', files[0]);
+      }
 
-      await dispatch(
-        updateMyParkings({
-          id: selectedParking.id,
-          name: parkingData.name,
-          description: parkingData.description,
-          location: {
-            address: parkingData.location?.address || "",
-            coordinates: {
-              lat: parkingData.location?.coordinates?.lat || null,
-              lon: parkingData.location?.coordinates?.lon || null,
-            },
-          },
-          price_per_hour: Number(parkingData.price_per_hour),
-          status: selectedParking.status // Сохраняем текущий статус
-        })
-      ).unwrap();
+      await dispatch(updateMyParkings(formData)).unwrap();
 
       await new Promise((resolve) => setTimeout(resolve, 3000));
       
@@ -569,6 +567,12 @@ export default function ParkingOwnerPage() {
     }
   };
 
+  const [files, setFiles] = useState<File[]>([]);
+
+  const handleFilesChange = (newFiles: File[]) => {
+    setFiles(newFiles);
+  };
+
   return (
     <Box
       sx={{
@@ -768,6 +772,58 @@ export default function ParkingOwnerPage() {
                 )}
               </Box>
             )}
+
+            <Box sx={{ width: '100%', mb: 2 }}>
+              <FileUploader
+                files={files}
+                onFilesChange={handleFilesChange}
+                maxFiles={1}
+                acceptedFileTypes={["image/jpeg", "image/png"]}
+                maxFileSize={5 * 1024 * 1024}
+              >
+                <Box sx={{
+                  border: "2px dashed #ccc",
+                  borderRadius: 2,
+                  p: 3,
+                  alignContent: "center",
+                  cursor: "pointer",
+                  "&:hover": {
+                    borderColor: "primary.main",
+                    bgcolor: "rgba(0, 0, 0, 0.04)",
+                  },
+                  display: "flex",
+                  alignItems: "center",
+                  flexDirection: "column",
+                }}>
+                  <CloudUploadIcon sx={{ fontSize: 36, color: "text.secondary" }} />
+                  <Typography variant="body2" sx={{ mt: 1 }}>
+                    Перетащите фотографию сюда или кликните для выбора
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Поддерживаются JPG, PNG. Максимальный размер файла: 5MB
+                  </Typography>
+                </Box>
+              </FileUploader>
+
+              {(selectedParking?.img || files.length > 0) && (
+                <Box sx={{ mt: 2 }}>
+                  <Box
+                    component="img"
+                    src={files.length > 0 
+                      ? URL.createObjectURL(files[0])
+                      : `http://localhost:3000/api/img/parking/${selectedParking.img}`
+                    }
+                    alt={parkingData.name}
+                    sx={{
+                      width: '100%',
+                      height: 200,
+                      objectFit: "cover",
+                      borderRadius: 1,
+                    }}
+                  />
+                </Box>
+              )}
+            </Box>
 
             <TextField
               size="small"
