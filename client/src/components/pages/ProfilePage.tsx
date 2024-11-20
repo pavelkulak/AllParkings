@@ -932,7 +932,12 @@ export default function ProfilePage() {
                               variant="outlined"
                               size="small" 
                               startIcon={<DirectionsIcon />}
-                              onClick={() => handleParkingClick(booking.ParkingSpace?.ParkingLot)}
+                              onClick={() => {
+                                const parkingLot = booking.ParkingSpace?.ParkingLot;
+                                if (parkingLot?.id) {
+                                  handleParkingClick(parkingLot);
+                                }
+                              }}
                             >
                               Маршрут
                             </Button>
@@ -1052,23 +1057,6 @@ export default function ProfilePage() {
                               onClick={() => {
                                 setSelectedBooking(booking);
                                 setShowParkingModal(true);
-                              }
-                            }}
-                          >
-                            Показать схему парковки
-                          </Button> 
-                          <Button
-                            variant="contained"
-                            startIcon={<DirectionsIcon />}
-                            onClick={() => {
-                              const parkingLot = booking.ParkingSpace?.ParkingLot;
-                              if (parkingLot?.id) {
-                                handleParkingClick(parkingLot, true);
-                              }
-                            }}
-                          >
-                            Построить маршрут
-                          </Button>
                               }}
                             >
                               Схема
@@ -1077,7 +1065,12 @@ export default function ProfilePage() {
                               variant="outlined"
                               size="small" 
                               startIcon={<DirectionsIcon />}
-                              onClick={() => handleParkingClick(booking.ParkingSpace?.ParkingLot)}
+                              onClick={() => {
+                                const parkingLot = booking.ParkingSpace?.ParkingLot;
+                                if (parkingLot?.id) {
+                                  handleParkingClick(parkingLot);
+                                }
+                              }}
                             >
                               Маршрут
                             </Button>
