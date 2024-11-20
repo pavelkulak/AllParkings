@@ -1,4 +1,4 @@
-import { Box, TextField, Stack, Button } from '@mui/material';
+import { Box, TextField, Stack, Button, useTheme } from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider, DateCalendar } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
@@ -35,6 +35,8 @@ export const TimeSelector = ({
     return slots;
   };
 
+  const theme = useTheme();
+
   const now = dayjs();
 
   const isTimeDisabled = (time: string) => {
@@ -57,7 +59,7 @@ export const TimeSelector = ({
   };
 
   return (
-    <Box>
+    <Box >
       <TextField
         fullWidth
         value={`${label}: ${dayjs(selectedDate).format('DD MMMM')}, ${selectedTime || ''}`}
@@ -65,9 +67,10 @@ export const TimeSelector = ({
         size="small"
         sx={{ 
           mb: 1,
-          '& .MuiOutlinedInput-root': {
-            backgroundColor: label === 'Заезд' ? '#e8f5e9' : '#fff3e0'
-          }
+          bgcolor: theme.palette.mode === 'dark' ? 'grey.600' : 'white',
+          // '& .MuiOutlinedInput-root': {
+          //   backgroundColor: label === 'Заезд' ? '#e8f5e9' : '#fff3e0'
+          // }
         }}
         InputProps={{
           readOnly: true,
@@ -88,6 +91,7 @@ export const TimeSelector = ({
               onChange={(newDate) => onDateChange(newDate?.toDate() || new Date())}
               minDate={now}
               sx={{ 
+                bgcolor: theme.palette.mode === 'dark' ? "grey.800" : "white",
                 width: 250,
                 '& .MuiPickersDay-root': {
                   borderRadius: '50%',
@@ -126,7 +130,7 @@ export const TimeSelector = ({
           width: 90,
           border: '1px solid #e0e0e0',
           borderRadius: 1,
-          p: 0.5
+          p: 0.5,
         }}>
           {generateTimeSlots().map((time) => {
             const isDisabled = isTimeDisabled(time);
