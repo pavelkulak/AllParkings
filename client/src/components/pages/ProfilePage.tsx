@@ -65,7 +65,7 @@ export default function ProfilePage() {
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dispatch = useAppDispatch();
-  const [activeTab, setActiveTab] = useState('settings');
+  const [activeTab, setActiveTab] = useState('history');
   const { favorites, status } = useAppSelector((state) => state.favorites);
   const { activeBookings, bookingHistory } = useAppSelector(
     (state) => state.booking,
@@ -368,11 +368,11 @@ export default function ProfilePage() {
       }}
     >
       <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2, gap: 2 }}>
-        <Button
-          onClick={() => setActiveTab('settings')}
-          variant={activeTab === 'settings' ? 'contained' : 'outlined'}
+      <Button
+          onClick={() => setActiveTab('history')}
+          variant={activeTab === 'history' ? 'contained' : 'outlined'}
         >
-          Настройки
+          История
         </Button>
         <Button
           onClick={() => setActiveTab('favorites')}
@@ -380,11 +380,12 @@ export default function ProfilePage() {
         >
           Избранное
         </Button>
+        
         <Button
-          onClick={() => setActiveTab('history')}
-          variant={activeTab === 'history' ? 'contained' : 'outlined'}
+          onClick={() => setActiveTab('settings')}
+          variant={activeTab === 'settings' ? 'contained' : 'outlined'}
         >
-          История
+          Настройки
         </Button>
       </Box>
 
