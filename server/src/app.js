@@ -13,7 +13,7 @@ const io = require('socket.io')(server, {
     credentials: true
   }
 });
-пше щ
+
 const { PORT } = process.env;
 
 const tokensRouter = require('./routers/token.router');
