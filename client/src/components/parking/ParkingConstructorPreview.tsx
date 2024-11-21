@@ -65,7 +65,7 @@ export default function ParkingConstructorPreview({ parkingId }: ParkingConstruc
         <Typography variant="subtitle1">Название: {parking.name}</Typography>
         <Typography variant="body1">Адрес: {parking.location.address}</Typography>
         <Typography variant="body1">Цена за час: {parking.price_per_hour}₽</Typography>
-        <Typography variant="body1">Статус: {parking.status}</Typography>
+        <Typography variant="body1">Статус: на рассмотрении</Typography>
       </Box>
 
       {parking.img && (

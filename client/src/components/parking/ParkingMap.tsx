@@ -209,8 +209,15 @@ export const ParkingMap = () => {
   };
 
   return (
-    <Container maxWidth="lg">
-      <Paper elevation={3} sx={{ p: 2, mt: 10 }}>
+    <Container  maxWidth={false} 
+    sx={{ 
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      px: { xs: 2, sm: 3 }, 
+      py: 3 
+    }}>
+      <Paper elevation={3} sx={{ p: 2, mt: 10, width: '1400px', height: '1000px'}}>
         <Typography variant="h5" component="h1" gutterBottom>
           Карта парковок
         </Typography>
@@ -235,7 +242,17 @@ export const ParkingMap = () => {
             if (!mapInstanceRef.current || !mapglAPI) return;
             createUserMarker(mapglAPI, mapInstanceRef.current, coords);
           }} />
-          <Box ref={mapContainerRef} sx={{ height: 600, width: '100%' }} />
+          <Box 
+  ref={mapContainerRef} 
+  sx={{ 
+    height: '70vh', // Используем viewport height вместо фиксированной высоты
+    width: '100%',
+    minHeight: 600, // Минимальная высота
+    borderRadius: 2,
+    overflow: 'hidden',
+    boxShadow: 1
+  }} 
+/>
         </Box>
       </Paper>
       <ParkingModal 
