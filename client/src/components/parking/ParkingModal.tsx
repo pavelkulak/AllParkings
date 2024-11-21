@@ -19,6 +19,8 @@ import 'dayjs/locale/ru';
 import { TimeSelector } from './TimeSelector';
 import { styled } from '@mui/system';
 
+
+
 interface ParkingModalProps {
   parking: Parking | null;
   open: boolean;
@@ -56,7 +58,7 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
   const { favorites } = useAppSelector((state) => state.favorites);
 
   const isAuthenticated = !!user;
-
+  const theme = useTheme();
   console.log('Auth state:', { isAuthenticated });
 
   const isFavorite = favorites.some(fav => fav.id === parking?.id);
@@ -462,7 +464,7 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
                             >
                               <Typography
                                 sx={{
-                                  color: 'black',
+                                  color: theme.palette.mode === 'dark' ? 'white' : 'black',
                                   fontSize: '0.8rem'
                                 }}
                               >
