@@ -64,7 +64,7 @@ export const LandingPage = () => {
       icon: <PaymentIcon sx={{ fontSize: 40, color: "white" }} />,
       title: "Онлайн оплата",
       description:
-        "Оплачивайте парковку через приложение без лишних хлопот (в разработке)",
+        "Оплачивайте парковку через приложение без лишних хлопот",
       inDevelopment: true,
       textColor: theme.palette.mode === "dark" ? "white" : "black",
     }
@@ -202,8 +202,8 @@ export const LandingPage = () => {
                       <Box
                         sx={{
                           position: "absolute",
-                          top: 8,
-                          right: 8,
+                          top: 0,
+                          right: 0,
                           bgcolor: "warning.main",
                           color: "black",
                           px: 1,
@@ -314,8 +314,8 @@ export const LandingPage = () => {
                       <Box
                         sx={{
                           position: "absolute",
-                          top: 8,
-                          right: 8,
+                          top: 0,
+                          right: 0,
                           bgcolor: "warning.main",
                           color: "black",
                           px: 1,
