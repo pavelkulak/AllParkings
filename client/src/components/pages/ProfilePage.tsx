@@ -16,7 +16,7 @@ import {
   Alert,
   LinearProgress,
 } from '@mui/material';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   updateAvatar,
@@ -167,7 +167,8 @@ export default function ProfilePage() {
       });
   };
 
-  const handleChangePassword = () => {
+  const handleChangePassword = (e: MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    e.preventDefault();
     if (!currentPassword || !newPassword || !confirmPassword) {
       setSnackbarMessage('Пожалуйста, заполните все поля');
       setSnackbarSeverity('error');
@@ -795,7 +796,7 @@ export default function ProfilePage() {
               variant='contained'
               color='primary'
               size='medium'
-              onClick={handleChangePassword}
+              onClick={(e) => handleChangePassword(e)}
               disabled={
                 !currentPassword ||
                 !newPassword ||
@@ -987,7 +988,7 @@ export default function ProfilePage() {
                         <Grid container spacing={2}>
                           <Grid item xs={12} sm={6}>
                             <Box sx={{ 
-                              bgcolor: (theme) => theme.palette.mode === 'dark' ? 'background.default' : 'grey.100',
+                              bgcolor: theme.palette.mode === 'dark' ? "grey.800" : "grey.100",
                               p: 2, 
                               borderRadius: 1,
                               boxShadow: (theme) => theme.palette.mode === 'dark' ? 'none' : 1,
@@ -1012,7 +1013,7 @@ export default function ProfilePage() {
                           
                           <Grid item xs={12} sm={6}>
                             <Box sx={{ 
-                              bgcolor: (theme) => theme.palette.mode === 'dark' ? 'background.default' : 'grey.100',
+                              bgcolor: theme.palette.mode === 'dark' ? "grey.800" : "grey.100",
                               p: 2, 
                               borderRadius: 1,
                               boxShadow: (theme) => theme.palette.mode === 'dark' ? 'none' : 1,
@@ -1116,13 +1117,13 @@ export default function ProfilePage() {
                         <Grid container spacing={2}>
                           <Grid item xs={12} sm={6}>
                             <Box sx={{ 
-                              bgcolor: (theme) => theme.palette.mode === 'dark' ? 'background.default' : 'grey.100',
+                              bgcolor: theme.palette.mode === 'dark' ? "grey.800" : "grey.100",
                               p: 2, 
                               borderRadius: 1,
                               boxShadow: (theme) => theme.palette.mode === 'dark' ? 'none' : 1,
                               height: '100%'
                             }}>
-                              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                              <Typography variant="subtitle2" color="text.secondary" gutterBottom >
                                 Информация о парковке
                               </Typography>
                               <Stack spacing={1}>
@@ -1141,7 +1142,7 @@ export default function ProfilePage() {
                           
                           <Grid item xs={12} sm={6}>
                             <Box sx={{ 
-                              bgcolor: (theme) => theme.palette.mode === 'dark' ? 'background.default' : 'grey.100',
+                              bgcolor: theme.palette.mode === 'dark' ? "grey.800" : "grey.100",
                               p: 2, 
                               borderRadius: 1,
                               boxShadow: (theme) => theme.palette.mode === 'dark' ? 'none' : 1,
