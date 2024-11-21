@@ -328,6 +328,21 @@ export default function ProfilePage() {
     
   const [gridSize, setGridSize] = useState('medium');
 
+  const handleCancelBooking = (bookingId: number) => {
+    dispatch(cancelBooking(bookingId))
+      .unwrap()
+      .then(() => {
+        setSnackbarMessage('Бронирование успешно отменено');
+        setSnackbarSeverity('success');
+        setOpenSnackbar(true);
+      })
+      .catch((error) => {
+        setSnackbarMessage(error.message || 'Произошла ошибка при отмене бронирования');
+        setSnackbarSeverity('error');
+        setOpenSnackbar(true);
+      });
+  };
+
   return (
     <Box
       sx={{
@@ -945,11 +960,7 @@ export default function ProfilePage() {
                               variant="outlined"
                               size="small"
                               color="error"
-                              onClick={() => {
-                                if (window.confirm('Вы уверены, что хотите отменить бронирование?')) {
-                                  dispatch(cancelBooking(booking.id));
-                                }
-                              }}
+                              onClick={() => handleCancelBooking(booking.id)}
                             >
                               Отменить
                             </Button>
@@ -1078,11 +1089,7 @@ export default function ProfilePage() {
                               variant="outlined"
                               size="small"
                               color="error"
-                              onClick={() => {
-                                if (window.confirm('Вы уверены, что хотите отменить бронирование?')) {
-                                  dispatch(cancelBooking(booking.id));
-                                }
-                              }}
+                              onClick={() => handleCancelBooking(booking.id)}
                             >
                               Отменить
                             </Button>
