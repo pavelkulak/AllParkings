@@ -343,6 +343,21 @@ export default function ProfilePage() {
       });
   };
 
+  const handleRemoveFromFavorites = (parkingId: number) => {
+    dispatch(removeFromFavorites(parkingId))
+      .unwrap()
+      .then(() => {
+        setSnackbarMessage('Парковка удалена из избранного');
+        setSnackbarSeverity('success');
+        setOpenSnackbar(true);
+      })
+      .catch((error) => {
+        setSnackbarMessage(error.message || 'Произошла ошибка при удалении из избранного');
+        setSnackbarSeverity('error');
+        setOpenSnackbar(true);
+      });
+  };
+
   return (
     <Box
       sx={{
@@ -889,9 +904,10 @@ export default function ProfilePage() {
                               bgcolor: 'rgba(255, 255, 255, 0.9)',
                             },
                           }}
-                          onClick={() =>
-                            dispatch(removeFromFavorites(favorite.id))
-                          }
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRemoveFromFavorites(favorite.id);
+                          }}
                         >
                           <CloseIcon />
                         </IconButton>
