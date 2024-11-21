@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, CircularProgress, Typography } from '@mui/material';
+import { Box, Chip, CircularProgress, Stack, Typography } from '@mui/material';
 import { useAppSelector } from '../../redux/hooks';
 import { UserParkingScheme } from './UserParkingScheme';
 import { ParkingEntrance } from '../../types/parking.types';
@@ -55,17 +55,54 @@ export default function ParkingConstructorPreview({ parkingId }: ParkingConstruc
     );
   }
 
+
+  const getStatusInfo = (status: string) => {
+    switch (status) {
+      case "pending":
+        return {
+          label: "На рассмотрении",
+          color: "warning" as const,
+        };
+      case "active":
+        return {
+          label: "Активна",
+          color: "success" as const,
+        };
+      case "inactive":
+        return {
+          label: "Неактивна",
+          color: "error" as const,
+        };
+      default:
+        return {
+          label: "Статус неизвестен",
+          color: "default" as const,
+        };
+    }
+  };
+
   return (
     <Box>
       <Typography variant="h6" gutterBottom>
         Информация о парковке
       </Typography>
-      
+
       <Box sx={{ mb: 2 }}>
         <Typography variant="subtitle1">Название: {parking.name}</Typography>
-        <Typography variant="body1">Адрес: {parking.location.address}</Typography>
-        <Typography variant="body1">Цена за час: {parking.price_per_hour}₽</Typography>
-        <Typography variant="body1">Статус: на рассмотрении</Typography>
+        <Typography variant="body1">
+          Адрес: {parking.location.address}
+        </Typography>
+        <Typography variant="body1">
+          Цена за час: {parking.price_per_hour}₽
+        </Typography>
+        <Stack direction="row" spacing={2} alignItems="center">
+          <Typography variant="body1">Статус:</Typography>
+          <Chip
+            label={getStatusInfo(parking.status).label}
+            color={getStatusInfo(parking.status).color}
+            size="small"
+          />
+        </Stack>        
       </Box>
 
       {parking.img && (
@@ -74,9 +111,9 @@ export default function ParkingConstructorPreview({ parkingId }: ParkingConstruc
           src={`http://localhost:3000/api/img/parking/${parking.img}`}
           alt={parking.name}
           sx={{
-            width: '100%',
+            width: "100%",
             height: 200,
-            objectFit: 'cover',
+            objectFit: "cover",
             borderRadius: 1,
             mb: 2,
           }}
@@ -84,8 +121,8 @@ export default function ParkingConstructorPreview({ parkingId }: ParkingConstruc
       )}
 
       {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
-          <CircularProgress/>
+        <Box sx={{ display: "flex", justifyContent: "center", my: 2 }}>
+          <CircularProgress />
         </Box>
       ) : (
         <UserParkingScheme
