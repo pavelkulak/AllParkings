@@ -59,15 +59,18 @@ export const TimeSelector = ({
   };
 
   return (
-    <Box >
+    <Box>
       <TextField
         fullWidth
-        value={`${label}: ${dayjs(selectedDate).format('DD MMMM')}, ${selectedTime || ''}`}
+        value={`${label}: ${dayjs(selectedDate)
+          .locale("ru")
+          .format("DD MMMM")
+          .toLowerCase()}, ${selectedTime || ""}`}
         variant="outlined"
         size="small"
-        sx={{ 
+        sx={{
           mb: 1,
-          bgcolor: theme.palette.mode === 'dark' ? 'grey.600' : 'white',
+          bgcolor: theme.palette.mode === "dark" ? "grey.600" : "white",
           // '& .MuiOutlinedInput-root': {
           //   backgroundColor: label === 'Заезд' ? '#e8f5e9' : '#fff3e0'
           // }
@@ -76,85 +79,102 @@ export const TimeSelector = ({
           readOnly: true,
         }}
       />
-      
-      <Stack direction="row" spacing={1} sx={{ height: '280px' }}>
-        <Box sx={{ 
-          border: '1px solid #e0e0e0', 
-          borderRadius: 1,
-          p: 0.5,
-          display: 'flex',
-          alignItems: 'flex-start'
-        }}>
+
+      <Stack direction="row" spacing={1} sx={{ height: "280px" }}>
+        <Box
+          sx={{
+            border: "1px solid #e0e0e0",
+            borderRadius: 1,
+            p: 0.5,
+            display: "flex",
+            alignItems: "flex-start",
+          }}
+        >
           <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ru">
-            <DateCalendar 
+            <DateCalendar
               value={dayjs(selectedDate)}
-              onChange={(newDate) => onDateChange(newDate?.toDate() || new Date())}
+              onChange={(newDate) =>
+                onDateChange(newDate?.toDate() || new Date())
+              }
               minDate={now}
-              sx={{ 
-                bgcolor: theme.palette.mode === 'dark' ? "grey.800" : "white",
+              sx={{
+                bgcolor: theme.palette.mode === "dark" ? "grey.800" : "white",
                 width: 250,
-                '& .MuiPickersDay-root': {
-                  borderRadius: '50%',
+                "& .MuiPickersDay-root": {
+                  borderRadius: "50%",
                 },
-                '& .MuiPickersDay-root.Mui-selected': {
-                  backgroundColor: label === 'Заезд' ? '#4caf50' : '#ff9800',
-                  borderRadius: '50%',
-                  '&:hover': {
-                    backgroundColor: label === 'Заезд' ? '#43a047' : '#f57c00'
-                  }
+                "& .MuiPickersDay-root.Mui-selected": {
+                  backgroundColor: label === "Заезд" ? "#4caf50" : "#ff9800",
+                  borderRadius: "50%",
+                  "&:hover": {
+                    backgroundColor: label === "Заезд" ? "#43a047" : "#f57c00",
+                  },
                 },
-                '& .MuiDayCalendar-header': {
-                  paddingBottom: '4px'
+                "& .MuiDayCalendar-header": {
+                  paddingBottom: "4px",
                 },
-                '& .MuiPickersCalendarHeader-root': {
-                  paddingBottom: '4px',
-                  marginTop: 0
+                "& .MuiPickersCalendarHeader-root": {
+                  paddingBottom: "4px",
+                  marginTop: 0,
                 },
-                '& .MuiDayCalendar-monthContainer': {
-                  marginTop: '4px'
+                "& .MuiDayCalendar-monthContainer": {
+                  marginTop: "4px",
                 },
-                '& .MuiPickersCalendarHeader-root + .MuiDayCalendar-header': {
-                  marginTop: 0
-                }
+                "& .MuiPickersCalendarHeader-root + .MuiDayCalendar-header": {
+                  marginTop: 0,
+                },
               }}
             />
           </LocalizationProvider>
         </Box>
 
-        <Box sx={{ 
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 0.5,
-          overflowY: 'auto',
-          height: '100%',
-          width: 90,
-          border: '1px solid #e0e0e0',
-          borderRadius: 1,
-          p: 0.5,
-        }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 0.5,
+            overflowY: "auto",
+            height: "100%",
+            width: 90,
+            border: "1px solid #e0e0e0",
+            borderRadius: 1,
+            p: 0.5,
+          }}
+        >
           {generateTimeSlots().map((time) => {
             const isDisabled = isTimeDisabled(time);
 
             return (
               <Button
                 key={time}
-                variant={selectedTime === time ? 'contained' : 'outlined'}
+                variant={selectedTime === time ? "contained" : "outlined"}
                 onClick={() => !isDisabled && onTimeChange(time)}
                 disabled={isDisabled}
                 size="small"
-                sx={{ 
+                sx={{
                   minWidth: 0,
                   py: 0.5,
-                  backgroundColor: selectedTime === time 
-                    ? (label === 'Заезд' ? '#4caf50' : '#ff9800') 
-                    : 'transparent',
-                  color: selectedTime === time ? 'white' : (label === 'Заезд' ? '#4caf50' : '#ff9800'),
-                  borderColor: label === 'Заезд' ? '#4caf50' : '#ff9800',
-                  '&:hover': {
-                    backgroundColor: selectedTime === time 
-                      ? (label === 'Заезд' ? '#43a047' : '#f57c00')
-                      : 'rgba(0, 0, 0, 0.04)'
-                  }
+                  backgroundColor:
+                    selectedTime === time
+                      ? label === "Заезд"
+                        ? "#4caf50"
+                        : "#ff9800"
+                      : "transparent",
+                  color:
+                    selectedTime === time
+                      ? "white"
+                      : label === "Заезд"
+                      ? "#4caf50"
+                      : "#ff9800",
+                  borderColor: label === "Заезд" ? "#4caf50" : "#ff9800",
+                  "&:hover": {
+                    backgroundColor:
+                      selectedTime === time
+                        ? label === "Заезд"
+                          ? "#43a047"
+                          : "#f57c00"
+                        : "rgba(0, 0, 0, 0.04)",
+                  },
                 }}
               >
                 {time}

@@ -95,13 +95,21 @@ export default function ReviewManagement() {
         <Card key={review.id} sx={{ mb: 2 }}>
           <CardContent>
             <Stack direction="row" spacing={2} alignItems="center">
-              <Avatar src={review.User.avatar || undefined} />
+              <Avatar
+                src={
+                  review.User?.avatar
+                    ? `${import.meta.env.VITE_TARGET}${review.User.avatar}`
+                    : undefined
+                }
+                alt={review.User?.name}
+              />
               <Box flex={1}>
                 <Typography variant="subtitle1">
                   {review.User.name} {review.User.surname}
                 </Typography>
                 <Typography variant="subtitle2" color="text.secondary">
-                  Парковка: {parkings.find(p => p.id === review.parking_id)?.name}
+                  Парковка:{" "}
+                  {parkings.find((p) => p.id === review.parking_id)?.name}
                 </Typography>
                 <Rating value={Number(review.rating)} readOnly />
                 <Typography>{review.comment}</Typography>
@@ -109,7 +117,10 @@ export default function ReviewManagement() {
                   {new Date(review.createdAt).toLocaleDateString()}
                 </Typography>
               </Box>
-              <IconButton onClick={() => handleDeleteClick(review)} color="error">
+              <IconButton
+                onClick={() => handleDeleteClick(review)}
+                color="error"
+              >
                 <DeleteIcon />
               </IconButton>
             </Stack>
@@ -117,12 +128,13 @@ export default function ReviewManagement() {
         </Card>
       ))}
 
-      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+      >
         <DialogTitle>Подтверждение удаления</DialogTitle>
         <DialogContent>
-          <Typography>
-            Вы уверены, что хотите удалить этот отзыв?
-          </Typography>
+          <Typography>Вы уверены, что хотите удалить этот отзыв?</Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDeleteDialogOpen(false)}>Отмена</Button>
