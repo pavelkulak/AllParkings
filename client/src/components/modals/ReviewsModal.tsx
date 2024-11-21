@@ -75,31 +75,29 @@ export default function ReviewsModal({
   };
 
   return (
-    <Modal
-      open={open}
-      onClose={onClose}
-      aria-labelledby="reviews-modal-title"
-    >
-      <Box sx={{
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        width: '80%',
-        maxWidth: 800,
-        maxHeight: '80vh',
-        bgcolor: 'background.paper',
-        boxShadow: 24,
-        p: 4,
-        borderRadius: 2,
-        overflow: 'auto'
-      }}>
+    <Modal open={open} onClose={onClose} aria-labelledby="reviews-modal-title">
+      <Box
+        sx={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: "80%",
+          maxWidth: 800,
+          maxHeight: "80vh",
+          bgcolor: "background.paper",
+          boxShadow: 24,
+          p: 4,
+          borderRadius: 2,
+          overflow: "auto",
+        }}
+      >
         <Typography variant="h6" component="h2" gutterBottom>
           Отзывы о парковке: {parkingName}
         </Typography>
 
         {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+          <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}>
             <CircularProgress />
           </Box>
         ) : error ? (
@@ -111,9 +109,14 @@ export default function ReviewsModal({
             <Card key={review.id} sx={{ mb: 2 }}>
               <CardContent>
                 <Stack direction="row" spacing={2} alignItems="flex-start">
-                  <Avatar 
-                    src={review.User.avatar || undefined}
-                    sx={{ bgcolor: 'primary.main' }}
+                  <Avatar
+                    src={
+                      review.User?.avatar
+                        ? `${import.meta.env.VITE_TARGET}${review.User.avatar}`
+                        : undefined
+                    }
+                    alt={review.User?.name}                   
+                    sx={{ bgcolor: "primary.main" }}
                   >
                     {review.User.name[0]}
                   </Avatar>
@@ -121,14 +124,18 @@ export default function ReviewsModal({
                     <Typography variant="subtitle1" sx={{ mb: 1 }}>
                       {review.User.name} {review.User.surname}
                     </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                      <Rating 
-                        value={getRatingValue(review.rating)} 
-                        readOnly 
+                    <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                      <Rating
+                        value={getRatingValue(review.rating)}
+                        readOnly
                         precision={1}
                         size="small"
                       />
-                      <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ ml: 1 }}
+                      >
                         {getRatingValue(review.rating)}/5
                       </Typography>
                     </Box>
@@ -136,14 +143,13 @@ export default function ReviewsModal({
                       {review.comment}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      {new Date(review.createdAt).toLocaleDateString('ru-RU', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
+                      {new Date(review.createdAt).toLocaleDateString("ru-RU", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
                       })}
                     </Typography>
                   </Box>
-              
                 </Stack>
               </CardContent>
             </Card>

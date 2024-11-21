@@ -210,7 +210,7 @@ export const ParkingMap = () => {
 
   return (
     <Container maxWidth="lg">
-      <Paper elevation={3} sx={{ p: 2, mt: 4 }}>
+      <Paper elevation={3} sx={{ p: 2, mt: 10 }}>
         <Typography variant="h5" component="h1" gutterBottom>
           Карта парковок
         </Typography>

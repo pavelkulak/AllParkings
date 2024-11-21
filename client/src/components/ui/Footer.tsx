@@ -6,27 +6,24 @@ function Footer() {
   return (
     <Box
       component="footer"
+      display="flex"
+      flexDirection={{ xs: "column", sm: "row" }}
       sx={{
         width: "100%",
         backgroundColor: (theme) => theme.palette.background.footer,
-        color: (theme) => theme.palette.mode === 'dark' ? '#fff' : '#fff',
-        position: 'absolute',
+        color: (theme) => (theme.palette.mode === "dark" ? "#fff" : "#fff"),
+        position: "absolute",
         bottom: 0,
         left: 0,
         right: 0,
       }}
     >
-      <Container 
-        maxWidth="lg"
-        sx={{
-          py: 2,
-        }}
-      >
+      <Container maxWidth="lg">
         <Box
           display="flex"
           flexDirection={{ xs: "column", sm: "row" }}
           justifyContent="center"
-          alignItems="center"
+          alignItems="flex-start"
           flexWrap="wrap"
           gap={1}
         >
@@ -120,13 +117,10 @@ function Footer() {
             </Typography>
           </Box>
         </Box>
-
-        <Typography
-          variant="body2"
-          textAlign="center"
-          sx={{ pt: 1 }}
-        >
-          © Eagles {new Date().getFullYear()} Все права защищены!
+      </Container>     
+      <Container maxWidth="lg">
+        <Typography variant="body2" textAlign="center" sx={{ pt: 1 }}>
+          © AllParkings | Все права защищены!
         </Typography>
       </Container>
     </Box>
