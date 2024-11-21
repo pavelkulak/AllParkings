@@ -785,7 +785,7 @@ export default function ProfilePage() {
                 value={confirmPassword}
                 onChange={handleConfirmPasswordChange}
                 size='small'
-                label='Подтвердите парль'
+                label='Подтвердите пароль'
                 variant='standard'
                 required
                 error={!!confirmPasswordError}
