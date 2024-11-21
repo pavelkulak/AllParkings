@@ -106,7 +106,6 @@ const authSlice = createSlice({
         setAccessToken(action.payload.accessToken);
       })
       .addCase(changePassword.pending, (state) => {
-        state.status = 'loading';
         state.error = null;
       })
       .addCase(changePassword.fulfilled, (state) => {

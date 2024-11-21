@@ -31,6 +31,7 @@ export const getDesignTokens = (mode: PaletteMode) => ({
         paper: "#1e1e1e",
         header: "#1e1e1e",
         footer: "#1e1e1e",
+        pink: "f748bd",
       },
       text: {
         primary: '#fff',
