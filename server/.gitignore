@@ -128,3 +128,9 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Image files
+img/*
+!img/.gitkeep
+img/parking/*
+!img/parking/.gitkeep

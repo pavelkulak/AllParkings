@@ -1,21 +1,35 @@
-import { useEffect } from "react";
-import { useAppDispatch, useAppSelector } from "./redux/hooks";
+import { useEffect } from 'react';
+import { useAppDispatch, useAppSelector } from './redux/hooks';
 import Root from './components/ui/Root';
-import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
-import { refreshToken } from "./redux/store/features/auth/authSlice";
-import SignIn from "./components/auth/SignIn";
-import SignUp from "./components/auth/SignUp";
-import ProtectedRoute from "./components/HOC/ProtectedRoute";
+import {
+  createBrowserRouter,
+  RouterProvider,
+  Navigate,
+} from 'react-router-dom';
+import { refreshToken } from './redux/thunkActions';
+import SignIn from './components/auth/SignIn';
+import SignUp from './components/auth/SignUp';
+import ProtectedRoute from './components/HOC/ProtectedRoute';
+import './App.css';
+import ParkingConstructor from './components/constructor/ParkingConstructor';
+import CreateParkingForm from './components/parking/CreateParkingForm';
+import ProfilePage from './components/pages/ProfilePage';
+import { ParkingMap } from './components/parking/ParkingMap';
+import ParkingOwnerPage from "./components/pages/ParkingOwnerPage";
+import ErrorPage from "./components/pages/ErrorPage";
+import { LandingPage } from "./components/pages/LandingPage";
+import AdminDashboard from './components/admin/AdminDashboard';
+import { ChatPage } from './components/pages/ChatPage';
 
 function App() {
   const dispatch = useAppDispatch();
-  const { user, isLoading } = useAppSelector((state) => state.auth);
+  const { user, status } = useAppSelector((state) => state.auth);
 
   useEffect(() => {
     dispatch(refreshToken());
   }, [dispatch]);
 
-  if (isLoading) {
+  if (status === 'loading' || status === 'idle') {
     return <div>Загрузка...</div>;
   }
 
@@ -23,22 +37,103 @@ function App() {
     {
       path: '/',
       element: <Root />,
+      errorElement: <ErrorPage />,
       children: [
         {
-          path: '/',
+          path: "/",
+          element: <LandingPage />,
+        },
+        {
+          path: '/signin',
+          element: user ? <Navigate to='/' replace /> : <SignIn />,
+        },
+        {
+          path: '/signup',
+          element: user ? <Navigate to='/' replace /> : <SignUp />,
+        },
+        {
+          path: '/profile',
+          element: user ? <ProfilePage /> : <Navigate to='/' replace />,
+        },
+        {
+          path: '/parking-constructor',
           element: (
-            <ProtectedRoute isAllowed={!!user}>
-              <div>Защищенная страница</div>
+            <ProtectedRoute
+              isAllowed={!!user}
+              allowedRoles={['owner', 'admin']}
+              user={user}
+              redirectPath='/'
+            >
+              <ParkingConstructor />
             </ProtectedRoute>
           ),
         },
         {
-          path: '/signin',
-          element: user ? <Navigate to="/" replace /> : <SignIn />,
+          path: '/create-parking',
+          element: (
+            <ProtectedRoute
+              isAllowed={!!user}
+              allowedRoles={['owner', 'admin']}
+              user={user}
+              redirectPath='/'
+            >
+              <CreateParkingForm />
+            </ProtectedRoute>
+          ),
         },
         {
-          path: '/signup',
-          element: user ? <Navigate to="/" replace /> : <SignUp />,
+          path: '/parking-constructor/:parkingId',
+          element: (
+            <ProtectedRoute
+              isAllowed={!!user}
+              allowedRoles={['owner', 'admin']}
+              user={user}
+              redirectPath='/'
+            >
+              <ParkingConstructor />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: '/parkings/map',
+          element: <ParkingMap />,
+        },
+        {
+          path: '/myparking',
+          element: (
+            <ProtectedRoute
+              isAllowed={!!user}
+              allowedRoles={['owner']}
+              user={user}
+              redirectPath='/'
+            >
+              <ParkingOwnerPage />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: '/admin',
+          element: (
+            <ProtectedRoute
+              isAllowed={!!user}
+              allowedRoles={['admin']}
+              user={user}
+            >
+              <AdminDashboard />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: '/chat',
+          element: (
+            <ProtectedRoute
+              isAllowed={!!user}
+              user={user}
+              redirectPath='/'
+            >
+              <ChatPage />
+            </ProtectedRoute>
+          ),
         },
       ],
     },

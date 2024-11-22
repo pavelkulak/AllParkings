@@ -1,44 +1,202 @@
 const bcrypt = require('bcrypt');
-const {User} = require('../../db/models');
+const { User } = require('../../db/models');
 const generateToken = require('../utils/generateToken');
 const cookieConfig = require('../configs/cookieConfig');
 const authRouter = require('express').Router();
+const { verifyAccessToken } = require('../middleware/verifyToken');
 
 authRouter.post('/signup', async (req, res) => {
-    const {email, name, password} = req.body;
-    if(!email || !name || !password) return res.sendStatus(400);
-    const pass = await bcrypt.hash(password, 10);
+  try {
+    const { email, name, surname, patronymic, phone, password, role } =
+      req.body;
+
+    if (!email || !name || !surname || !phone || !password || !role) {
+      return res.status(400).json({
+        error: 'Не заполнены обязательные поля',
+      });
+    }
+
+    if (!['user', 'owner'].includes(role)) {
+      return res.status(400).json({
+        error: 'Недопустимая роль пользователя',
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     const [newUser, created] = await User.findOrCreate({
-        where: {email},
-        defaults: {name, pass},
+      where: { email },
+      defaults: {
+        name,
+        surname,
+        patronymic: patronymic || null,
+        phone,
+        role,
+        password: hashedPassword,
+        avatar: null,
+      },
+    });
+
+    if (!created) {
+      return res.status(400).json({
+        error: 'Пользователь с таким email уже существует',
+      });
+    }
+
+    const user = {
+      id: newUser.id,
+      name: newUser.name,
+      surname: newUser.surname,
+      patronymic: newUser.patronymic,
+      phone: newUser.phone,
+      email: newUser.email,
+      role: newUser.role,
+      avatar: newUser.avatar,
+    };
+
+    const { accessToken, refreshToken } = generateToken({ user });
+
+    res
+      .cookie('refreshToken', refreshToken, cookieConfig)
+      .json({ accessToken, user });
+  } catch (error) {
+    console.error('Ошибка регистрации:', error);
+    res.status(500).json({
+      error: 'Ошибка сервера при регистрации',
+    });
+  }
 });
-if(!created) return res.sendStatus(400);
-const user = newUser.get();
-delete user.pass;
-const {accessToken, refreshToken} = generateToken({user});
-res
-.cookie('refreshToken', refreshToken, cookieConfig)
-.json({accessToken, user});
-}); 
 
 authRouter.post('/signin', async (req, res) => {
-    const {email, password} = req.body;
-    if(!email || !password) return res.sendStatus(400);
-    const foundUser = await User.findOne({where: {email}});
-    if(!foundUser) return res.sendStatus(400);
-    const isValid = await bcrypt.compare(password, foundUser.pass);
-    if(!isValid) return res.sendStatus(400);
-    const user = foundUser.get();
-    delete user.pass;
-    const {accessToken, refreshToken} = generateToken({user});
+  try {
+    const { email, password } = req.body;
+
+    const foundUser = await User.findOne({ where: { email } });
+
+    if (!foundUser) {
+      return res.status(400).json({ error: 'Пользователь не найден' });
+    }
+
+    const isValid = await bcrypt.compare(password, foundUser.password);
+
+    if (!isValid) {
+      return res.status(400).json({ error: 'Неверный пароль' });
+    }
+
+    console.log('User found:', foundUser.toJSON());
+
+    const user = {
+      id: foundUser.id,
+      name: foundUser.name,
+      surname: foundUser.surname,
+      patronymic: foundUser.patronymic,
+      phone: foundUser.phone,
+      email: foundUser.email,
+      role: foundUser.role,
+      avatar: foundUser.avatar,
+    };
+
+    console.log('User data being sent:', user);
+
+    const { accessToken, refreshToken } = generateToken({ user });
+
     res
-.cookie('refreshToken', refreshToken, cookieConfig)
-.json({accessToken, user});
-})
+      .cookie('refreshToken', refreshToken, cookieConfig)
+      .json({ accessToken, user });
+  } catch (error) {
+    console.error('Ошибка входа:', error);
+    res.status(500).json({ error: 'Ошибка сервера при входе' });
+  }
+});
 
 authRouter.post('/signout', async (req, res) => {
-    res.clearCookie('refreshToken').sendStatus(200);
+  try {
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    });
+    res.status(200).json({ message: 'Успешный выход' });
+  } catch (error) {
+    console.error('Ошибка при выходе:', error);
+    res.status(500).json({ error: 'Ошибка сервера при выходе' });
+  }
+});
+
+authRouter.put('/profile', verifyAccessToken, async (req, res) => {
+  try {
+    const userId = res.locals.user.id;
+    const { surname, name, patronymic, phone } = req.body;
+
+    await User.update(
+      { surname, name, patronymic, phone },
+      { where: { id: userId } },
+    );
+
+    const updatedUser = await User.findByPk(userId);
+    const user = {
+      id: updatedUser.id,
+      name: updatedUser.name,
+      surname: updatedUser.surname,
+      patronymic: updatedUser.patronymic,
+      phone: updatedUser.phone,
+      email: updatedUser.email,
+      role: updatedUser.role,
+      avatar: updatedUser.avatar,
+    };
+
+    const { accessToken, refreshToken } = generateToken({ user });
+
+    res
+      .cookie('refreshToken', refreshToken, cookieConfig)
+      .json({ accessToken, user });
+  } catch (error) {
+    console.error('Ошибка при обновлении профиля:', error);
+    res.status(500).json({ error: 'Ошибка при обновлении профиля' });
+  }
+});
+
+authRouter.put('/change-password', verifyAccessToken, async (req, res) => {
+  try {
+    const userId = res.locals.user.id;
+    const { currentPassword, newPassword } = req.body;
+
+    const user = await User.findByPk(userId);
+
+    const isPasswordValid = await bcrypt.compare(
+      currentPassword,
+      user.password,
+    );
+    if (!isPasswordValid) {
+      return res.status(400).json({ error: 'Неверный текущий пароль' });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await User.update({ password: hashedPassword }, { where: { id: userId } });
+
+    res.json({ message: 'Пароль успешно изменен' });
+  } catch (error) {
+    console.error('Ошибка при изменении пароля:', error);
+    res.status(500).json({ error: 'Ошибка при изменении пароля' });
+  }
+});
+
+authRouter.delete('/destroyAccount', verifyAccessToken, async (req, res) => {
+  try {
+    const { user } = res.locals;
+
+    await User.destroy({ where: { id: user.id } });
+
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    });
+      res.json({ message: 'Пользователь успешно удален!' });
+  } catch (error) {
+    res.json({ error: 'Не получилось удалить пользователя' });
+  }
 });
 
 module.exports = authRouter;
-

@@ -1,30 +1,112 @@
-import { FormEvent } from 'react';
-import { useAppDispatch, useAppSelector } from '../../redux/hooks';
-import { signIn } from '../../redux/thunkActions';
-import type { LoginCredentials } from '../../types/auth.types';
+import { FormEvent, useState } from "react";
+import { useAppDispatch, useAppSelector } from "../../redux/hooks";
+import { signIn } from "../../redux/thunkActions";
+import type { LoginCredentials } from "../../types/auth.types";
+import {
+  Box,
+  Container,
+  TextField,
+  Button,
+  Typography,
+  Stack,
+  InputAdornment,
+  IconButton,
+} from "@mui/material";
+import { Link, useNavigate } from "react-router-dom";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 export default function SignIn() {
   const dispatch = useAppDispatch();
-  const { error, isLoading } = useAppSelector((state) => state.auth);
+  const { error, status } = useAppSelector((state) => state.auth);
+
+   const navigate = useNavigate();
+
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const credentials: LoginCredentials = {
-      email: formData.get('email') as string,
-      password: formData.get('password') as string,
+      email: formData.get("email") as string,
+      password: formData.get("password") as string,
     };
     await dispatch(signIn(credentials));
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      {error && <div style={{ color: 'red' }}>{error}</div>}
-      <input type="email" name="email" required placeholder="Email" />
-      <input type="password" name="password" required placeholder="Password" />
-      <button type="submit" disabled={isLoading}>
-        {isLoading ? 'Загрузка...' : 'Войти'}
-      </button>
-    </form>
+    <Container
+      maxWidth="sm"
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: "70vh",
+      }}
+    >
+      <Box
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        width="100%"
+      >
+        <Typography component="h1" variant="h5">
+          Вход
+        </Typography>
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{ mt: 3, width: "100%" }}
+        >
+          <Stack spacing={2}>
+            {/* {error && <Typography color="error">{error}</Typography>} */}
+            <TextField
+              required
+              fullWidth
+              name="email"
+              label="Email"
+              type="email"
+              autoFocus
+            />
+            <TextField
+              required
+              fullWidth
+              name="password"
+              label="Пароль"
+              type={showPassword ? 'text' : 'password'}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              disabled={status === "loading"}
+              sx={{ mt: 2 }}
+            >
+              {status === "loading" ? "Загрузка..." : "Войти"}
+            </Button>
+          </Stack>
+        </Box>
+
+        <Button
+          variant="text"
+          component={Link}
+          to="/signup"
+          sx={{ mt: 2, color: "grey.500" }}
+        >
+          Нет аккаунта? Зарегистрируйтесь
+        </Button>
+      </Box>
+    </Container>
   );
-} 
+}
