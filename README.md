@@ -115,5 +115,4 @@ npm run dev
 - `db/migrations` - Миграции базы данных
 - `db/seeders` - Сиды для заполнения базы данных
 
-## Лицензия
-[MIT](https://choosealicense.com/licenses/mit/)
+
