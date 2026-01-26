@@ -1,9 +1,9 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "src/app.js",
   "scripts": {
-    "start": "node app.js",
+    "start": "node src/app.js",
     "dev": "nodemon --env-file=.env ./src/app.js --ext js,jsx",
     "db:create": "npx sequelize db:create",
     "db:migrate": "npx sequelize db:migrate",
