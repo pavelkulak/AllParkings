@@ -24,7 +24,6 @@ import { useNavigate } from 'react-router-dom';
 import MapIcon from '@mui/icons-material/Map';
 import AddLocationIcon from '@mui/icons-material/AddLocation';
 import ChatIcon from '@mui/icons-material/Chat';
-import { useAppSelector, useAppDispatch } from '../../redux/hooks';
 
 interface NavBarProps {
   user: IUser | null;
@@ -47,7 +46,7 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
   return (
     <AppBar position="static" sx={{ 
       fontFamily: "Merriweather",
-      bgcolor: (theme) => theme.palette.background.header
+      bgcolor: (theme) => theme.palette.mode === 'dark' ? theme.palette.grey[900] : theme.palette.primary.main
     }}>
       <Toolbar disableGutters>
         <Box
@@ -89,18 +88,30 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
         </Box>
         <Stack
           direction="row"
-          spacing={2}
+          spacing={{ xs: 1, md: 2 }}
           sx={{
             flexGrow: 1,
             justifyContent: "center",
+            display: { xs: 'none', sm: 'flex' },
           }}
         >
           <Button
             color="inherit"
             startIcon={<MapIcon />}
             onClick={() => navigate("/parkings/map")}
+            sx={{
+              fontSize: { xs: '0.875rem', md: '1rem' },
+              '& .MuiButton-startIcon': {
+                marginRight: { xs: 0.5, md: 1 },
+              }
+            }}
           >
-            Карта парковок
+            <Box component="span" sx={{ display: { xs: 'none', md: 'inline' } }}>
+              Карта парковок
+            </Box>
+            <Box component="span" sx={{ display: { xs: 'inline', md: 'none' } }}>
+              Карта
+            </Box>
           </Button>
 
           {(user?.role === "owner" || user?.role === "admin") && (
@@ -108,8 +119,19 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
               color="inherit"
               startIcon={<AddLocationIcon />}
               onClick={() => navigate("/create-parking")}
+              sx={{
+                fontSize: { xs: '0.875rem', md: '1rem' },
+                '& .MuiButton-startIcon': {
+                  marginRight: { xs: 0.5, md: 1 },
+                }
+              }}
             >
-              Создать парковку
+              <Box component="span" sx={{ display: { xs: 'none', md: 'inline' } }}>
+                Создать парковку
+              </Box>
+              <Box component="span" sx={{ display: { xs: 'inline', md: 'none' } }}>
+                Создать
+              </Box>
             </Button>
           )}
         </Stack>
@@ -267,7 +289,8 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
                 sx={{
                   display: { xs: "flex", sm: "flex" },
                   alignItems: "center",
-                  padding: "10px 20px",
+                  padding: { xs: "8px 12px", md: "10px 20px" },
+                  fontSize: { xs: '0.875rem', md: '1rem' },
                   fontWeight: "Regular 400 Italic",
                   "&:hover": {
                     backgroundColor: "primary.dark",
@@ -286,7 +309,8 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
                 sx={{
                   display: { xs: "flex", sm: "flex" },
                   alignItems: "center",
-                  padding: "10px 20px",
+                  padding: { xs: "8px 12px", md: "10px 20px" },
+                  fontSize: { xs: '0.875rem', md: '1rem' },
                   fontWeight: "Regular 400 Italic",
                   "&:hover": {
                     backgroundColor: "primary.dark",

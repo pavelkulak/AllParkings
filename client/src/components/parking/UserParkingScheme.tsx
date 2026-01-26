@@ -1,6 +1,6 @@
-import { Box, Typography, Stack, useTheme } from '@mui/material';
+import { Box, Typography, useTheme } from '@mui/material';
 import { ConstructorGrid, GRID_SIZES } from '../constructor/ParkingConstructor';
-import { ParkingSpace, ParkingEntrance } from '../../types/parking';
+import { ParkingSpace, ParkingEntrance } from '../../types/parking.types';
 import styled from '@emotion/styled';
 import { Paper } from '@mui/material';
 
@@ -37,7 +37,7 @@ interface UserParkingSchemeProps {
   entrance: ParkingEntrance | null;
 }
 
-export const UserParkingScheme = ({ spaces, entrance, userSpaceId }: UserParkingSchemeProps) => {
+export const UserParkingScheme = ({ spaces, entrance }: UserParkingSchemeProps) => {
   const theme = useTheme();
 
   const parsedSpaces = spaces.map(space => ({

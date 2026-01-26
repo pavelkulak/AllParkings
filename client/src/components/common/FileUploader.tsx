@@ -11,7 +11,6 @@ interface FileUploaderProps {
 }
 
 export const FileUploader: React.FC<FileUploaderProps> = ({
-  files,
   onFilesChange,
   children,
   maxFiles = 5,

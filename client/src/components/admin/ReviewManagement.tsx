@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { 
   Box, 
   Card, 
@@ -13,10 +13,6 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Autocomplete,
   TextField
 } from '@mui/material';
@@ -34,7 +30,7 @@ export default function ReviewManagement() {
 
   const fetchParkings = async () => {
     try {
-      const response = await axiosInstance.get('/parking-lots/all');
+      const response = await axiosInstance.get<Parking[]>('/parking-lots/all');
       setParkings(response.data);
     } catch (error) {
       console.error('Ошибка при получении парковок:', error);
@@ -43,7 +39,7 @@ export default function ReviewManagement() {
 
   const fetchReviews = async () => {
     try {
-      const response = await axiosInstance.get('/reviews/all');
+      const response = await axiosInstance.get<Review[]>('/reviews/all');
       setReviews(response.data);
     } catch (error) {
       console.error('Ошибка при получении отзывов:', error);

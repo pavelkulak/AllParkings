@@ -4,13 +4,15 @@ import type {
   CreateParkingSpacesPayload,
   ParkingSpace,
   Entrance,
+  ConstructorParkingSpace,
+  ParkingEntrance,
 } from "../types/parking.types";
 import axiosInstance from '../services/axiosInstance';
 
-export const createParking = createAsyncThunk(
+export const createParking = createAsyncThunk<ParkingLot, FormData>(
   'parking/create',
-  async (parkingData: FormData) => {
-    const response = await axiosInstance.post('/parking-lots', parkingData, {
+  async (parkingData) => {
+    const response = await axiosInstance.post<ParkingLot>('/parking-lots', parkingData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -48,7 +50,7 @@ export const getOwnerParkings = createAsyncThunk<ParkingLot[]>(
 
 export const saveSpacesConfiguration = createAsyncThunk<
   { spaces: ParkingSpace[]; entrance: ParkingEntrance }, 
-  { parkingId: string; spaces: ParkingSpace[]; entrance: Entrance; gridSize: string }
+  { parkingId: string; spaces: ConstructorParkingSpace[]; entrance: Entrance; gridSize: string }
 >(
   'parking/saveSpaces',
   async ({ parkingId, spaces, entrance, gridSize }) => {
@@ -57,7 +59,7 @@ export const saveSpacesConfiguration = createAsyncThunk<
       location: JSON.stringify({ x: space.x, y: space.y, rotation: space.rotation })
     }));
 
-    const response = await axiosInstance.post(
+    const response = await axiosInstance.post<{ spaces: ParkingSpace[]; entrance: ParkingEntrance }>(
       `/parking-lots/${parkingId}/spaces`,
       { 
         spaces: formattedSpaces,
@@ -80,9 +82,9 @@ export const getMyParkings = createAsyncThunk<ParkingLot[]>(
 );
 
 
-export const updateMyParkings = createAsyncThunk<ParkingLot[]>(
-  "parking/updateMyParkings",
-  async (data: {
+export const updateMyParkings = createAsyncThunk<
+  ParkingLot[],
+  {
     id: string;
     name: string;
     description: string;
@@ -94,7 +96,10 @@ export const updateMyParkings = createAsyncThunk<ParkingLot[]>(
       };
     };
     price_per_hour: number;
-  }) => {
+  }
+>(
+  "parking/updateMyParkings",
+  async (data) => {
     const requestData = {
       name: data.name,
       description: data.description,

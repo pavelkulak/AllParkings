@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Box, Chip, CircularProgress, Stack, Typography } from '@mui/material';
 import { useAppSelector } from '../../redux/hooks';
 import { UserParkingScheme } from './UserParkingScheme';
-import { ParkingEntrance } from '../../types/parking.types';
+import { ParkingEntrance, ParkingSpace } from '../../types/parking.types';
 
 interface ParkingConstructorPreviewProps {
   parkingId: number;

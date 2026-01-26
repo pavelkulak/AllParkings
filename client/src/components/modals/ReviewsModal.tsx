@@ -12,7 +12,6 @@ import {
 } from '@mui/material';
 
 import { useEffect, useState } from 'react';
-import { useAppSelector } from '../../redux/hooks';
 import axiosInstance from "../../services/axiosInstance";
 
 interface Review {
@@ -53,7 +52,7 @@ export default function ReviewsModal({
       setLoading(true);
       setError(null);
       
-      const response = await axiosInstance.get(`/reviews/${selectedParkingId}`);
+      const response = await axiosInstance.get<Review[]>(`/reviews/${selectedParkingId}`);
       setReviews(response.data);
     } catch (err) {
       console.error('Error fetching reviews:', err);

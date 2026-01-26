@@ -68,13 +68,13 @@ export const updateAvatar = createAsyncThunk<AuthResponse, FormData>(
   },
 );
 
-export const deleteAvatar = createAsyncThunk(
+export const deleteAvatar = createAsyncThunk<AuthResponse, void>(
   'auth/deleteAvatar',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.delete('/upload/avatar');
+      const response = await axiosInstance.delete<AuthResponse>('/upload/avatar');
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       return rejectWithValue(
         error.response?.data?.message || 'Ошибка при удалении аватара',
       );
@@ -121,13 +121,13 @@ export const deleteAccount = createAsyncThunk(
   },
 );
 
-export const logout = createAsyncThunk(
+export const logout = createAsyncThunk<boolean, void>(
   'auth/logout',
   async (_, { rejectWithValue }) => {
     try {
       await axiosInstance.post('/auth/logout');
       return true;
-    } catch (error) {
+    } catch (error: any) {
       return rejectWithValue(error.response?.data || 'Ошибка при выходе');
     }
   }

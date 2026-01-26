@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
-import { useAppDispatch } from '../../redux/hooks';
-import { createParking } from '../../redux/parkingThunks';
-import { useNavigate } from 'react-router-dom';
-import { load } from '@2gis/mapgl';
+import { useState, useEffect, useRef } from "react";
+import { useAppDispatch } from "../../redux/hooks";
+import { createParking } from "../../redux/parkingThunks";
+import { useNavigate } from "react-router-dom";
+import { load } from "@2gis/mapgl";
 import {
   Box,
   Container,
@@ -13,39 +13,55 @@ import {
   Paper,
   Tabs,
   Tab,
-  CircularProgress
-} from '@mui/material';
-import { LocationButton } from '../map/LocationButton';
-import { FileUploader } from '../common/FileUploader';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+  CircularProgress,
+  Snackbar,
+  Alert,
+} from "@mui/material";
+import { LocationButton } from "../map/LocationButton";
+import { FileUploader } from "../common/FileUploader";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 
 export default function CreateParkingForm() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const [error, setError] = useState<string | null>(null);
-  const [addressMethod, setAddressMethod] = useState<'input' | 'map'>('input');
+  const [addressMethod, setAddressMethod] = useState<"input" | "map">("input");
   const [map, setMap] = useState<any>(null);
   const [marker, setMarker] = useState<any>(null);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
 
-  const [parkingData, setParkingData] = useState({
-    name: '',
-    description: '',
+  const [parkingData, setParkingData] = useState<{
+    name: string;
+    description: string;
     location: {
-      address: '',
+      address: string;
+      coordinates: {
+        lat: number | null;
+        lon: number | null;
+      };
+    };
+    price_per_hour: string;
+    status: "pending";
+  }>({
+    name: "",
+    description: "",
+    location: {
+      address: "",
       coordinates: {
         lat: null,
-        lon: null
-      }
+        lon: null,
+      },
     },
-    price_per_hour: '',
-    status: 'pending' as const
+    price_per_hour: "",
+    status: "pending",
   });
 
-  const [addressSuggestions, setAddressSuggestions] = useState<Array<{
-    name: string;
-    full_name: string;
-    coordinates: [number, number];
-  }>>([]);
+  const [addressSuggestions, setAddressSuggestions] = useState<
+    Array<{
+      name: string;
+      full_name: string;
+      coordinates: [number, number];
+    }>
+  >([]);
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const userMarkerRef = useRef<any>(null);
@@ -54,7 +70,7 @@ export default function CreateParkingForm() {
   const [files, setFiles] = useState<File[]>([]);
 
   useEffect(() => {
-    if (addressMethod === 'map' && !map) {
+    if (addressMethod === "map" && !map) {
       initMap();
     }
     return () => {
@@ -66,32 +82,36 @@ export default function CreateParkingForm() {
 
   const getCurrentPosition = (): Promise<[number, number]> => {
     return new Promise((resolve, reject) => {
-      if ('geolocation' in navigator) {
+      if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(
           (position) => {
             const coords: [number, number] = [
               position.coords.longitude,
-              position.coords.latitude
+              position.coords.latitude,
             ];
             resolve(coords);
           },
           (error) => {
-            console.error('Ошибка получения геолокации:', error);
+            console.error("Ошибка получения геолокации:", error);
             reject(error);
           },
           {
             enableHighAccuracy: true,
             timeout: 5000,
-            maximumAge: 0
-          }
+            maximumAge: 0,
+          },
         );
       } else {
-        reject(new Error('Геолокация недоступна'));
+        reject(new Error("Геолокация недоступна"));
       }
     });
   };
 
-  const createUserMarker = (mapglAPI: any, map: any, coords: [number, number]) => {
+  const createUserMarker = (
+    mapglAPI: any,
+    map: any,
+    coords: [number, number],
+  ) => {
     if (userMarkerRef.current) {
       userMarkerRef.current.destroy();
       userMarkerRef.current = null;
@@ -101,19 +121,19 @@ export default function CreateParkingForm() {
       const marker = new mapglAPI.Marker(map, {
         coordinates: coords,
         label: {
-          text: 'Вы здесь',
+          text: "Вы здесь",
           offset: [0, -60],
           relativeAnchor: [0.5, 0],
-        }
+        },
       });
-      
+
       userMarkerRef.current = marker;
       map.setCenter(coords);
       map.setZoom(15);
 
       return marker;
     } catch (error) {
-      console.error('Ошибка при создании маркера:', error);
+      console.error("Ошибка при создании маркера:", error);
       return null;
     }
   };
@@ -123,15 +143,15 @@ export default function CreateParkingForm() {
       setIsLoading(true);
       const mapglAPI = await load();
       setMapglAPI(mapglAPI);
-      
+
       if (!mapContainerRef.current) return;
 
       const userCoords = await getCurrentPosition();
-      
+
       const mapInstance = new mapglAPI.Map(mapContainerRef.current, {
         center: userCoords,
         zoom: 15,
-        key: import.meta.env.VITE_2GIS_API_KEY
+        key: import.meta.env.VITE_2GIS_API_KEY,
       });
 
       // Создаем маркер пользователя
@@ -139,57 +159,61 @@ export default function CreateParkingForm() {
 
       // Загружаем существующие парковки
       try {
-        const response = await fetch('http://localhost:3000/api/parking-lots/all');
+        const response = await fetch(
+          "http://localhost:3000/api/parking-lots/all",
+        );
         if (!response.ok) {
-          throw new Error('Ошибка при загрузке парковок');
+          throw new Error("Ошибка при загрузке парковок");
         }
         const existingParkings = await response.json();
-        
+
         // Добавляем маркеры существующих парковок
-        existingParkings.forEach((parking: Parking) => {
+        existingParkings.forEach((parking: any) => {
           new mapglAPI.Marker(mapInstance, {
-            coordinates: [parking.location.coordinates.lon, parking.location.coordinates.lat]
+            coordinates: [
+              parking.location.coordinates.lon,
+              parking.location.coordinates.lat,
+            ],
           });
         });
       } catch (error) {
-        console.error('Ошибка при загрузке существующих парковок:', error);
+        console.error("Ошибка при загрузке существующих парковок:", error);
       }
 
       // Создаем маркер для новой парковки
       const parkingMarker = new mapglAPI.Marker(mapInstance, {
         coordinates: userCoords,
-        draggable: true,
         label: {
-          text: 'Новая парковка',
+          text: "Новая парковка",
           offset: [0, -60],
           relativeAnchor: [0.5, 0],
-        }
+        },
       });
 
       // Обработчик клика по карте
-      mapInstance.on('click', async (e: any) => {
+      mapInstance.on("click", async (e: any) => {
         const coordinates = e.lngLat;
         parkingMarker.setCoordinates(coordinates);
 
         try {
           const response = await fetch(
-            `https://catalog.api.2gis.com/3.0/items/geocode?lat=${coordinates[1]}&lon=${coordinates[0]}&key=${import.meta.env.VITE_2GIS_API_KEY}`
+            `https://catalog.api.2gis.com/3.0/items/geocode?lat=${coordinates[1]}&lon=${coordinates[0]}&key=${import.meta.env.VITE_2GIS_API_KEY}`,
           );
           const data = await response.json();
-          const address = data.result.items[0]?.full_name || 'Адрес не найден';
-          
-          setParkingData(prev => ({
+          const address = data.result.items[0]?.full_name || "Адрес не найден";
+
+          setParkingData((prev) => ({
             ...prev,
             location: {
               address,
-              coordinates: { 
-                lat: coordinates[1], 
-                lon: coordinates[0] 
-              }
-            }
+              coordinates: {
+                lat: coordinates[1] as number | null,
+                lon: coordinates[0] as number | null,
+              },
+            },
           }));
         } catch (error) {
-          console.error('Ошибка при получении адреса:', error);
+          console.error("Ошибка при получении адреса:", error);
         }
       });
 
@@ -197,133 +221,162 @@ export default function CreateParkingForm() {
       setMarker(parkingMarker);
       setIsLoading(false);
     } catch (error) {
-      console.error('Ошибка при инициализации карты:', error);
+      console.error("Ошибка при инициализации карты:", error);
       setIsLoading(false);
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setParkingData(prev => ({
+    setParkingData((prev) => ({
       ...prev,
-      ...(name === 'address' 
+      ...(name === "address"
         ? { location: { ...prev.location, address: value } }
-        : { [name]: value })
+        : { [name]: value }),
     }));
   };
 
   const handleAddressInput = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
-    console.log('Input value:', value);
+    console.log("Input value:", value);
     handleChange(e);
 
     if (value.length < 3) {
-      console.log('Input too short, clearing suggestions');
+      console.log("Input too short, clearing suggestions");
       setAddressSuggestions([]);
       return;
     }
 
     try {
-      // const url = `https://catalog.api.2gis.com/3.0/items/geocode?q=${encodeURIComponent(value)}&fields=items.point,items.full_name&key=${import.meta.env.VITE_2GIS_API_KEY}`;
-      console.log('Fetching suggestions from:', url);
+      const url = `https://catalog.api.2gis.com/3.0/items/geocode?q=${encodeURIComponent(value)}&fields=items.point,items.full_name&key=${import.meta.env.VITE_2GIS_API_KEY}`;
+      console.log("Fetching suggestions from:", url);
 
       const response = await fetch(url);
-      console.log('Response status:', response.status);
-      
+      console.log("Response status:", response.status);
+
       const data = await response.json();
-      console.log('API Response:', data);
-      
+      console.log("API Response:", data);
+
       if (!data.result || !data.result.items) {
-        console.log('No items in response');
+        console.log("No items in response");
         return;
       }
 
       const suggestions = data.result.items
         .filter((item: any) => item.point && item.full_name)
         .map((item: any) => ({
-          name: item.name || '',
+          name: item.name || "",
           full_name: item.full_name,
-          coordinates: [item.point.lon, item.point.lat]
+          coordinates: [item.point.lon, item.point.lat],
         }));
-      
-      console.log('Processed suggestions:', suggestions);
+
+      console.log("Processed suggestions:", suggestions);
       setAddressSuggestions(suggestions);
     } catch (error) {
-      console.error('Error fetching suggestions:', error);
+      console.error("Error fetching suggestions:", error);
     }
   };
 
-  const handleSuggestionSelect = (suggestion: typeof addressSuggestions[0]) => {
-    console.log('Selected suggestion:', suggestion);
-    setParkingData(prev => ({
-      ...prev,
-      location: {
-        address: suggestion.full_name,
-        coordinates: {
-          lat: suggestion.coordinates[1],
-          lon: suggestion.coordinates[0]
-        }
-      }
-    }));
+  const handleSuggestionSelect = (
+    suggestion: (typeof addressSuggestions)[0],
+  ) => {
+    console.log("Selected suggestion:", suggestion);
+      setParkingData((prev) => ({
+        ...prev,
+        location: {
+          address: suggestion.full_name,
+          coordinates: {
+            lat: suggestion.coordinates[1] as number | null,
+            lon: suggestion.coordinates[0] as number | null,
+          },
+        },
+      }));
     setAddressSuggestions([]);
-    
+
     if (map && marker) {
-      console.log('Moving marker to:', suggestion.coordinates);
+      console.log("Moving marker to:", suggestion.coordinates);
       marker.setCoordinates(suggestion.coordinates);
     }
   };
 
   const handleFilesChange = (newFiles: File[]) => {
     setFiles(newFiles);
-    setParkingData(prev => ({
+    setParkingData((prev) => ({
       ...prev,
-      images: newFiles
+      images: newFiles,
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError(null);
 
-    if (!parkingData.name.trim() || !parkingData.location.address.trim() || !parkingData.price_per_hour) {
-      setError('Пожалуйста, заполните все обязательные поля');
+    if (
+      !parkingData.name.trim() ||
+      !parkingData.location.address.trim() ||
+      !parkingData.price_per_hour
+    ) {
+      const message = "Пожалуйста, заполните все обязательные поля";
+      setSnackbar({ open: true, message, severity: 'error' });
       return;
     }
 
     try {
       const formData = new FormData();
-      formData.append('name', parkingData.name);
-      formData.append('description', parkingData.description);
-      formData.append('location', JSON.stringify(parkingData.location));
-      formData.append('price_per_hour', parkingData.price_per_hour.toString());
-      formData.append('status', 'pending');
-      formData.append('grid_size', 'medium');
+      formData.append("name", parkingData.name);
+      formData.append("description", parkingData.description);
+      formData.append("location", JSON.stringify(parkingData.location));
+      formData.append("price_per_hour", parkingData.price_per_hour.toString());
+      formData.append("status", "pending");
+      formData.append("grid_size", "medium");
 
       if (files.length > 0) {
-        formData.append('img', files[0]);
+        formData.append("img", files[0]);
       }
 
-      const result = await dispatch(createParking(formData)).unwrap();
-      navigate(`/parking-constructor/${result.id}`);
+      const result = await dispatch(createParking(formData)).unwrap() as { id: number };
+      setSnackbar({ open: true, message: 'Парковка успешно создана! Переходим к настройке мест...', severity: 'success' });
+      setTimeout(() => navigate(`/parking-constructor/${result.id}`), 1500);
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Ошибка при создании парковки');
-      console.error('Error details:', err);
+      const message = err.response?.data?.error || "Ошибка при создании парковки";
+      setSnackbar({ open: true, message, severity: 'error' });
+      console.error("Error details:", err);
     }
   };
 
   return (
-    <Container maxWidth="sm">
-      <Paper elevation={3} sx={{ p: 2, mt: 3, textAlign:'center' }}>
-        <Typography variant="h5" component="h1" gutterBottom>
+    <Container maxWidth="md" sx={{ py: { xs: 2, md: 4 } }}>
+      <Paper 
+        elevation={4} 
+        sx={{ 
+          p: { xs: 3, md: 4 }, 
+          borderRadius: 3,
+        }}
+      >
+        <Typography 
+          variant="h4" 
+          component="h1" 
+          gutterBottom
+          sx={{ 
+            mb: 1,
+            fontWeight: 600,
+            textAlign: 'center',
+            fontSize: { xs: '1.75rem', md: '2rem' },
+          }}
+        >
           Создание новой парковки
+        </Typography>
+        <Typography 
+          variant="body2" 
+          color="text.secondary" 
+          sx={{ mb: 3, textAlign: 'center' }}
+        >
+          Заполните информацию о вашей парковке
         </Typography>
 
         <Box component="form" onSubmit={handleSubmit}>
-          <Stack spacing={2}>
-            {error && <Typography color="error">{error}</Typography>}
+          <Stack spacing={3}>
 
             <TextField
-              size="small"
               required
               fullWidth
               name="name"
@@ -331,10 +384,15 @@ export default function CreateParkingForm() {
               value={parkingData.name}
               onChange={handleChange}
               autoFocus
+              variant="outlined"
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2,
+                }
+              }}
             />
 
             <TextField
-              size="small"
               fullWidth
               multiline
               rows={4}
@@ -343,6 +401,12 @@ export default function CreateParkingForm() {
               value={parkingData.description}
               onChange={handleChange}
               helperText="Укажите особенности парковки, режим работы и другую полезную информацию"
+              variant="outlined"
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2,
+                }
+              }}
             />
 
             <Box sx={{ mt: 2 }}>
@@ -431,7 +495,13 @@ export default function CreateParkingForm() {
                 )}
                 <Box
                   ref={mapContainerRef}
-                  sx={{ height: 350, width: "100%", mb: 1 }}
+                  sx={{ 
+                    height: { xs: 250, md: 350 }, 
+                    width: "100%", 
+                    mb: 1,
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                  }}
                 />
                 <LocationButton
                   onLocationFound={(coords) => {
@@ -440,17 +510,21 @@ export default function CreateParkingForm() {
                   }}
                 />
                 <TextField
-                  size="small"
                   fullWidth
                   label="Выбранный адрес"
                   value={parkingData.location.address}
                   disabled
+                  variant="outlined"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                    }
+                  }}
                 />
               </Box>
             ) : (
               <Box sx={{ position: "relative" }}>
                 <TextField
-                  size="small"
                   required
                   fullWidth
                   name="address"
@@ -458,6 +532,12 @@ export default function CreateParkingForm() {
                   value={parkingData.location.address}
                   onChange={handleAddressInput}
                   autoComplete="off"
+                  variant="outlined"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                    }
+                  }}
                 />
                 {addressSuggestions.length > 0 && (
                   <Paper
@@ -491,7 +571,6 @@ export default function CreateParkingForm() {
             )}
 
             <TextField
-              size="small"
               required
               fullWidth
               name="price_per_hour"
@@ -500,14 +579,49 @@ export default function CreateParkingForm() {
               value={parkingData.price_per_hour}
               onChange={handleChange}
               inputProps={{ min: 0 }}
+              variant="outlined"
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2,
+                }
+              }}
             />
 
-            <Button type="submit" fullWidth variant="contained" size="large">
+            <Button 
+              type="submit" 
+              fullWidth 
+              variant="contained" 
+              size="large"
+              sx={{
+                mt: 2,
+                py: 1.5,
+                borderRadius: 2,
+                fontSize: '1rem',
+                fontWeight: 600,
+                textTransform: 'none',
+              }}
+            >
               Создать и перейти к настройке мест
             </Button>
           </Stack>
         </Box>
       </Paper>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={() => setSnackbar({ ...snackbar, open: false })} 
+          severity={snackbar.severity}
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 }

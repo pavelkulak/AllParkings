@@ -1,8 +1,8 @@
 export interface Review {
-  id: string;
-  user_id: string;
-  parking_id: string;
-  rating: string;
+  id: number;
+  user_id: number;
+  parking_id: number;
+  rating: number;
   comment: string;
   createdAt: string;
   updatedAt: string;

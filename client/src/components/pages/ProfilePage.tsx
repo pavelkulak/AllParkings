@@ -1,4 +1,5 @@
 import { useAppDispatch, useAppSelector } from '../../redux/hooks';
+import { Booking } from '../../types/booking';
 import {
   Box,
   Typography,
@@ -16,7 +17,7 @@ import {
   Alert,
   LinearProgress,
 } from '@mui/material';
-import { useState, useRef, useEffect, MouseEvent } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   updateAvatar,
@@ -73,7 +74,7 @@ export default function ProfilePage() {
   const navigate = useNavigate();
   const [historyTab, setHistoryTab] = useState<'active' | 'history'>('active');
   const [showParkingModal, setShowParkingModal] = useState(false);
-  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
 
   const { mode, toggleTheme } = useThemeContext();
 
@@ -112,11 +113,11 @@ export default function ProfilePage() {
     const cleanedOriginalPhone = user?.phone?.toString() || '';
 
     setIsChanged(
-      (surname !== user?.surname ||
+      Boolean((surname !== user?.surname ||
         name !== user?.name ||
         patronymic !== user?.patronymic ||
         cleanedCurrentPhone !== cleanedOriginalPhone) &&
-        isFieldsValid(),
+        isFieldsValid()),
     );
   }, [surname, name, patronymic, phone, user]);
 
@@ -167,7 +168,7 @@ export default function ProfilePage() {
       });
   };
 
-  const handleChangePassword = (e: MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const handleChangePassword = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     if (!currentPassword || !newPassword || !confirmPassword) {
       setSnackbarMessage('Пожалуйста, заполните все поля');
@@ -1028,13 +1029,13 @@ export default function ProfilePage() {
                                     Заезд:
                                   </Typography>
                                   <Typography>
-                                    {new Date(booking.start_time).toLocaleString('ru-RU', {
+                                    {new Date(booking.start_time || booking.entry_time).toLocaleString('ru-RU', {
                                       year: 'numeric',
                                       month: 'long',
                                       day: 'numeric',
                                     })}
                                     {' '}в{' '}
-                                    {new Date(booking.start_time).toLocaleString('ru-RU', {
+                                    {new Date(booking.start_time || booking.entry_time).toLocaleString('ru-RU', {
                                       hour: '2-digit',
                                       minute: '2-digit'
                                     })}
@@ -1045,13 +1046,13 @@ export default function ProfilePage() {
                                     Выезд:
                                   </Typography>
                                   <Typography>
-                                    {new Date(booking.end_time).toLocaleString('ru-RU', {
+                                    {new Date(booking.end_time || booking.exit_time).toLocaleString('ru-RU', {
                                       year: 'numeric',
                                       month: 'long',
                                       day: 'numeric',
                                     })}
                                     {' '}в{' '}
-                                    {new Date(booking.end_time).toLocaleString('ru-RU', {
+                                    {new Date(booking.end_time || booking.exit_time).toLocaleString('ru-RU', {
                                       hour: '2-digit',
                                       minute: '2-digit'
                                     })}
@@ -1157,13 +1158,13 @@ export default function ProfilePage() {
                                     Заезд:
                                   </Typography>
                                   <Typography>
-                                    {new Date(booking.start_time).toLocaleString('ru-RU', {
+                                    {new Date(booking.start_time || booking.entry_time).toLocaleString('ru-RU', {
                                       year: 'numeric',
                                       month: 'long',
                                       day: 'numeric',
                                     })}
                                     {' '}в{' '}
-                                    {new Date(booking.start_time).toLocaleString('ru-RU', {
+                                    {new Date(booking.start_time || booking.entry_time).toLocaleString('ru-RU', {
                                       hour: '2-digit',
                                       minute: '2-digit'
                                     })}
@@ -1174,13 +1175,13 @@ export default function ProfilePage() {
                                     Выезд:
                                   </Typography>
                                   <Typography>
-                                    {new Date(booking.end_time).toLocaleString('ru-RU', {
+                                    {new Date(booking.end_time || booking.exit_time).toLocaleString('ru-RU', {
                                       year: 'numeric',
                                       month: 'long',
                                       day: 'numeric',
                                     })}
                                     {' '}в{' '}
-                                    {new Date(booking.end_time).toLocaleString('ru-RU', {
+                                    {new Date(booking.end_time || booking.exit_time).toLocaleString('ru-RU', {
                                       hour: '2-digit',
                                       minute: '2-digit'
                                     })}
@@ -1212,7 +1213,7 @@ export default function ProfilePage() {
     maxWidth={false}
     PaperProps={{
       sx: {
-        width: (theme) => ({
+        width: (_theme) => ({
           small: '700px',
           medium: '900px',
           large: '1100px'

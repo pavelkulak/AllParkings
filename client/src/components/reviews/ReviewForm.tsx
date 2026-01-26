@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   Box,
   Button,
@@ -6,7 +6,9 @@ import {
   Rating,
   Typography,
   Stack,
+  Snackbar,
   Alert,
+  Paper,
 } from '@mui/material';
 import { Star, StarBorder } from '@mui/icons-material';
 import axiosInstance from '../../services/axiosInstance';
@@ -20,131 +22,132 @@ interface ReviewFormProps {
 export const ReviewForm = ({ parkingId, onSuccess, onCancel }: ReviewFormProps) => {
   const [rating, setRating] = useState<number | null>(null);
   const [comment, setComment] = useState('');
-  const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [hover, setHover] = useState(-1);
-
-  useEffect(() => {
-    console.log('Component mounted');
-  }, []);
-
-  useEffect(() => {
-    console.log('Rating state changed:', rating);
-    console.log('Button should be disabled:', submitting || !rating);
-  }, [rating, submitting]);
-
-  const handleRatingChange = (event: React.SyntheticEvent, newValue: number | null) => {
-    console.log('Rating change:', {
-      oldValue: rating,
-      newValue,
-      eventType: event.type
-    });
-    setRating(newValue);
-    setError(null);
-  };
-
-  const labels: { [index: string]: string } = {
-    0: 'Выберите оценку',
-    1: 'Ужасно',
-    2: 'Плохо',
-    3: 'Нормально',
-    4: 'Хорошо',
-    5: 'Отлично',
-  };
-
-  console.log('Current rating:', rating);
-  console.log('Current hover:', hover);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted with rating:', rating);
     
     if (!rating) {
-      console.log('Rating is missing');
-      setError('Пожалуйста, поставьте оценку');
+      setSnackbar({ open: true, message: 'Пожалуйста, поставьте оценку', severity: 'error' });
       return;
     }
 
     try {
       setSubmitting(true);
-      console.log('Sending review data:', {
-        parking_id: parkingId,
-        rating,
-        comment: comment.trim()
-      });
 
       await axiosInstance.post('/reviews', {
         parking_id: parkingId,
         rating,
         comment: comment.trim()
       });
-      console.log('Review submitted successfully');
-      onSuccess();
-    } catch (err) {
-      console.error('Error submitting review:', err);
-      setError('Ошибка при отправке отзыва');
+      
+      setSnackbar({ open: true, message: 'Отзыв успешно отправлен!', severity: 'success' });
+      setTimeout(() => {
+        onSuccess();
+      }, 1500);
+    } catch (err: any) {
+      const message = err.response?.data?.message || 'Ошибка при отправке отзыва';
+      setSnackbar({ open: true, message, severity: 'error' });
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <Box component="form" onSubmit={handleSubmit}>
-      <Stack spacing={2}>
-        {error && <Alert severity="error">{error}</Alert>}
-        
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <Typography>Ваша оценка:</Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Rating
-  name="rating"
-  value={rating}
-  onChange={(_, newValue) => {
-    setRating(newValue);
-    setError(null);
-  }}
-  icon={<Star fontSize="inherit" />}
-  emptyIcon={<StarBorder fontSize="inherit" />}
-  sx={{
-    '& .MuiRating-iconFilled': {
-      color: '#faaf00',
-    },
-    '& .MuiRating-iconEmpty': {
-      color: '#faaf00',
-      opacity: 0.55,
-    },
-  }}
-/>
+    <Paper elevation={2} sx={{ p: { xs: 2, md: 3 }, borderRadius: 2 }}>
+      <Box component="form" onSubmit={handleSubmit}>
+        <Stack spacing={3}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+              Ваша оценка:
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Rating
+                name="rating"
+                value={rating}
+                onChange={(_, newValue) => {
+                  setRating(newValue);
+                }}
+                icon={<Star fontSize="inherit" />}
+                emptyIcon={<StarBorder fontSize="inherit" />}
+                size="large"
+                sx={{
+                  '& .MuiRating-iconFilled': {
+                    color: '#faaf00',
+                  },
+                  '& .MuiRating-iconEmpty': {
+                    color: '#faaf00',
+                    opacity: 0.55,
+                  },
+                }}
+              />
+            </Box>
           </Box>
-        </Box>
 
-        <TextField
-          fullWidth
-          multiline
-          rows={4}
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-          label="Ваш комментарий"
-          placeholder="Расскажите о вашем опыте использования парковки"
-        />
+          <TextField
+            fullWidth
+            multiline
+            rows={4}
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            label="Ваш комментарий"
+            placeholder="Расскажите о вашем опыте использования парковки"
+            variant="outlined"
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 2,
+              }
+            }}
+          />
 
-        <Stack direction="row" spacing={1}>
-          <Button 
-            variant="contained" 
-            type="submit"
-            disabled={submitting || !rating}
-          >
-            Отправить
-          </Button>
-          <Button 
-            variant="outlined" 
-            onClick={onCancel}
-            disabled={submitting}
-          >
-            Отмена
-          </Button>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+            <Button 
+              variant="contained" 
+              type="submit"
+              disabled={submitting || !rating}
+              fullWidth
+              sx={{
+                borderRadius: 2,
+                py: 1.25,
+                fontWeight: 600,
+                textTransform: 'none',
+              }}
+            >
+              {submitting ? 'Отправка...' : 'Отправить'}
+            </Button>
+            <Button 
+              variant="outlined" 
+              onClick={onCancel}
+              disabled={submitting}
+              fullWidth
+              sx={{
+                borderRadius: 2,
+                py: 1.25,
+                textTransform: 'none',
+              }}
+            >
+              Отмена
+            </Button>
+          </Stack>
         </Stack>
-      </Stack>
-    </Box>
+      </Box>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={() => setSnackbar({ ...snackbar, open: false })} 
+          severity={snackbar.severity}
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+    </Paper>
   );
 }; 

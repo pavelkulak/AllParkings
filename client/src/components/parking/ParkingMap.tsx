@@ -1,4 +1,4 @@
-import { useEffect, useRef, useMemo, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { load } from '@2gis/mapgl';
 import { Directions } from '@2gis/mapgl-directions';
 import { Box, Container, Paper, Typography, CircularProgress } from '@mui/material';
@@ -17,7 +17,7 @@ export const ParkingMap = () => {
   const isInitializedRef = useRef(false);
   const [mapglAPI, setMapglAPI] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [parkings, setParkings] = useState<Parking[]>([]);
+  const [, setParkings] = useState<Parking[]>([]);
   const [selectedParking, setSelectedParking] = useState<Parking | null>(null);
 
   const location = useLocation();
@@ -217,8 +217,27 @@ export const ParkingMap = () => {
       px: { xs: 2, sm: 3 }, 
       py: 3 
     }}>
-      <Paper elevation={3} sx={{ p: 2, mt: 10, width: '1400px', height: '1000px'}}>
-        <Typography variant="h5" component="h1" gutterBottom>
+      <Paper 
+        elevation={4} 
+        sx={{ 
+          p: { xs: 1.5, md: 3 }, 
+          mt: { xs: 2, md: 10 },
+          width: { xs: '100%', md: '1400px' },
+          maxWidth: '100%',
+          height: { xs: 'auto', md: '1000px' },
+          borderRadius: { xs: 2, md: 3 },
+        }}
+      >
+        <Typography 
+          variant="h5" 
+          component="h1" 
+          gutterBottom
+          sx={{
+            fontSize: { xs: '1.25rem', md: '1.5rem' },
+            fontWeight: 600,
+            mb: 2,
+          }}
+        >
           Карта парковок
         </Typography>
         <Box sx={{ position: 'relative' }}>
@@ -234,6 +253,7 @@ export const ParkingMap = () => {
               justifyContent: 'center',
               backgroundColor: 'rgba(255, 255, 255, 0.8)',
               zIndex: 2,
+              borderRadius: 2,
             }}>
               <CircularProgress />
             </Box>
@@ -243,16 +263,16 @@ export const ParkingMap = () => {
             createUserMarker(mapglAPI, mapInstanceRef.current, coords);
           }} />
           <Box 
-  ref={mapContainerRef} 
-  sx={{ 
-    height: '70vh', // Используем viewport height вместо фиксированной высоты
-    width: '100%',
-    minHeight: 600, // Минимальная высота
-    borderRadius: 2,
-    overflow: 'hidden',
-    boxShadow: 1
-  }} 
-/>
+            ref={mapContainerRef} 
+            sx={{ 
+              height: { xs: '60vh', sm: '65vh', md: '70vh' },
+              width: '100%',
+              minHeight: { xs: 400, md: 600 },
+              borderRadius: 2,
+              overflow: 'hidden',
+              boxShadow: 2
+            }} 
+          />
         </Box>
       </Paper>
       <ParkingModal 

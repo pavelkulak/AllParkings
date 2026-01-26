@@ -1,4 +1,4 @@
-import { Container } from '@mui/material';
+import { Container, Box } from '@mui/material';
 import { GeneralChat } from '../chat/GeneralChat';
 
 export const ChatPage = () => {
@@ -6,13 +6,16 @@ export const ChatPage = () => {
     <Container 
       maxWidth="lg" 
       sx={{ 
-        mt: 4, 
-        mb: 4,
+        py: { xs: 2, md: 4 },
+        px: { xs: 1, md: 3 },
         display: 'flex',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        minHeight: { xs: 'calc(100vh - 200px)', md: 'auto' },
       }}
     >
-      <GeneralChat />
+      <Box sx={{ width: '100%', maxWidth: '900px' }}>
+        <GeneralChat />
+      </Box>
     </Container>
   );
 }; 

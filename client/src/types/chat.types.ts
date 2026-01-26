@@ -12,6 +12,16 @@ export interface Message {
   };
 }
 
+export interface Chat {
+  id: number;
+  user_id: number;
+  name: string;
+  surname: string;
+  avatar: string | null;
+  lastMessage?: Message;
+  unreadCount?: number;
+}
+
 export interface ChatState {
   messages: Message[];
   status: 'idle' | 'loading' | 'succeeded' | 'failed';

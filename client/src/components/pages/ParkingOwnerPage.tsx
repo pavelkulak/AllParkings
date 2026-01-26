@@ -2,36 +2,24 @@ import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import {
   Box,
   Typography,
-  Avatar,
   Button,
-  List,
-  ListItem,
-  ListItemText,
   TextField,
   Container,
-  InputLabel,
-  MenuItem,
-  Select,
   Stack,
-  Modal,
   Paper,
   CircularProgress,
   Tab,
   Tabs,
   Chip,
-  CardContent,
-  Rating,
-  Card,
   Grid,
+  Snackbar,
+  Alert,
 } from "@mui/material";
-import { Add as AddIcon, Description } from "@mui/icons-material";
 import { useEffect, useRef, useState } from "react";
 import Autocomplete from "@mui/material/Autocomplete";
-import ParkingConstructor from "../constructor/ParkingConstructor";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { load } from "@2gis/mapgl";
 import {
-  createParking,
   getMyParkings,
   updateMyParkings,
   deleteMyParkings,
@@ -45,30 +33,27 @@ import { FileUploader } from '../common/FileUploader';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
 interface IParkingOption {
-  parking(parking: any): unknown;
   label: string;
   value: number | string;
+  parking: any;
 }
 
 export default function ParkingOwnerPage() {
   const user = useAppSelector((state) => state.auth.user);
 
   const dispatch = useAppDispatch();
-  const navigate = useNavigate();
-  const [error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
   const [addressMethod, setAddressMethod] = useState<"input" | "map">("input");
   const [map, setMap] = useState<any>(null);
   const [marker, setMarker] = useState<any>(null);
   const [isReviewsModalOpen, setIsReviewsModalOpen] = useState(false);
   const [selectedParking, setSelectedParking] = useState<any>(null);
-  const [reviews, setReviews] = useState<Review[]>([]);
   const [parkings, setParkings] = useState<Parking[]>([]);
-    
-  const [selectedReview, setSelectedReview] = useState<Review | null>(null);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
 
   const fetchParkings = async () => {
     try {
-      const response = await axiosInstance.get("/parking-lots/all");
+      const response = await axiosInstance.get<Parking[]>("/parking-lots/all");
       setParkings(response.data);
     } catch (error) {
       console.error("Ошибка при получении парковок:", error);
@@ -89,13 +74,22 @@ export default function ParkingOwnerPage() {
     // fetchReviews();
   }, []);
 
-  const filteredReviews = selectedParking
-    ? reviews.filter((review) => review.parking_id === selectedParking.id)
-    : reviews;
 
   const { parkingLots } = useAppSelector((state) => state.parking);
 
-  const [parkingData, setParkingData] = useState({
+  const [parkingData, setParkingData] = useState<{
+    status: string;
+    name: string;
+    description: string;
+    location: {
+      address: string;
+      coordinates: {
+        lat: number | null;
+        lon: number | null;
+      };
+    };
+    price_per_hour: string;
+  }>({
     status:"",
     name: "",
     description: "",
@@ -115,7 +109,20 @@ export default function ParkingOwnerPage() {
 
   useEffect(() => {
     if (parkingLots && parkingLots.length > 0) {
-      setParkingData(parkingLots[0]); // Устанавливаем данные первой парковки
+      const firstParking = parkingLots[0];
+      setParkingData({
+        status: firstParking.status || "",
+        name: firstParking.name || "",
+        description: firstParking.description || "",
+        location: {
+          address: firstParking.location?.address || "",
+          coordinates: {
+            lat: firstParking.location?.coordinates?.lat || null,
+            lon: firstParking.location?.coordinates?.lon || null,
+          },
+        },
+        price_per_hour: firstParking.price_per_hour?.toString() || ""
+      });
     }
   }, [parkingLots]); // Обновляем данные когда parkingLots изменяется
 
@@ -216,24 +223,27 @@ export default function ParkingOwnerPage() {
 
     try {
       setIsSaving(true);
-      const formData = new FormData();
       
-      formData.append('name', parkingData.name);
-      formData.append('description', parkingData.description);
-      formData.append('location', JSON.stringify(parkingData.location));
-      formData.append('price_per_hour', parkingData.price_per_hour);
-      formData.append('status', selectedParking.status);
-      
-      if (files.length > 0) {
-        formData.append('image', files[0]);
-      }
+      const updateData = {
+        id: selectedParking.id.toString(),
+        name: parkingData.name,
+        description: parkingData.description,
+        location: {
+          address: parkingData.location.address,
+          coordinates: {
+            lat: parkingData.location.coordinates.lat,
+            lon: parkingData.location.coordinates.lon,
+          },
+        },
+        price_per_hour: Number(parkingData.price_per_hour),
+      };
 
-      await dispatch(updateMyParkings(formData)).unwrap();
+      await dispatch(updateMyParkings(updateData)).unwrap();
 
       await new Promise((resolve) => setTimeout(resolve, 3000));
       
-      // Обновляем список парковок
-      const parkings = await dispatch(getMyParkings()).unwrap();
+        // Обновляем список парковок
+        await dispatch(getMyParkings());
       
       // Находим обновленную парковку
       const updatedParking = parkings.find(p => p.id === selectedParking.id);
@@ -254,9 +264,12 @@ export default function ParkingOwnerPage() {
           price_per_hour: updatedParking.price_per_hour?.toString() || ""
         });
       }
-    } catch (error) {
+      setSnackbar({ open: true, message: 'Изменения успешно сохранены!', severity: 'success' });
+    } catch (error: any) {
       console.error("Ошибка при сохранении изменений:", error);
-      setError("Ошибка при сохранении изменений");
+      const message = error?.response?.data?.message || "Ошибка при сохранении изменений";
+      setError(message);
+      setSnackbar({ open: true, message, severity: 'error' });
     } finally {
       setIsSaving(false);
     }
@@ -394,7 +407,6 @@ export default function ParkingOwnerPage() {
       // Создаем маркер для новой парковки
       const parkingMarker = new mapglAPI.Marker(mapInstance, {
         coordinates: userCoords,
-        draggable: true,
         label: {
           text: "Новая парковка",
           offset: [0, -60],
@@ -421,8 +433,8 @@ export default function ParkingOwnerPage() {
             location: {
               address,
               coordinates: {
-                lat: coordinates[1],
-                lon: coordinates[0],
+                lat: coordinates[1] as number,
+                lon: coordinates[0] as number,
               },
             },
           }));
@@ -462,7 +474,7 @@ export default function ParkingOwnerPage() {
     }
 
     try {
-      // const url = `https://catalog.api.2gis.com/3.0/items/geocode?q=${encodeURIComponent(value)}&fields=items.point,items.full_name&key=${import.meta.env.VITE_2GIS_API_KEY}`;
+      const url = `https://catalog.api.2gis.com/3.0/items/geocode?q=${encodeURIComponent(value)}&fields=items.point,items.full_name&key=${import.meta.env.VITE_2GIS_API_KEY}`;
       console.log("Fetching suggestions from:", url);
 
       const response = await fetch(url);
@@ -513,34 +525,6 @@ export default function ParkingOwnerPage() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError(null);
-
-    if (
-      !parkingData.name.trim() ||
-      !parkingData.location.address.trim() ||
-      !parkingData.price_per_hour
-    ) {
-      setError("Пожалуйста, заполните все обязательные поля");
-      return;
-    }
-
-    try {
-      const result = await dispatch(
-        createParking({
-          ...parkingData,
-          price_per_hour: Number(parkingData.price_per_hour),
-          status: 'pending'
-        })
-      ).unwrap();
-
-      navigate(`/parking-constructor/${result.id}`);
-    } catch (err: any) {
-      setError(err.response?.data?.error || "Ошибка при создании парковки");
-      console.error("Error details:", err);
-    }
-  };
 
   const getStatusInfo = (status: string) => {
     switch (status) {
@@ -612,32 +596,30 @@ export default function ParkingOwnerPage() {
         <Container
           maxWidth="xl"
           sx={{
-            display: "flex",
-            gap: 4,
-            justifyContent: "space-around",
-            margin: 10,
+            px: { xs: 2, md: 3 },
+            py: { xs: 2, md: 4 },
           }}
         >
-          <Grid item xs={12} md={6}>
-            {selectedParking && (
-              <ParkingEditor 
-                parkingId={selectedParking.id}
-              />
-            )}
-          </Grid>
+          <Grid container spacing={{ xs: 2, md: 4 }}>
+            <Grid item xs={12} md={7}>
+              {selectedParking && (
+                <ParkingEditor 
+                  parkingId={selectedParking.id}
+                />
+              )}
+            </Grid>
 
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              m: 0,
-              borderRadius: 5,
-              height: "100%",
-              width: "40%",
-              gap: 1,
-            }}
-          >
+            <Grid item xs={12} md={5}>
+              <Paper
+                elevation={3}
+                sx={{
+                  p: { xs: 2, md: 3 },
+                  borderRadius: 3,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 2,
+                }}
+              >
             <Stack direction="row" spacing={2} alignItems="center">
               <Typography variant="body2">Статус:</Typography>
               <Chip
@@ -714,7 +696,13 @@ export default function ParkingOwnerPage() {
                 )}
                 <Box
                   ref={mapContainerRef}
-                  sx={{ height: 350, width: "100%", mb: 1 }}
+                  sx={{ 
+                    height: { xs: 250, md: 350 }, 
+                    width: "100%", 
+                    mb: 1,
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                  }}
                 />
                 <LocationButton
                   onLocationFound={(coords) => {
@@ -861,6 +849,12 @@ export default function ParkingOwnerPage() {
               variant="contained"
               onClick={handleSaveChanges}
               disabled={isSaving}
+              sx={{
+                py: 1.5,
+                borderRadius: 2,
+                fontWeight: 600,
+                textTransform: 'none',
+              }}
             >
               {isSaving ? (
                 <>
@@ -874,15 +868,38 @@ export default function ParkingOwnerPage() {
             <Button
               fullWidth
               variant="contained"
-              size="small"
+              size="medium"
               color="error"
               onClick={handleDeleteClick}
+              sx={{
+                borderRadius: 2,
+                fontWeight: 600,
+                textTransform: 'none',
+              }}
             >
               Удалить
             </Button>
-          </Box>
+              </Paper>
+            </Grid>
+          </Grid>
         </Container>
       )}
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={() => setSnackbar({ ...snackbar, open: false })} 
+          severity={snackbar.severity}
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
 
       <ReviewsModal
         open={isReviewsModalOpen}

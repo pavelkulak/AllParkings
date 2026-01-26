@@ -1,4 +1,4 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { signIn } from "../../redux/thunkActions";
 import type { LoginCredentials } from "../../types/auth.types";
@@ -11,17 +11,35 @@ import {
   Stack,
   InputAdornment,
   IconButton,
+  Snackbar,
+  Alert,
+  Paper,
 } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 export default function SignIn() {
   const dispatch = useAppDispatch();
-  const { error, status } = useAppSelector((state) => state.auth);
-
-   const navigate = useNavigate();
+  const navigate = useNavigate();
+  const { status, error, user } = useAppSelector((state) => state.auth);
 
   const [showPassword, setShowPassword] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
+
+  useEffect(() => {
+    if (user) {
+      navigate('/');
+    }
+  }, [user, navigate]);
+
+  useEffect(() => {
+    if (status === 'succeeded' && user) {
+      setSnackbar({ open: true, message: 'Успешный вход!', severity: 'success' });
+      setTimeout(() => navigate('/'), 1000);
+    } else if (status === 'failed' && error) {
+      setSnackbar({ open: true, message: error || 'Ошибка при входе', severity: 'error' });
+    }
+  }, [status, error, user, navigate]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -41,72 +59,123 @@ export default function SignIn() {
         alignItems: "center",
         justifyContent: "center",
         minHeight: "70vh",
+        py: 4,
       }}
     >
-      <Box
-        display="flex"
-        flexDirection="column"
-        alignItems="center"
-        width="100%"
+      <Paper
+        elevation={4}
+        sx={{
+          p: { xs: 3, md: 4 },
+          width: "100%",
+          borderRadius: 3,
+        }}
       >
-        <Typography component="h1" variant="h5">
-          Вход
-        </Typography>
         <Box
-          component="form"
-          onSubmit={handleSubmit}
-          sx={{ mt: 3, width: "100%" }}
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          width="100%"
         >
-          <Stack spacing={2}>
-            {/* {error && <Typography color="error">{error}</Typography>} */}
-            <TextField
-              required
-              fullWidth
-              name="email"
-              label="Email"
-              type="email"
-              autoFocus
-            />
-            <TextField
-              required
-              fullWidth
-              name="password"
-              label="Пароль"
-              type={showPassword ? 'text' : 'password'}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      onClick={() => setShowPassword(!showPassword)}
-                      edge="end"
-                    >
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-            />
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              disabled={status === "loading"}
-              sx={{ mt: 2 }}
-            >
-              {status === "loading" ? "Загрузка..." : "Войти"}
-            </Button>
-          </Stack>
-        </Box>
+          <Typography component="h1" variant="h4" sx={{ mb: 1, fontWeight: 600 }}>
+            Вход
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            Войдите в свой аккаунт
+          </Typography>
+          <Box
+            component="form"
+            onSubmit={handleSubmit}
+            sx={{ width: "100%" }}
+          >
+            <Stack spacing={2.5}>
+              <TextField
+                required
+                fullWidth
+                name="email"
+                label="Email"
+                type="email"
+                autoFocus
+                variant="outlined"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                  }
+                }}
+              />
+              <TextField
+                required
+                fullWidth
+                name="password"
+                label="Пароль"
+                type={showPassword ? 'text' : 'password'}
+                variant="outlined"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                  }
+                }}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => setShowPassword(!showPassword)}
+                        edge="end"
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                disabled={status === "loading"}
+                sx={{ 
+                  mt: 2,
+                  py: 1.5,
+                  borderRadius: 2,
+                  fontSize: '1rem',
+                  fontWeight: 600,
+                  textTransform: 'none',
+                }}
+              >
+                {status === "loading" ? "Загрузка..." : "Войти"}
+              </Button>
+            </Stack>
+          </Box>
 
-        <Button
-          variant="text"
-          component={Link}
-          to="/signup"
-          sx={{ mt: 2, color: "grey.500" }}
+          <Button
+            variant="text"
+            component={Link}
+            to="/signup"
+            sx={{ 
+              mt: 3, 
+              color: "text.secondary",
+              textTransform: 'none',
+            }}
+          >
+            Нет аккаунта? Зарегистрируйтесь
+          </Button>
+        </Box>
+      </Paper>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={() => setSnackbar({ ...snackbar, open: false })} 
+          severity={snackbar.severity}
+          variant="filled"
+          sx={{ width: '100%' }}
         >
-          Нет аккаунта? Зарегистрируйтесь
-        </Button>
-      </Box>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 }

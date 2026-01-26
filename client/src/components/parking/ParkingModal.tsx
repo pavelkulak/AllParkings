@@ -1,25 +1,16 @@
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, Box, Typography, Button, Rating, Stack, CircularProgress, DialogTitle, IconButton, useTheme } from '@mui/material';
 import { Parking } from '../../types/parking';
-import { ParkingSpace } from '../../types/parking';
+import { ParkingSpace, ParkingEntrance } from '../../types/parking.types';
 import { ConstructorGrid, GRID_SIZES } from '../constructor/ParkingConstructor';
 import { BookingDialog } from './BookingDialog';
 import CloseIcon from '@mui/icons-material/Close';
 import { Star, StarBorder } from '@mui/icons-material';
 import { ReviewList } from '../reviews/ReviewList';
-import { ParkingEntrance } from '../../types/parking';
 import { useAppDispatch, useAppSelector } from '../../redux/hooks';
 import { addToFavorites, removeFromFavorites, getFavorites } from '../../redux/favoritesThunks';
 import { Favorite, FavoriteBorder } from '@mui/icons-material';
-import { LocalizationProvider } from '@mui/x-date-pickers';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import dayjs from 'dayjs';
-import 'dayjs/locale/ru';
 import { TimeSelector } from './TimeSelector';
-import { styled } from '@mui/system';
-
-
 
 interface ParkingModalProps {
   parking: Parking | null;
@@ -28,16 +19,6 @@ interface ParkingModalProps {
   onBuildRoute?: () => void;
 }
 
-const ParkingGrid = styled(Box)`
-  border: 1px solid #ccc;
-  position: relative;
-  background-size: 20px 20px;
-  background-image: 
-    linear-gradient(to right, rgba(0, 0, 0, 0.1) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
-  margin: 20px auto;
-  transform-origin: top left;
-`;
 
 export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingModalProps) => {
   const [showSpaces, setShowSpaces] = useState(false);
@@ -131,7 +112,7 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
       const data = await response.json();
       console.log('Полученные данные о местах:', {
         totalSpaces: data.ParkingSpaces?.length,
-        freeSpaces: data.ParkingSpaces?.filter(s => s.is_free).length
+        freeSpaces: data.ParkingSpaces?.filter((s: ParkingSpace) => s.is_free).length
       });
       
       setSpaces(data.ParkingSpaces || []);
@@ -537,8 +518,6 @@ const TimeSelectionSection = ({ onTimeSelect }: TimeSelectionSectionProps) => {
       alert('Время выезда должно быть позже времени заезда');
     }
   };
-
-  const theme = useTheme();
 
   return (
     <Box sx={{ 

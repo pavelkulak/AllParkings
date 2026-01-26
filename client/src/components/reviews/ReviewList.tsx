@@ -31,7 +31,7 @@ export const ReviewList = ({ parkingId }: ReviewListProps) => {
   const fetchReviews = async () => {
     try {
       setLoading(true);
-      const response = await axiosInstance.get(`/reviews/parking/${parkingId}`);
+      const response = await axiosInstance.get<Review[]>(`/reviews/parking/${parkingId}`);
       console.log('Reviews response:', response.data);
       setReviews(response.data);
       setError(null);

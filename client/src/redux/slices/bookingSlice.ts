@@ -1,9 +1,10 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { getBookingHistory, getActiveBookings, cancelBooking } from '../bookingThunks';
+import { Booking } from '../../types/booking';
 
 interface BookingState {
-  activeBookings: any[];
-  bookingHistory: any[];
+  activeBookings: Booking[];
+  bookingHistory: Booking[];
   status: 'idle' | 'loading' | 'succeeded' | 'failed';
   error: string | null;
 }
@@ -46,7 +47,7 @@ const bookingSlice = createSlice({
       })
       .addCase(cancelBooking.rejected, (state, action) => {
         state.status = 'failed';
-        state.error = action.error.message;
+        state.error = action.error.message || null;
       });
   }
 });

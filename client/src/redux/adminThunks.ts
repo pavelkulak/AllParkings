@@ -1,28 +1,31 @@
 // src/redux/adminThunks.ts
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
 import { ParkingStatus } from '../types/common.types';
 import axiosInstance from '../services/axiosInstance';
+import { ParkingLot } from '../types/parking.types';
 
-export const getPendingParkings = createAsyncThunk(
+export const getPendingParkings = createAsyncThunk<ParkingLot[], void>(
   'admin/getPendingParkings',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.get('http://localhost:3000/api/parking-lots/pending');
+      const response = await axiosInstance.get<ParkingLot[]>('http://localhost:3000/api/parking-lots/pending');
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       return rejectWithValue(error.response?.data?.error || 'Ошибка при получении парковок');
     }
   }
 );
 
-export const updateParkingStatus = createAsyncThunk(
+export const updateParkingStatus = createAsyncThunk<
+  ParkingLot,
+  { parkingId: number; status: ParkingStatus }
+>(
   'admin/updateParkingStatus',
-  async ({ parkingId, status }: { parkingId: number; status: ParkingStatus }, { rejectWithValue }) => {
+  async ({ parkingId, status }, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.patch(`http://localhost:3000/api/parking-lots/${parkingId}/status`, { status });
+      const response = await axiosInstance.patch<ParkingLot>(`http://localhost:3000/api/parking-lots/${parkingId}/status`, { status });
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       return rejectWithValue(error.response?.data?.error || 'Ошибка при обновлении статуса');
     }
   }

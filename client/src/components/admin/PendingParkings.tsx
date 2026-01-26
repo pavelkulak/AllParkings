@@ -1,5 +1,5 @@
 // src/components/admin/PendingParkings.tsx
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../../redux/hooks';
 import { getPendingParkings, updateParkingStatus } from '../../redux/adminThunks';
 import { 
@@ -12,11 +12,12 @@ import {
   DialogContent, 
 } from '@mui/material';
 import ParkingConstructorPreview from '../parking/ParkingConstructorPreview';
+import { ParkingLot } from '../../types/parking.types';
 
 export default function PendingParkings() {
   const dispatch = useAppDispatch();
-  const { pendingParkings, status } = useAppSelector((state) => state.admin);
-  const [selectedParking, setSelectedParking] = useState(null);
+  const { pendingParkings } = useAppSelector((state) => state.admin);
+  const [selectedParking, setSelectedParking] = useState<ParkingLot | null>(null);
 
   useEffect(() => {
     dispatch(getPendingParkings());

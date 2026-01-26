@@ -1,4 +1,4 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { signUp } from "../../redux/thunkActions";
 import {
@@ -15,15 +15,19 @@ import {
   Tooltip,
   IconButton,
   InputAdornment,
+  Snackbar,
+  Alert,
+  Paper,
 } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import InfoIcon from '@mui/icons-material/Info';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import InputMask from 'react-input-mask';
 
 export default function SignUp() {
   const dispatch = useAppDispatch();
-  const { error, status } = useAppSelector((state) => state.auth);
+  const navigate = useNavigate();
+  const { status, error, user } = useAppSelector((state) => state.auth);
   
   const [surname, setSurname] = useState('');
   const [name, setName] = useState('');
@@ -44,6 +48,22 @@ export default function SignUp() {
   
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
+
+  useEffect(() => {
+    if (user) {
+      navigate('/');
+    }
+  }, [user, navigate]);
+
+  useEffect(() => {
+    if (status === 'succeeded' && user) {
+      setSnackbar({ open: true, message: 'Регистрация успешна! Добро пожаловать!', severity: 'success' });
+      setTimeout(() => navigate('/'), 1500);
+    } else if (status === 'failed' && error) {
+      setSnackbar({ open: true, message: error || 'Ошибка при регистрации', severity: 'error' });
+    }
+  }, [status, error, user, navigate]);
 
   const validateName = (value: string, fieldName: string) => {
     if (value && value.length < 2) {
@@ -145,22 +165,34 @@ export default function SignUp() {
         alignItems: "center",
         justifyContent: "center",
         minHeight: "80vh",
+        py: 4,
       }}
     >
-      <Box
-        display="flex"
-        flexDirection="column"
-        alignItems="center"
-        width="100%"
+      <Paper
+        elevation={4}
+        sx={{
+          p: { xs: 3, md: 4 },
+          width: "100%",
+          borderRadius: 3,
+        }}
       >
-        <Typography component="h1" variant="h5">
-          Регистрация
-        </Typography>
         <Box
-          component="form"
-          onSubmit={handleSubmit}
-          sx={{ mt: 3, width: "100%" }}
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          width="100%"
         >
+          <Typography component="h1" variant="h4" sx={{ mb: 1, fontWeight: 600 }}>
+            Регистрация
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            Создайте новый аккаунт
+          </Typography>
+          <Box
+            component="form"
+            onSubmit={handleSubmit}
+            sx={{ width: "100%" }}
+          >
           <Stack spacing={2}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <TextField
@@ -338,7 +370,14 @@ export default function SignUp() {
               disabled={status === "loading" || !!surnameError || !!nameError || 
                 !!patronymicError || !!phoneError || !!emailError || 
                 !!passwordError || !!confirmPasswordError}
-              sx={{ mt: 2 }}
+              sx={{ 
+                mt: 2,
+                py: 1.5,
+                borderRadius: 2,
+                fontSize: '1rem',
+                fontWeight: 600,
+                textTransform: 'none',
+              }}
             >
               {status === "loading" ? "Загрузка..." : "Зарегистрироваться"}
             </Button>
@@ -348,11 +387,32 @@ export default function SignUp() {
           variant="text"
           component={Link}
           to="/signin"
-          sx={{ mt: 2, color: "grey.500" }}
+          sx={{ 
+            mt: 3, 
+            color: "text.secondary",
+            textTransform: 'none',
+          }}
         >
           Уже есть аккаунт? Войдите
         </Button>
       </Box>
+      </Paper>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={() => setSnackbar({ ...snackbar, open: false })} 
+          severity={snackbar.severity}
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 }

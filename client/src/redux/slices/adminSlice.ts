@@ -1,6 +1,7 @@
 // src/redux/slices/adminSlice.ts
 import { createSlice } from '@reduxjs/toolkit';
 import { getPendingParkings, updateParkingStatus } from '../adminThunks';
+import { ParkingLot } from '../../types/parking.types';
 
 interface AdminState {
   pendingParkings: ParkingLot[];

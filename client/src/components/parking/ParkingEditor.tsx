@@ -13,7 +13,8 @@ import { saveSpacesConfiguration } from '../../redux/parkingThunks';
 import AddIcon from '@mui/icons-material/Add';
 import CheckIcon from '@mui/icons-material/Check';
 import ClearIcon from '@mui/icons-material/Clear';
-import { ParkingSpace, Entrance, GRID_SIZES } from '../constructor/ParkingConstructor';
+import { Entrance, GRID_SIZES } from '../constructor/ParkingConstructor';
+import { ConstructorParkingSpace } from '../../types/parking.types';
 import axiosInstance from '../../services/axiosInstance';
 
 interface ParkingEditorProps {
@@ -133,15 +134,15 @@ export default function ParkingEditor({ parkingId }: ParkingEditorProps) {
   // Копируем все состояния из конструктора
   const theme = useTheme(); // Добавляем использование хука
   const dispatch = useAppDispatch();
-  const [spaces, setSpaces] = useState<ParkingSpace[]>([]);
+  const [spaces, setSpaces] = useState<ConstructorParkingSpace[]>([]);
   const [entrance, setEntrance] = useState<Entrance | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [currentSpace, setCurrentSpace] = useState<ParkingSpace | null>(null);
+  const [currentSpace, setCurrentSpace] = useState<ConstructorParkingSpace | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [gridSize, setGridSize] = useState<keyof typeof GRID_SIZES>('medium');
   const [isRowDialogOpen, setIsRowDialogOpen] = useState(false);
   const [temporaryRow, setTemporaryRow] = useState<{
-    spaces: ParkingSpace[];
+    spaces: ConstructorParkingSpace[];
     position: { x: number; y: number };
   } | null>(null);
 
@@ -149,19 +150,36 @@ export default function ParkingEditor({ parkingId }: ParkingEditorProps) {
   useEffect(() => {
     const fetchParkingData = async () => {
       try {
-        const response = await axiosInstance.get(`/parking-lots/${parkingId}/spaces`);
+        interface ParkingDataResponse {
+          gridSize?: keyof typeof GRID_SIZES;
+          ParkingSpaces?: Array<{
+            id: number;
+            space_number: string;
+            location: string;
+          }>;
+          ParkingEntrance?: {
+            location: string;
+          };
+        }
+        
+        const response = await axiosInstance.get<ParkingDataResponse>(`/parking-lots/${parkingId}/spaces`);
         
         if (response.data.gridSize) {
           setGridSize(response.data.gridSize);
         }
         
-        const parsedSpaces = response.data.ParkingSpaces.map(space => ({
-          id: space.id,
-          number: space.space_number,
-          ...JSON.parse(space.location),
-          width: 40,
-          height: 80
-        }));
+        const parsedSpaces: ConstructorParkingSpace[] = (response.data.ParkingSpaces || []).map((space: any) => {
+          const location = JSON.parse(space.location);
+          return {
+            id: space.id,
+            number: space.space_number,
+            x: location.x,
+            y: location.y,
+            rotation: location.rotation || 0,
+            width: 60 as const,
+            height: 100 as const
+          };
+        });
         
         setSpaces(parsedSpaces);
         
@@ -216,14 +234,14 @@ export default function ParkingEditor({ parkingId }: ParkingEditorProps) {
     const centerX = Math.round((GRID_SIZES[gridSize].width - 40) / 2 / 20) * 20;
     const centerY = Math.round((GRID_SIZES[gridSize].height - 80) / 2 / 20) * 20;
     
-    const newSpace: ParkingSpace = {
+    const newSpace: ConstructorParkingSpace = {
       id: Date.now(),
       number: `P-${spaces.length + 1}`,
       x: centerX,
       y: centerY,
       rotation: 0,
-      width: 40,
-      height: 80
+      width: 60,
+      height: 100
     };
     setSpaces([...spaces, newSpace]);
   };
@@ -277,7 +295,7 @@ export default function ParkingEditor({ parkingId }: ParkingEditorProps) {
     ));
   };
 
-  const handleSpaceClick = (space: ParkingSpace) => {
+  const handleSpaceClick = (space: ConstructorParkingSpace) => {
     if (!isDragging) {
       setCurrentSpace(space);
       setIsDialogOpen(true);
@@ -309,7 +327,7 @@ export default function ParkingEditor({ parkingId }: ParkingEditorProps) {
     console.log('Отправляем кофигурацию с gridSize:', gridSize);
     try {
       await dispatch(saveSpacesConfiguration({
-        parkingId,
+        parkingId: parkingId.toString(),
         spaces,
         entrance,
         gridSize
@@ -323,14 +341,14 @@ export default function ParkingEditor({ parkingId }: ParkingEditorProps) {
   };
 
   const handleAddRow = (data: RowDialogData) => {
-    const rowSpaces = Array.from({ length: data.count }).map((_, index) => ({
+    const rowSpaces: ConstructorParkingSpace[] = Array.from({ length: data.count }).map((_, index) => ({
       id: Date.now() + index,
       number: `P-${spaces.length + index + 1}`,
       x: 0,
       y: 0,
       rotation: data.orientation === 'horizontal' ? 0 : 90,
-      width: 40,
-      height: 80
+      width: 60 as const,
+      height: 100 as const
     }));
     
     const position = {
@@ -433,7 +451,7 @@ export default function ParkingEditor({ parkingId }: ParkingEditorProps) {
             <Draggable
               grid={[20, 20]}
               position={{ x: entrance.x, y: entrance.y }}
-              onStop={(e, data) => handleEntranceDragStop(data.x, data.y)}
+              onStop={(_e, data) => handleEntranceDragStop(data.x, data.y)}
               bounds={{
                 left: 0,
                 top: 0,
@@ -479,7 +497,7 @@ export default function ParkingEditor({ parkingId }: ParkingEditorProps) {
                     : 80
                 )
               }}
-              onStop={(e, data) => {
+              onStop={(_e, data) => {
                 const newX = Math.round(data.x / 20) * 20;
                 const newY = Math.round(data.y / 20) * 20;
                 setTemporaryRow({
@@ -524,7 +542,7 @@ export default function ParkingEditor({ parkingId }: ParkingEditorProps) {
                 grid={[20, 20]}
                 position={{ x: space.x, y: space.y }}
                 onStart={handleDragStart}
-                onStop={(e, data) => handleDragStop(space.id, data.x, data.y)}
+                onStop={(_e, data) => handleDragStop(space.id, data.x, data.y)}
                 bounds={{
                   left: 0,
                   top: 0,

@@ -10,7 +10,6 @@ export const LocationButton = ({ onLocationFound }: LocationButtonProps) => {
   const [loading, setLoading] = useState(false);
   
   const watchId = useRef<number | null>(null);
-  const locationMarkerRef = useRef<any>(null);
 
   useEffect(() => {
     return () => {

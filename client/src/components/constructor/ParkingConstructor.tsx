@@ -27,35 +27,15 @@ import { saveSpacesConfiguration } from '../../redux/parkingThunks';
 import AddIcon from '@mui/icons-material/Add';
 import CheckIcon from '@mui/icons-material/Check';
 import ClearIcon from '@mui/icons-material/Clear';
+import { 
+  Entrance, 
+  ConstructorParkingSpace, 
+  GRID_SIZES 
+} from '../../types/parking.types';
 
-export interface Entrance {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
-export interface ParkingSpace {
-    id: number;
-    number: string;
-    x: number;
-    y: number;
-    rotation: number;
-    width: 60;  // фиксированная ширина
-    height: 100; // фиксированная высота
-  }
-
-export interface GridSize {
-  width: number;
-  height: number;
-  maxSpaces: number;
-}  
-
-export const GRID_SIZES: Record<string, GridSize> = {
-    small: { width: 600, height: 400, maxSpaces: 20 },
-    medium: { width: 800, height: 600, maxSpaces: 40 },
-    large: { width: 1000, height: 800, maxSpaces: 50 }
-  };
+// Экспортируем для обратной совместимости
+export type { Entrance, ConstructorParkingSpace as ParkingSpace };
+export { GRID_SIZES };
 
   export const ConstructorGrid = styled(Box)`
   border: 1px solid #ccc;
@@ -173,15 +153,15 @@ const TemporaryRowControls = styled(Stack)`
 export default function ParkingConstructor() {
   const dispatch = useAppDispatch();
   const { parkingId } = useParams();
-  const [spaces, setSpaces] = useState<ParkingSpace[]>([]);
+  const [spaces, setSpaces] = useState<ConstructorParkingSpace[]>([]);
   const [entrance, setEntrance] = useState<Entrance | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [currentSpace, setCurrentSpace] = useState<ParkingSpace | null>(null);
+  const [currentSpace, setCurrentSpace] = useState<ConstructorParkingSpace | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [gridSize, setGridSize] = useState<keyof typeof GRID_SIZES>('medium');
   const [isRowDialogOpen, setIsRowDialogOpen] = useState(false);
   const [temporaryRow, setTemporaryRow] = useState<{
-    spaces: ParkingSpace[];
+    spaces: ConstructorParkingSpace[];
     position: { x: number; y: number };
   } | null>(null);
 
@@ -236,14 +216,14 @@ export default function ParkingConstructor() {
     const centerX = Math.round((GRID_SIZES[gridSize].width - 40) / 2 / 20) * 20;
     const centerY = Math.round((GRID_SIZES[gridSize].height - 80) / 2 / 20) * 20;
     
-    const newSpace: ParkingSpace = {
+    const newSpace: ConstructorParkingSpace = {
       id: Date.now(),
       number: `P-${spaces.length + 1}`,
       x: centerX,
       y: centerY,
       rotation: 0,
-      width: 40,
-      height: 80
+      width: 60,
+      height: 100
     };
     setSpaces([...spaces, newSpace]);
   };
@@ -297,7 +277,7 @@ export default function ParkingConstructor() {
     }, 100);
   };
 
- const handleSpaceClick = (space: ParkingSpace) => {
+ const handleSpaceClick = (space: ConstructorParkingSpace) => {
   // авим небольшую задержку перед открытием диалога
   setTimeout(() => {
     if (!isDragging) {
@@ -361,8 +341,8 @@ export default function ParkingConstructor() {
       x: 0,
       y: 0,
       rotation: data.orientation === 'horizontal' ? 0 : 90,
-      width: 40,
-      height: 80
+      width: 60 as const,
+      height: 100 as const
     }));
 
     const position = {
@@ -484,7 +464,7 @@ export default function ParkingConstructor() {
             <Draggable
               grid={[20, 20]}
               position={{ x: entrance.x, y: entrance.y }}
-              onStop={(e, data) => handleEntranceDragStop(data.x, data.y)}
+              onStop={(_e, data) => handleEntranceDragStop(data.x, data.y)}
               bounds={{
                 left: 0,
                 top: 0,
@@ -530,7 +510,7 @@ export default function ParkingConstructor() {
                     : 80
                 )
               }}
-              onStop={(e, data) => {
+              onStop={(_e, data) => {
                 const newX = Math.round(data.x / 20) * 20;
                 const newY = Math.round(data.y / 20) * 20;
                 setTemporaryRow({
@@ -573,7 +553,7 @@ export default function ParkingConstructor() {
               grid={[20, 20]}
               position={{ x: space.x, y: space.y }}
               onStart={handleDragStart}
-              onStop={(e, data) => handleDragStop(space.id, data.x, data.y)}
+              onStop={(_e, data) => handleDragStop(space.id, data.x, data.y)}
               bounds={{
                 left: 0,
                 top: 0,

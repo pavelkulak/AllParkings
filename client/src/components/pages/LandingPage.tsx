@@ -23,12 +23,10 @@ import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
 import BusinessIcon from '@mui/icons-material/Business';
 import EditLocationIcon from '@mui/icons-material/EditLocation';
 import AssessmentIcon from '@mui/icons-material/Assessment';
-import PhoneIphoneIcon from '@mui/icons-material/PhoneIphone';
 import MapIcon from '@mui/icons-material/Map';
 import { StarBorder, Favorite } from '@mui/icons-material';
 
 import parkingImage from '../../assets/images/parking.png';
-import parkingMobileImage from '../../assets/images/Parking_mobile.png';
 import InteractivePark from "../../assets/images/InteractivePark.png";
 // import favoriteScreenshot from '../../assets/images/favorite-screenshot.png';
 // import reviewsScreenshot from '../../assets/images/reviews-screenshot.png';
@@ -39,11 +37,17 @@ export const LandingPage = () => {
   const theme = useTheme();
   const [activeTab, setActiveTab] = useState(0);
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
   };
 
-  const driverFeatures = [
+  const driverFeatures: Array<{
+    icon: React.ReactElement;
+    title: string;
+    description: string;
+    inDevelopment?: boolean;
+    textColor?: string;
+  }> = [
     {
       icon: <SearchIcon sx={{ fontSize: 40, color: "primary.main" }} />,
       title: "Поиск парковок",
@@ -70,7 +74,13 @@ export const LandingPage = () => {
     }
   ];
 
-  const ownerFeatures = [
+  const ownerFeatures: Array<{
+    icon: React.ReactElement;
+    title: string;
+    description: string;
+    inDevelopment?: boolean;
+    textColor?: string;
+  }> = [
     {
       icon: <BusinessIcon sx={{ fontSize: 40, color: 'primary.main' }} />,
       title: 'Управление парковкой',
@@ -105,30 +115,71 @@ export const LandingPage = () => {
       {/* Hero секция */}
       <Box
         sx={{
-          bgcolor: theme.palette.mode === 'dark' ? "grey.900" : "primary.main",
+          background: theme.palette.mode === 'dark' 
+            ? 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)'
+            : 'linear-gradient(135deg, #1976d2 0%, #1565c0 50%, #0d47a1 100%)',
           color: "white",
-          py: 8,
+          py: { xs: 6, md: 12 },
+          position: 'relative',
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%)',
+            pointerEvents: 'none',
+          }
         }}
       >
-        <Container maxWidth="lg">
+        <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
           <Grid container spacing={4} alignItems="center">
             <Grid item xs={12} md={6}>
-              <Typography variant="h2" gutterBottom>
+              <Typography 
+                variant="h2" 
+                gutterBottom
+                sx={{
+                  fontWeight: 700,
+                  fontSize: { xs: '2.5rem', md: '3.5rem' },
+                  mb: 2,
+                  textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
+                }}
+              >
                 ALLPARKINGS
               </Typography>
-              <Typography variant="h5" gutterBottom>
+              <Typography 
+                variant="h5" 
+                gutterBottom
+                sx={{
+                  mb: 3,
+                  fontSize: { xs: '1.1rem', md: '1.5rem' },
+                  opacity: 0.95,
+                  fontWeight: 300,
+                }}
+              >
                 Умная система бронирования парковочных мест
               </Typography>
               <Button
                 variant="contained"
                 size="large"
                 sx={{
-                  mt: 4,
-                  bgcolor: theme.palette.mode === 'dark' ? "grey.800" : "white",
-                  color: theme.palette.mode === 'dark' ? "white" : "primary.main",
+                  mt: 2,
+                  px: 4,
+                  py: 1.5,
+                  fontSize: '1.1rem',
+                  bgcolor: "white",
+                  color: "primary.main",
+                  fontWeight: 600,
+                  borderRadius: 2,
+                  boxShadow: '0 4px 14px 0 rgba(0,0,0,0.2)',
                   "&:hover": {
-                    bgcolor: theme.palette.mode === 'dark' ? "grey.700" : "grey.100",
+                    bgcolor: "grey.100",
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 6px 20px 0 rgba(0,0,0,0.3)',
                   },
+                  transition: 'all 0.3s ease',
                 }}
                 onClick={() => navigate("/parkings/map")}
               >
@@ -143,8 +194,13 @@ export const LandingPage = () => {
                 sx={{
                   width: "100%",
                   height: "auto",
-                  borderRadius: 2,
-                  boxShadow: 3,
+                  borderRadius: 3,
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
+                  transform: { xs: 'none', md: 'perspective(1000px) rotateY(-5deg)' },
+                  transition: 'transform 0.3s ease',
+                  '&:hover': {
+                    transform: { xs: 'none', md: 'perspective(1000px) rotateY(0deg) scale(1.02)' },
+                  }
                 }}
               />
             </Grid>
@@ -152,13 +208,32 @@ export const LandingPage = () => {
         </Container>
       </Box>
 
-      {/* Tabs дл переключения между воителями и владельцами */}
-      <Container maxWidth="lg" sx={{ mt: 4 }}>
+      {/* Tabs для переключения между водителями и владельцами */}
+      <Container maxWidth="lg" sx={{ mt: { xs: 6, md: 8 }, px: { xs: 2, md: 3 } }}>
+        <Typography 
+          variant="h3" 
+          textAlign="center" 
+          gutterBottom
+          sx={{
+            fontWeight: 600,
+            mb: 4,
+            fontSize: { xs: '1.8rem', md: '2.5rem' },
+          }}
+        >
+          Как это работает?
+        </Typography>
         <Tabs
           value={activeTab}
           onChange={handleTabChange}
           centered
-          sx={{ mb: 4 }}
+          sx={{ 
+            mb: 6,
+            '& .MuiTab-root': {
+              fontSize: { xs: '0.9rem', md: '1rem' },
+              fontWeight: 600,
+              minHeight: 48,
+            }
+          }}
         >
           <Tab label="Для водителей" />
           <Tab label="Для владельцев парковок" />
@@ -167,16 +242,14 @@ export const LandingPage = () => {
         {/* Контент для водителей */}
         {activeTab === 0 && (
           <Box>
-            <Typography variant="h3" textAlign="center" gutterBottom>
-              Возможности для водителей
-            </Typography>
-            <Grid container spacing={4} sx={{ mt: 4 }}>
+            <Grid container spacing={{ xs: 2, md: 4 }} sx={{ mt: 2 }}>
               {driverFeatures.map((feature, index) => (
-                <Grid item xs={12} md={3} key={index}>
+                <Grid item xs={12} sm={6} md={3} key={index}>
                   <Paper
+                    elevation={feature.inDevelopment ? 2 : 4}
                     sx={{
-                      p: 3,
-                      height: "280px",
+                      p: { xs: 2, md: 3 },
+                      minHeight: { xs: "auto", md: "280px" },
                       textAlign: "center",
                       position: "relative",
                       bgcolor: feature.inDevelopment
@@ -184,17 +257,34 @@ export const LandingPage = () => {
                         : "background.paper",
                       display: "flex",
                       flexDirection: "column",
+                      justifyContent: "center",
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        transform: 'translateY(-8px)',
+                        boxShadow: 8,
+                      },
+                      borderRadius: 2,
                     }}
                   >
-                    <Box sx={{ mb: 2 }}>{feature.icon}</Box>
+                    <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
+                      {feature.icon}
+                    </Box>
                     <Typography
                       variant="h6"
-                      sx={{ mb: 2, color: feature.textColor }}
+                      sx={{ 
+                        mb: 2, 
+                        color: feature.textColor,
+                        fontWeight: 600,
+                        fontSize: { xs: '1rem', md: '1.25rem' },
+                      }}
                     >
                       {feature.title}
                     </Typography>
                     <Typography
-                      sx={{ color: feature.textColor }}
+                      sx={{ 
+                        color: feature.textColor,
+                        fontSize: { xs: '0.875rem', md: '1rem' },
+                      }}
                     >
                       {feature.description}
                     </Typography>
@@ -202,14 +292,15 @@ export const LandingPage = () => {
                       <Box
                         sx={{
                           position: "absolute",
-                          top: 0,
-                          right: 0,
+                          top: 8,
+                          right: 8,
                           bgcolor: "warning.main",
                           color: "black",
-                          px: 1,
+                          px: 1.5,
                           py: 0.5,
                           borderRadius: 1,
                           fontSize: "0.75rem",
+                          fontWeight: 600,
                         }}
                       >
                         В разработке
@@ -221,41 +312,79 @@ export const LandingPage = () => {
             </Grid>
 
             {/* Секция поиска машины */}
-            <Box sx={{ bgcolor: theme.palette.mode === 'dark' ? "grey.900" : "grey.100", py: 8, mt: 8 }}>
+            <Box 
+              sx={{ 
+                bgcolor: theme.palette.mode === 'dark' 
+                  ? "grey.900" 
+                  : "linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)",
+                py: { xs: 6, md: 10 },
+                mt: { xs: 6, md: 10 },
+                borderRadius: { xs: 0, md: 4 },
+                mx: { xs: 0, md: 2 },
+              }}
+            >
               <Container maxWidth="lg">
-                <Grid container spacing={4} alignItems="center">
-                  <Grid item xs={12} md={6}>
-                    <Typography variant="h3" gutterBottom>
+                <Grid container spacing={{ xs: 3, md: 6 }} alignItems="center">
+                  <Grid item xs={12} md={6} order={{ xs: 2, md: 1 }}>
+                    <Typography 
+                      variant="h3" 
+                      gutterBottom
+                      sx={{
+                        fontWeight: 700,
+                        fontSize: { xs: '1.8rem', md: '2.5rem' },
+                        mb: 3,
+                      }}
+                    >
                       Никогда не теряйте свою машину
                     </Typography>
-                    <Typography variant="body1" paragraph>
+                    <Typography 
+                      variant="body1" 
+                      paragraph
+                      sx={{
+                        fontSize: { xs: '1rem', md: '1.1rem' },
+                        lineHeight: 1.8,
+                        mb: 3,
+                      }}
+                    >
                       Благодаря интерактивной схеме парковки, вы всегда будете
-                      знать, где оставили свой автобиль. Ваше место парковки
+                      знать, где оставили свой автомобиль. Ваше место парковки
                       будет сохранено в приложении и вы легко найдете его при
                       возвращении.
                     </Typography>
-                    <List>
-                      <ListItem>
+                    <List sx={{ pl: { xs: 0, md: 2 } }}>
+                      <ListItem sx={{ px: 0 }}>
                         <ListItemIcon>
-                          <DirectionsCarIcon color="primary" />
+                          <DirectionsCarIcon 
+                            color="primary" 
+                            sx={{ fontSize: { xs: 32, md: 40 } }}
+                          />
                         </ListItemIcon>
                         <ListItemText
                           primary="Легкий поиск"
                           secondary="Быстро находите свой автомобиль по сохраненной метке"
+                          primaryTypographyProps={{
+                            sx: { fontWeight: 600, fontSize: { xs: '1rem', md: '1.1rem' } }
+                          }}
                         />
                       </ListItem>
-                      <ListItem>
+                      <ListItem sx={{ px: 0 }}>
                         <ListItemIcon>
-                          <MapIcon color="primary" />
+                          <MapIcon 
+                            color="primary"
+                            sx={{ fontSize: { xs: 32, md: 40 } }}
+                          />
                         </ListItemIcon>
                         <ListItemText
                           primary="Интерактивная схема"
                           secondary="Визуальное отображение всех уровней парковки"
+                          primaryTypographyProps={{
+                            sx: { fontWeight: 600, fontSize: { xs: '1rem', md: '1.1rem' } }
+                          }}
                         />
                       </ListItem>
                     </List>
                   </Grid>
-                  <Grid item xs={12} md={6}>
+                  <Grid item xs={12} md={6} order={{ xs: 1, md: 2 }}>
                     <Box
                       component="img"
                       src={InteractivePark}
@@ -263,8 +392,8 @@ export const LandingPage = () => {
                       sx={{
                         width: "100%",
                         height: "auto",
-                        borderRadius: 2,
-                        boxShadow: 3,
+                        borderRadius: 3,
+                        boxShadow: 6,
                         display: "block",
                         objectFit: "contain",
                       }}
@@ -279,16 +408,14 @@ export const LandingPage = () => {
         {/* Контент для владельцев */}
         {activeTab === 1 && (
           <Box>
-            <Typography variant="h3" textAlign="center" gutterBottom>
-              Возможности для владельцев
-            </Typography>
-            <Grid container spacing={4} sx={{ mt: 4 }}>
+            <Grid container spacing={{ xs: 2, md: 3 }} sx={{ mt: 2 }}>
               {ownerFeatures.map((feature, index) => (
-                <Grid item xs={12} md={2.4} key={index}>
+                <Grid item xs={12} sm={6} md={4} lg={2.4} key={index}>
                   <Paper
+                    elevation={feature.inDevelopment ? 2 : 4}
                     sx={{
-                      p: 3,
-                      height: "280px",
+                      p: { xs: 2, md: 3 },
+                      minHeight: { xs: "auto", md: "280px" },
                       textAlign: "center",
                       position: "relative",
                       bgcolor: feature.inDevelopment
@@ -296,17 +423,34 @@ export const LandingPage = () => {
                         : "background.paper",
                       display: "flex",
                       flexDirection: "column",
+                      justifyContent: "center",
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        transform: 'translateY(-8px)',
+                        boxShadow: 8,
+                      },
+                      borderRadius: 2,
                     }}
                   >
-                    <Box sx={{ mb: 2 }}>{feature.icon}</Box>
+                    <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
+                      {feature.icon}
+                    </Box>
                     <Typography
                       variant="h6"
-                      sx={{ mb: 2, color: feature.textColor }}
+                      sx={{ 
+                        mb: 2, 
+                        color: feature.textColor,
+                        fontWeight: 600,
+                        fontSize: { xs: '1rem', md: '1.25rem' },
+                      }}
                     >
                       {feature.title}
                     </Typography>
                     <Typography
-                      sx={{ color: feature.textColor }}
+                      sx={{ 
+                        color: feature.textColor,
+                        fontSize: { xs: '0.875rem', md: '1rem' },
+                      }}
                     >
                       {feature.description}
                     </Typography>
@@ -314,14 +458,15 @@ export const LandingPage = () => {
                       <Box
                         sx={{
                           position: "absolute",
-                          top: 0,
-                          right: 0,
+                          top: 8,
+                          right: 8,
                           bgcolor: "warning.main",
                           color: "black",
-                          px: 1,
+                          px: 1.5,
                           py: 0.5,
                           borderRadius: 1,
                           fontSize: "0.75rem",
+                          fontWeight: 600,
                         }}
                       >
                         В разработке
@@ -335,37 +480,6 @@ export const LandingPage = () => {
         )}
       </Container>
 
-      {/* Секция о мобильном приложении */}
-      <Box sx={{ bgcolor: theme.palette.mode === 'dark' ? "grey.900" : "grey.100", py: 8, mt: 8 }}>
-        <Container maxWidth="lg">
-          <Grid container spacing={4} alignItems="center">
-            <Grid item xs={12} md={6}>
-              <Typography variant="h3" gutterBottom>
-                Скоро на мобильных устройствах
-              </Typography>
-              <Typography variant="body1" paragraph>
-                Мы разрабатываем мобильное приложение для еще более удобного
-                использования сервиса. Бронируйте парковочные места, оплачивайте
-                услуги и получайте уведомления прямо на вашем смартфоне.
-              </Typography>
-              <Box sx={{ display: "flex", gap: 2, mt: 4 }}>
-                <PhoneIphoneIcon sx={{ fontSize: 60 }} color="primary" />
-                <Typography variant="h6" sx={{ mt: 1 }}>
-                  Ожидайте в 2024
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Box
-                component="img"
-                alt="Мобильное приложение"
-                src={parkingMobileImage}
-                sx={{ width: "100%" }}
-              />
-            </Grid>
-          </Grid>
-        </Container>
-      </Box>
     </Box>
   );
 };

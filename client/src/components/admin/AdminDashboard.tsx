@@ -1,5 +1,5 @@
 // src/components/admin/AdminDashboard.tsx
-import React, { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Box, Tab, Tabs, Typography } from '@mui/material';
 import PendingParkings from './PendingParkings';
 import ReviewManagement from './ReviewManagement';
@@ -7,7 +7,7 @@ import ReviewManagement from './ReviewManagement';
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState(0);
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
   };
 
