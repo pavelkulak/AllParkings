@@ -69,6 +69,7 @@ app.use('/api/messages', messagesRouter);
 
 app.use('/api/favorites', favoritesRouter);
 
+app.set('trust proxy', 1)
 // Обработка подключений Socket.IO
 io.on('connection', (socket) => {
   console.log('Пользователь подключился');
