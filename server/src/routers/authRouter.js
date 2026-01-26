@@ -57,7 +57,7 @@ authRouter.post('/signup', async (req, res) => {
     const { accessToken, refreshToken } = generateToken({ user });
 
     res
-      .cookie('refreshToken', refreshToken, cookieConfig)
+      .cookie('refreshToken', refreshToken, cookieConfig.refresh)
       .json({ accessToken, user });
   } catch (error) {
     console.error('Ошибка регистрации:', error);
@@ -101,7 +101,7 @@ authRouter.post('/signin', async (req, res) => {
     const { accessToken, refreshToken } = generateToken({ user });
 
     res
-      .cookie('refreshToken', refreshToken, cookieConfig)
+      .cookie('refreshToken', refreshToken, cookieConfig.refresh)
       .json({ accessToken, user });
   } catch (error) {
     console.error('Ошибка входа:', error);
@@ -113,8 +113,8 @@ authRouter.post('/signout', async (req, res) => {
   try {
     res.clearCookie('refreshToken', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: true,
+      sameSite: 'none',
     });
     res.status(200).json({ message: 'Успешный выход' });
   } catch (error) {
@@ -148,7 +148,7 @@ authRouter.put('/profile', verifyAccessToken, async (req, res) => {
     const { accessToken, refreshToken } = generateToken({ user });
 
     res
-      .cookie('refreshToken', refreshToken, cookieConfig)
+      .cookie('refreshToken', refreshToken, cookieConfig.refresh)
       .json({ accessToken, user });
   } catch (error) {
     console.error('Ошибка при обновлении профиля:', error);
@@ -190,8 +190,8 @@ authRouter.delete('/destroyAccount', verifyAccessToken, async (req, res) => {
 
     res.clearCookie('refreshToken', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: true,
+      sameSite: 'none',
     });
       res.json({ message: 'Пользователь успешно удален!' });
   } catch (error) {
