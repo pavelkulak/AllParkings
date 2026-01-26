@@ -79,6 +79,7 @@ io.on('connection', (socket) => {
 });
 
 // Изменим app.listen на server.listen
-server.listen(PORT, () => {
-  console.log(`Server started at ${PORT} port`);
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Сервер запущен на порту ${PORT}`);
+  console.log(`🌍 Доступен по адресу: 0.0.0.0 (для Nginx)`);
 });
