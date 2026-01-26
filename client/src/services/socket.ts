@@ -1,14 +1,18 @@
 import { io } from 'socket.io-client';
 
-export const socket = io('http://localhost:3000', {
+// Заменяем localhost на твой рабочий адрес с SSL
+export const socket = io('https://31-41-153-37.sslip.io', {
   withCredentials: true,
-  autoConnect: false
+  autoConnect: false,
+  // Добавляем websocket в приоритет, чтобы не висеть на polling
+  transports: ['websocket', 'polling'] 
 });
 
 export const connectSocket = (userId: number) => {
   if (!socket.connected) {
     socket.connect();
-    socket.emit('join', userId);
+    // Это событие сервер должен поймать и сопоставить socket.id с твоим userId
+    socket.emit('join', userId); 
   }
 };
 
@@ -16,4 +20,4 @@ export const disconnectSocket = () => {
   if (socket.connected) {
     socket.disconnect();
   }
-}; 
+};
