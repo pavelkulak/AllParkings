@@ -7,9 +7,17 @@ const app = express();
 const cors = require('cors');
 const path = require('path');
 const server = require('http').createServer(app);
+
+const allowedOrigins = [
+  'http://localhost:5173', 
+  'http://127.0.0.1:5173',
+  'https://all-parkings-7d9tv1qs8-pavelkulaks-projects.vercel.app/', 
+  'https://31-41-153-37.sslip.io'  
+];
+
 const io = require('socket.io')(server, {
   cors: {
-    origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
+    origin: allowedOrigins, 
     credentials: true
   }
 });
@@ -32,7 +40,7 @@ const favoritesRouter = require('./routers/favoritesRouter');
 const { messagesRouter, handleSocket } = require('./routers/messages.router');
 
 const corsConfig = {
-  origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
+  origin: allowedOrigins, 
   credentials: true,
 };
 app.use(cors(corsConfig));
