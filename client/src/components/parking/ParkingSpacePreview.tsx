@@ -24,7 +24,7 @@ export const ParkingSpacePreview = ({
   useEffect(() => {
     const fetchSpaces = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/api/parking-lots/${parkingId}/spaces`);
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/parking-lots/${parkingId}/spaces`);
         const data = await response.json();
         
         setGridSize(data.gridSize || 'medium');

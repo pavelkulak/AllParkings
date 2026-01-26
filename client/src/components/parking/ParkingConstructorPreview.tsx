@@ -21,7 +21,7 @@ export default function ParkingConstructorPreview({ parkingId }: ParkingConstruc
     const fetchParkingSpaces = async () => {
       try {
         console.log('Fetching spaces for parking:', parkingId);
-        const response = await fetch(`http://localhost:3000/api/parking-lots/${parkingId}/spaces`);
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/parking-lots/${parkingId}/spaces`);
         console.log('Response status:', response.status);
         
         if (!response.ok) {
@@ -108,7 +108,7 @@ export default function ParkingConstructorPreview({ parkingId }: ParkingConstruc
       {parking.img && (
         <Box
           component="img"
-          src={`http://localhost:3000/api/img/parking/${parking.img}`}
+          src={`${import.meta.env.VITE_API_URL}/img/parking/${parking.img}`}
           alt={parking.name}
           sx={{
             width: "100%",

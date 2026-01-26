@@ -32,7 +32,7 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
   const [gridSize, setGridSize] = useState<keyof typeof GRID_SIZES>('medium');
   const [isGridSizeLoaded, setIsGridSizeLoaded] = useState(false);
 
-  const BASE_IMG_URL = 'http://localhost:3000/api/img/parking/';
+  const BASE_IMG_URL = '${import.meta.env.VITE_API_URL}/img/parking/';
 
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
@@ -72,7 +72,7 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
       setLoading(true);
       setIsGridSizeLoaded(false);
       
-      const response = await fetch(`http://localhost:3000/api/parking-lots/${parkingId}/spaces`);
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/parking-lots/${parkingId}/spaces`);
       const data = await response.json();
       
       setGridSize(data.gridSize || 'medium');
@@ -105,7 +105,7 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
       setLoading(true);
       
       const response = await fetch(
-        `http://localhost:3000/api/parking-lots/${parkingId}/spaces?` + 
+        `${import.meta.env.VITE_API_URL}/parking-lots/${parkingId}/spaces?` + 
         `entry_time=${entry.toISOString()}&exit_time=${exit.toISOString()}`
       );
       
@@ -152,7 +152,7 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
     try {
       setLoading(true);
       const response = await fetch(
-        `http://localhost:3000/api/parking-lots/${parking.id}/available-spaces?` + 
+        `${import.meta.env.VITE_API_URL}/parking-lots/${parking.id}/available-spaces?` + 
         `entry_time=${entry.toISOString()}&exit_time=${exit.toISOString()}`
       );
       

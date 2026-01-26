@@ -181,7 +181,7 @@ export default function ParkingConstructor() {
     if (parkingId && !spaces.length) {
       const fetchSpaces = async () => {
         try {
-          const response = await fetch(`http://localhost:3000/api/parking-lots/${parkingId}/spaces`);
+          const response = await fetch(`${import.meta.env.VITE_API_URL}/parking-lots/${parkingId}/spaces`);
           if (!response.ok) throw new Error('Failed to fetch spaces');
           const data = await response.json();
           setSpaces(data.ParkingSpaces || []);

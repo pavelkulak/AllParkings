@@ -379,7 +379,7 @@ export default function ParkingOwnerPage() {
       // Загружаем сущесвующие парковки
       try {
         const response = await fetch(
-          "http://localhost:3000/api/parking-lots/all"
+          "${import.meta.env.VITE_API_URL}/parking-lots/all"
         );
         if (!response.ok) {
           throw new Error("Ошибка при загрузке парковок");
@@ -799,7 +799,7 @@ export default function ParkingOwnerPage() {
                     component="img"
                     src={files.length > 0 
                       ? URL.createObjectURL(files[0])
-                      : `http://localhost:3000/api/img/parking/${selectedParking.img}`
+                      : `${import.meta.env.VITE_API_URL}/img/parking/${selectedParking.img}`
                     }
                     alt={parkingData.name}
                     sx={{
