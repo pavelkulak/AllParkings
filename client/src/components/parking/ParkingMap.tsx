@@ -126,7 +126,7 @@ export const ParkingMap = () => {
         setIsLoading(true);
         
         // Загружаем парковки
-        const response = await fetch('${import.meta.env.VITE_API_URL}/parking-lots/all');
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/parking-lots/all`);
         if (!response.ok) {
           throw new Error('Ошибка при загрузке парковок');
         }

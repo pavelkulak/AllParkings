@@ -32,7 +32,7 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
   const [gridSize, setGridSize] = useState<keyof typeof GRID_SIZES>('medium');
   const [isGridSizeLoaded, setIsGridSizeLoaded] = useState(false);
 
-  const BASE_IMG_URL = '${import.meta.env.VITE_API_URL}/img/parking/';
+  const BASE_IMG_URL = `${import.meta.env.VITE_API_URL}/img/parking/`;
 
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
