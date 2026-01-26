@@ -160,7 +160,7 @@ export default function CreateParkingForm() {
       // Загружаем существующие парковки
       try {
         const response = await fetch(
-          "${import.meta.env.VITE_API_URL}/parking-lots/all",
+          `${import.meta.env.VITE_API_URL}/parking-lots/all`,
         );
         if (!response.ok) {
           throw new Error("Ошибка при загрузке парковок");

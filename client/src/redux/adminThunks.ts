@@ -8,7 +8,7 @@ export const getPendingParkings = createAsyncThunk<ParkingLot[], void>(
   'admin/getPendingParkings',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.get<ParkingLot[]>('${import.meta.env.VITE_API_URL}/parking-lots/pending');
+      const response = await axiosInstance.get<ParkingLot[]>(`${import.meta.env.VITE_API_URL}/parking-lots/pending`);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.error || 'Ошибка при получении парковок');
