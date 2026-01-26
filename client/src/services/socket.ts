@@ -1,8 +1,8 @@
 import { io } from 'socket.io-client';
 
-const socket = io('https://31-41-153-37.sslip.io', {
+export const socket = io('http://localhost:3000', {
   withCredentials: true,
-  transports: ['websocket', 'polling']
+  autoConnect: false
 });
 
 export const connectSocket = (userId: number) => {
