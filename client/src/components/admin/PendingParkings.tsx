@@ -52,15 +52,17 @@ export default function PendingParkings() {
         <Card key={parking.id} sx={{ mb: 2 }}>
           <CardContent>
             <Typography variant="h6">{parking.name}</Typography>
-            <Button onClick={() => setSelectedParking(parking)}>
-              Просмотреть конфигурацию
-            </Button>
-            <Button onClick={() => handleApprove(parking.id)} color="success">
-              Подтвердить
-            </Button>
-            <Button onClick={() => handleReject(parking.id)} color="error">
-              Отклонить
-            </Button>
+            <Box sx={{ mt: 2, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+              <Button variant="outlined" onClick={() => setSelectedParking(parking)}>
+                Просмотреть конфигурацию
+              </Button>
+              <Button variant="contained" onClick={() => handleApprove(parking.id)} color="success">
+                Подтвердить
+              </Button>
+              <Button variant="contained" onClick={() => handleReject(parking.id)} color="error">
+                Отклонить
+              </Button>
+            </Box>
           </CardContent>
         </Card>
       ))}

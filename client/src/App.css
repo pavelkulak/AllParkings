@@ -1,6 +1,8 @@
 /* && Сброс стилей */
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -13,7 +15,11 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-img, picture, video, canvas, svg:not(.MuiRating-icon svg):not(.MuiSvgIcon-root) {
+img,
+picture,
+video,
+canvas,
+svg:not(.MuiRating-icon svg):not(.MuiSvgIcon-root) {
   display: block;
   max-width: 100%;
 }
@@ -25,17 +31,35 @@ img, picture, video, canvas, svg:not(.MuiRating-icon svg):not(.MuiSvgIcon-root) 
   height: 1em;
 }
 
-input, button, textarea, select {
+input,
+button,
+textarea,
+select {
   font: inherit;
 }
-p, h1, h2, h3, h4, h5, h6 {
+
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   overflow-wrap: break-word;
 }
-#root, #__next {
-  isolation: isolate;
+
+html,
+body,
+#root {
+  height: 100%;
 }
 
 html {
   overflow-x: hidden;
   scroll-behavior: auto;
+}
+
+#root {
+  isolation: isolate;
+  min-height: 100vh;
 }

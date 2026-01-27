@@ -13,7 +13,13 @@ import {
   DialogContent,
   DialogTitle,
   Switch,
+  Container,
+  Divider,
+  Tabs,
+  Tab,
+  ListItemButton,
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -26,25 +32,29 @@ import {
 import { getFavorites, removeFromFavorites } from '../../redux/favoritesThunks';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { IconButton, InputAdornment } from '@mui/material';
-import { Tooltip } from '@mui/material';
+
 import InputMask from 'react-input-mask';
-import { Card, CardContent, CardMedia, Rating } from '@mui/material';
+import { Card, CardContent, CardMedia, Rating, Grid, List, ListItem, ListItemIcon, ListItemText, Paper, useMediaQuery } from '@mui/material';
+import PersonIcon from '@mui/icons-material/Person';
+import SecurityIcon from '@mui/icons-material/Security';
+import HistoryIcon from '@mui/icons-material/History';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import SettingsIcon from '@mui/icons-material/Settings';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import SaveIcon from '@mui/icons-material/Save';
 import CloseIcon from '@mui/icons-material/Close';
 import {
   getBookingHistory,
   getActiveBookings,
   cancelBooking,
 } from '../../redux/bookingThunks';
-import { Tabs, Tab } from '@mui/material';
+import KeyIcon from '@mui/icons-material/Key';
 import DirectionsIcon from '@mui/icons-material/Directions';
-import InfoIcon from '@mui/icons-material/Info';
 import LightModeSharpIcon from '@mui/icons-material/LightModeSharp';
 import DarkModeSharpIcon from '@mui/icons-material/DarkModeSharp';
-import { ParkingSpacePreview } from '../parking/ParkingSpacePreview';
 import MapIcon from '@mui/icons-material/Map';
 import { useThemeContext } from '../theme/ThemeContext';
-import { useTheme } from '@mui/material/styles';
-import { Grid } from '@mui/material';
+import { ParkingSpacePreview } from '../parking/ParkingSpacePreview';
 
 import { showNotification } from '../../redux/slices/uiSlice';
 
@@ -65,7 +75,7 @@ export default function ProfilePage() {
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dispatch = useAppDispatch();
-  const [activeTab, setActiveTab] = useState('history');
+  const [activeTab, setActiveTab] = useState('profile');
   const { favorites, status } = useAppSelector((state) => state.favorites);
   const { activeBookings, bookingHistory } = useAppSelector(
     (state) => state.booking,
@@ -287,6 +297,17 @@ export default function ProfilePage() {
     navigate('/parkings/map', { state: { selectedParking: parking } });
   };
 
+  const handleRemoveFromFavorites = (favoriteId: number) => {
+    dispatch(removeFromFavorites(favoriteId))
+      .unwrap()
+      .then(() => {
+        dispatch(showNotification({ message: 'Парковка удалена из избранного', severity: 'success' }));
+      })
+      .catch((error) => {
+        dispatch(showNotification({ message: error.message || 'Ошибка при удалении из избранного', severity: 'error' }));
+      });
+  };
+
 
 
   const [gridSize, setGridSize] = useState('medium');
@@ -302,896 +323,754 @@ export default function ProfilePage() {
       });
   };
 
-  const handleRemoveFromFavorites = (parkingId: number) => {
-    dispatch(removeFromFavorites(parkingId))
-      .unwrap()
-      .then(() => {
-        dispatch(showNotification({ message: 'Парковка удалена из избранного', severity: 'success' }));
-      })
-      .catch((error) => {
-        dispatch(showNotification({ message: error.message || 'Произошла ошибка при удалении из избранного', severity: 'error' }));
-      });
-  };
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  const menuItems = [
+    { id: 'profile', label: 'Профиль', icon: <PersonIcon /> },
+    { id: 'bookings', label: 'Бронирования', icon: <HistoryIcon /> },
+    { id: 'favorites', label: 'Избранное', icon: <FavoriteIcon /> },
+    { id: 'security', label: 'Безопасность', icon: <SecurityIcon /> },
+    { id: 'settings', label: 'Настройки', icon: <SettingsIcon /> },
+  ];
+
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        mt: 4,
-      }}
-    >
-      <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2, gap: 2 }}>
-        <Button
-          onClick={() => setActiveTab('history')}
-          variant={activeTab === 'history' ? 'contained' : 'outlined'}
-        >
-          История
-        </Button>
-        <Button
-          onClick={() => setActiveTab('favorites')}
-          variant={activeTab === 'favorites' ? 'contained' : 'outlined'}
-        >
-          Избранное
-        </Button>
-
-        <Button
-          onClick={() => setActiveTab('settings')}
-          variant={activeTab === 'settings' ? 'contained' : 'outlined'}
-        >
-          Настройки
-        </Button>
-      </Box>
-
-      <Box sx={{ display: 'flex', width: '80%', flexDirection: 'column' }}>
-        <Box
-          sx={{
-            border: '1px solid #ddd',
-            borderRadius: 3,
-            p: 3,
-            mb: 2,
-            display: 'flex',
-            gap: 8,
-          }}
-        >
-          <Box
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
+      <Grid container spacing={3}>
+        {/* Sidebar Navigation */}
+        <Grid item xs={12} md={3}>
+          <Paper
+            elevation={2}
             sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRight: '1px solid #ddd',
-              px: 5,
-              minHeight: '100%',
-              width: '25%',
-            }}
-          >
-            <Avatar
-              src={
-                user?.avatar
-                  ? `${import.meta.env.VITE_TARGET}${user.avatar}`
-                  : undefined
-              }
-              sx={{
-                width: 200,
-                height: 200,
-                bgcolor: 'lightblue',
-                fontSize: '100px',
-              }}
-            >
-              {!user?.avatar && (user?.name.charAt(0).toUpperCase() || 'А')}
-            </Avatar>
-            <input
-              type='file'
-              ref={fileInputRef}
-              style={{ display: 'none' }}
-              accept='image/*'
-              onChange={handleFileChange}
-            />
-            <Typography
-              variant='body1'
-              color='primary'
-              sx={{
-                cursor: uploading ? 'default' : 'pointer',
-                mt: 1,
-              }}
-              onClick={handleAvatarClick}
-            >
-              {uploading ? 'Загрузка...' : 'Сменить аватар'}
-            </Typography>
-            {user?.avatar && (
-              <Typography
-                variant='body2'
-                color='error'
-                sx={{
-                  cursor: 'pointer',
-                  mt: 1,
-                  '&:hover': {
-                    opacity: 0.8,
-                  },
-                }}
-                onClick={handleDeleteAvatar}
-              >
-                Удалить аватар
-              </Typography>
-            )}
-          </Box>
-
-          <Box sx={{ flex: 1 }}>
-            <Typography variant='body1' sx={{ mb: 2, color: 'grey' }}>
-              {user?.email || ' Error'}
-            </Typography>
-
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-                width: '100%',
-                mb: 2,
-              }}
-            >
-              <Box
-                sx={{
-                  width: '28px',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  visibility: surnameError ? 'visible' : 'hidden',
-                }}
-              >
-                <Tooltip title={surnameError} arrow>
-                  <InfoIcon
-                    color='error'
-                    sx={{ fontSize: '24px', cursor: 'pointer' }}
-                  />
-                </Tooltip>
-              </Box>
-              <TextField
-                fullWidth
-                value={surname}
-                onChange={handleSurnameChange}
-                size='small'
-                label='Фамилия'
-                variant='standard'
-                required
-                error={!!surnameError}
-              />
-            </Box>
-
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-                width: '100%',
-                mb: 2,
-              }}
-            >
-              <Box
-                sx={{
-                  width: '28px',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  visibility: nameError ? 'visible' : 'hidden',
-                }}
-              >
-                <Tooltip title={nameError} arrow>
-                  <InfoIcon
-                    color='error'
-                    sx={{ fontSize: '24px', cursor: 'pointer' }}
-                  />
-                </Tooltip>
-              </Box>
-              <TextField
-                fullWidth
-                value={name}
-                onChange={handleNameChange}
-                size='small'
-                label='Имя'
-                variant='standard'
-                required
-                error={!!nameError}
-              />
-            </Box>
-
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-                width: '100%',
-                mb: 2,
-              }}
-            >
-              <Box
-                sx={{
-                  width: '28px',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  visibility: patronymicError ? 'visible' : 'hidden',
-                }}
-              >
-                <Tooltip title={patronymicError} arrow>
-                  <InfoIcon
-                    color='error'
-                    sx={{ fontSize: '24px', cursor: 'pointer' }}
-                  />
-                </Tooltip>
-              </Box>
-              <TextField
-                fullWidth
-                value={patronymic}
-                onChange={handlePatronymicChange}
-                size='small'
-                label='Отчество'
-                variant='standard'
-                error={!!patronymicError}
-              />
-            </Box>
-
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-                width: '100%',
-                mb: 2,
-              }}
-            >
-              <Box
-                sx={{
-                  width: '28px',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  visibility: phoneError ? 'visible' : 'hidden',
-                }}
-              >
-                <Tooltip title={phoneError} arrow>
-                  <InfoIcon
-                    color='error'
-                    sx={{ fontSize: '24px', cursor: 'pointer' }}
-                  />
-                </Tooltip>
-              </Box>
-              <InputMask
-                mask='+7 999 999 99 99'
-                value={phone}
-                onChange={handlePhoneChange}
-                maskChar='_'
-              >
-                {(inputProps) => (
-                  <TextField
-                    {...inputProps}
-                    fullWidth
-                    size='small'
-                    label='Номер телефона'
-                    variant='standard'
-                    required
-                    error={!!phoneError}
-                  />
-                )}
-              </InputMask>
-            </Box>
-
-            <Box sx={{ display: 'flex', justifyContent: 'space-around' }}>
-              <Button
-                variant='contained'
-                color='primary'
-                size='medium'
-                disabled={!isChanged}
-                onClick={handleSaveChanges}
-              >
-                Сохранить изменения
-              </Button>
-            </Box>
-          </Box>
-
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderLeft: '1px solid #ddd',
-              px: 1,
-              minHeight: '100%',
-              width: '25%',
-            }}
-          >
-            <Typography variant='h6' sx={{ mb: 3 }}>
-              Смена пароля
-            </Typography>
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-                width: '100%',
-                mb: 3,
-              }}
-            >
-              <Box
-                sx={{
-                  width: '28px',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  visibility: 'hidden',
-                }}
-              >
-                <InfoIcon sx={{ fontSize: '24px' }} />
-              </Box>
-              <TextField
-                fullWidth
-                type={showCurrentPassword ? 'text' : 'password'}
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                size='small'
-                label='Ваш пароль'
-                variant='standard'
-                required
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position='start'>
-                      <IconButton
-                        onClick={() =>
-                          setShowCurrentPassword(!showCurrentPassword)
-                        }
-                        edge='end'
-                      >
-                        {showCurrentPassword ? (
-                          <VisibilityOff />
-                        ) : (
-                          <Visibility />
-                        )}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Box>
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-                width: '100%',
-                mb: 3,
-              }}
-            >
-              <Box
-                sx={{
-                  width: '28px',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  visibility: newPasswordError ? 'visible' : 'hidden',
-                }}
-              >
-                <Tooltip title={newPasswordError} arrow>
-                  <InfoIcon
-                    color='error'
-                    sx={{
-                      fontSize: '24px',
-                      cursor: 'pointer',
-                      '&:hover': {
-                        opacity: 0.8,
-                      },
-                    }}
-                  />
-                </Tooltip>
-              </Box>
-              <TextField
-                fullWidth
-                type={showNewPassword ? 'text' : 'password'}
-                value={newPassword}
-                onChange={handleNewPasswordChange}
-                size='small'
-                label='Новый пароль'
-                variant='standard'
-                required
-                error={!!newPasswordError}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position='start'>
-                      <IconButton
-                        onClick={() => setShowNewPassword(!showNewPassword)}
-                        edge='end'
-                      >
-                        {showNewPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Box>
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-                width: '100%',
-                mb: 3,
-              }}
-            >
-              <Box
-                sx={{
-                  width: '28px',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  visibility: confirmPasswordError ? 'visible' : 'hidden',
-                }}
-              >
-                <Tooltip title={confirmPasswordError} arrow>
-                  <InfoIcon
-                    color='error'
-                    sx={{
-                      fontSize: '24px',
-                      cursor: 'pointer',
-                      '&:hover': {
-                        opacity: 0.8,
-                      },
-                    }}
-                  />
-                </Tooltip>
-              </Box>
-              <TextField
-                fullWidth
-                type='password'
-                value={confirmPassword}
-                onChange={handleConfirmPasswordChange}
-                size='small'
-                label='Подтвердите пароль'
-                variant='standard'
-                required
-                error={!!confirmPasswordError}
-              />
-            </Box>
-            <Button
-              variant='contained'
-              color='primary'
-              size='medium'
-              onClick={(e) => handleChangePassword(e)}
-              disabled={
-                !currentPassword ||
-                !newPassword ||
-                !confirmPassword ||
-                !!newPasswordError ||
-                !!confirmPasswordError
-              }
-            >
-              Изменить пароль
-            </Button>
-          </Box>
-        </Box>
-
-        {activeTab === 'settings' && (
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              border: '1px solid #ddd',
               borderRadius: 3,
-              p: 3,
-              mt: 2,
+              overflow: 'hidden',
+              position: { md: 'sticky' },
+              top: { md: 100 },
+              bgcolor: 'background.paper',
             }}
           >
-            <Typography variant='h6'>Настройки</Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <LightModeSharpIcon />
-              <Typography variant='body2'>Light</Typography>
-              <Switch
-                checked={mode === 'dark'}
-                onChange={toggleTheme}
-                color='default'
-              />
-              <DarkModeSharpIcon />
-              <Typography variant='body2'>Dark</Typography>
-            </Box>
-            <Button
-              variant='outlined'
-              color='error'
-              onClick={handleDeleteAccount}
-            >
-              Удалить аккаунт
-            </Button>
-          </Box>
-        )}
-
-        {activeTab === 'favorites' && (
-          <Box
-            sx={{
-              border: '1px solid #ddd',
-              borderRadius: 3,
-              p: 3,
-              mt: 2,
-            }}
-          >
-            <Typography variant='h6' sx={{ mb: 2 }}>
-              Избранные парковки
-            </Typography>
-            {status === 'loading' && <CircularProgress />}
-            {status === 'succeeded' && favorites?.length === 0 && (
-              <Typography>У вас пока нет избранных парковок</Typography>
-            )}
-            {status === 'succeeded' && favorites?.length > 0 && (
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-                {favorites.map((favorite) => (
-                  <Card key={favorite.id} sx={{ position: 'relative' }}>
-                    <CardActionArea onClick={() => handleParkingClick(favorite)}>
-                      <CardMedia
-                        component='img'
-                        height='140'
-                        image={
-                          favorite.img
-                            ? `${import.meta.env.VITE_API_URL}/img/parking/${favorite.img}`
-                            : 'parking-default.jpg'
-                        }
-                        alt={favorite.name}
-                      />
-                      <CardContent>
-                        <Typography variant="h6" component="div">
-                          {favorite.name}
-                        </Typography>
-                        <Typography variant='body2' color='text.secondary' noWrap>
-                          {favorite.location?.address}
-                        </Typography>
-                        <Box
-                          sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
-                        >
-                          <Rating
-                            value={Number(favorite.average_rating) || 0}
-                            readOnly
-                            size='small'
-                          />
-                          <Typography variant='body2'>
-                            {favorite.price_per_hour} ₽/час
-                          </Typography>
-                        </Box>
-                        <IconButton
-                          sx={{
-                            position: 'absolute',
-                            top: 8,
-                            right: 8,
-                            color: 'red',
-                            bgcolor: 'rgba(255, 255, 255, 0.8)',
-                            padding: '4px',
-                            '&:hover': {
-                              bgcolor: 'rgba(255, 255, 255, 0.9)',
-                            },
-                          }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleRemoveFromFavorites(favorite.id);
-                          }}
-                        >
-                          <CloseIcon />
-                        </IconButton>
-                      </CardContent>
-                    </CardActionArea>
-                  </Card>
+            {isMobile ? (
+              <Tabs
+                value={activeTab}
+                onChange={(_, value) => setActiveTab(value)}
+                variant="scrollable"
+                scrollButtons="auto"
+                sx={{
+                  borderBottom: 1,
+                  borderColor: 'divider',
+                  '& .MuiTabs-indicator': { height: 3, borderRadius: '3px 3px 0 0' },
+                }}
+              >
+                {menuItems.map((item) => (
+                  <Tab
+                    key={item.id}
+                    value={item.id}
+                    label={item.label}
+                    icon={item.icon}
+                    iconPosition="start"
+                    sx={{ minHeight: 64, textTransform: 'none', fontWeight: 600 }}
+                  />
                 ))}
+              </Tabs>
+            ) : (
+              <List component="nav" sx={{ py: 0 }}>
+                {menuItems.map((item) => (
+                  <ListItem key={item.id} disablePadding>
+                    <ListItemButton
+                      selected={activeTab === item.id}
+                      onClick={() => setActiveTab(item.id)}
+                      sx={{
+                        py: 1.5,
+                        '&.Mui-selected': {
+                          bgcolor: 'primary.main',
+                          color: 'white',
+                          '& .MuiListItemIcon-root': { color: 'white' },
+                          '&:hover': { bgcolor: 'primary.dark' },
+                        },
+                        px: 3,
+                      }}
+                    >
+                      <ListItemIcon sx={{ minWidth: 40, color: activeTab === item.id ? 'white' : 'primary.main' }}>
+                        {item.icon}
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={item.label}
+                        primaryTypographyProps={{
+                          fontWeight: activeTab === item.id ? 600 : 500
+                        }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                ))}
+                <Divider />
+                <ListItem disablePadding>
+                  <ListItemButton
+                    onClick={handleDeleteAccount}
+                    sx={{ py: 1.5, px: 3, color: 'error.main' }}
+                  >
+                    <ListItemIcon sx={{ minWidth: 40, color: 'error.main' }}>
+                      <DeleteForeverIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Удалить аккаунт" />
+                  </ListItemButton>
+                </ListItem>
+              </List>
+            )}
+          </Paper>
+        </Grid>
+
+        {/* Content Area */}
+        <Grid item xs={12} md={9}>
+          <Paper
+            elevation={0}
+            sx={{
+              p: { xs: 2, sm: 3, md: 4 },
+              borderRadius: 4,
+              minHeight: '600px',
+              border: (theme) => `1px solid ${theme.palette.divider}`,
+              bgcolor: 'background.paper',
+            }}
+          >
+            {activeTab === 'profile' && (
+              <Box>
+                <Typography variant="h5" fontWeight={700} gutterBottom sx={{ mb: 4 }}>
+                  Личные данные
+                </Typography>
+
+                <Grid container spacing={4}>
+                  <Grid item xs={12} md={4} sx={{ textAlign: 'center' }}>
+                    <Box sx={{ position: 'relative', display: 'inline-block' }}>
+                      <Avatar
+                        src={user?.avatar ? `${import.meta.env.VITE_TARGET}${user.avatar}` : undefined}
+                        sx={{
+                          width: 180,
+                          height: 180,
+                          bgcolor: 'primary.light',
+                          fontSize: '80px',
+                          border: '4px solid white',
+                          boxShadow: 3,
+                        }}
+                      >
+                        {!user?.avatar && (user?.name.charAt(0).toUpperCase() || 'А')}
+                      </Avatar>
+                      <IconButton
+                        onClick={handleAvatarClick}
+                        sx={{
+                          position: 'absolute',
+                          bottom: 5,
+                          right: 5,
+                          bgcolor: 'primary.main',
+                          color: 'white',
+                          '&:hover': { bgcolor: 'primary.dark' },
+                          boxShadow: 2,
+                        }}
+                        size="small"
+                      >
+                        <SettingsIcon fontSize="small" />
+                      </IconButton>
+                    </Box>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      style={{ display: 'none' }}
+                      accept="image/*"
+                      onChange={handleFileChange}
+                    />
+                    <Box sx={{ mt: 2 }}>
+                      <Button
+                        size="small"
+                        onClick={handleAvatarClick}
+                        disabled={uploading}
+                        sx={{ textTransform: 'none' }}
+                      >
+                        {uploading ? 'Загрузка...' : 'Изменить фото'}
+                      </Button>
+                      {user?.avatar && (
+                        <Button
+                          size="small"
+                          color="error"
+                          onClick={handleDeleteAvatar}
+                          sx={{ textTransform: 'none', ml: 1 }}
+                        >
+                          Удалить
+                        </Button>
+                      )}
+                    </Box>
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+                      {user?.email}
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={12} md={8}>
+                    <Stack spacing={3}>
+                      <Box sx={{ display: 'flex', gap: 2 }}>
+                        <TextField
+                          fullWidth
+                          label="Фамилия"
+                          value={surname}
+                          onChange={handleSurnameChange}
+                          error={!!surnameError}
+                          helperText={surnameError}
+                        />
+                        <TextField
+                          fullWidth
+                          label="Имя"
+                          value={name}
+                          onChange={handleNameChange}
+                          error={!!nameError}
+                          helperText={nameError}
+                        />
+                      </Box>
+                      <TextField
+                        fullWidth
+                        label="Отчество"
+                        value={patronymic}
+                        onChange={handlePatronymicChange}
+                        error={!!patronymicError}
+                        helperText={patronymicError}
+                      />
+                      <InputMask
+                        mask="+7 999 999 99 99"
+                        value={phone}
+                        onChange={handlePhoneChange}
+                      >
+                        {(inputProps: any) => (
+                          <TextField
+                            {...inputProps}
+                            fullWidth
+                            label="Номер телефона"
+                            error={!!phoneError}
+                            helperText={phoneError}
+                          />
+                        )}
+                      </InputMask>
+                      <Box sx={{ pt: 2 }}>
+                        <Button
+                          variant="contained"
+                          size="large"
+                          startIcon={<SaveIcon />}
+                          disabled={!isChanged}
+                          onClick={handleSaveChanges}
+                          sx={{ px: 4, borderRadius: 2 }}
+                        >
+                          Сохранить профиль
+                        </Button>
+                      </Box>
+                    </Stack>
+                  </Grid>
+                </Grid>
               </Box>
             )}
-          </Box>
-        )}
 
-        {activeTab === 'history' && (
-          <Box sx={{ border: '1px solid #ddd', borderRadius: 3, p: 3, mt: 2 }}>
-            <Typography variant='h6' sx={{ mb: 2 }}>
-              История бронирований
-            </Typography>
+            {activeTab === 'security' && (
+              <Box maxWidth="500px">
+                <Typography variant="h5" fontWeight={700} gutterBottom sx={{ mb: 4 }}>
+                  Безопасность
+                </Typography>
 
-            <Tabs
-              value={historyTab}
-              onChange={(_, value) => setHistoryTab(value)}
-              sx={{ mb: 2 }}
-            >
-              <Tab label='Активные' value='active' />
-              <Tab label='История' value='history' />
-            </Tabs>
+                <Card sx={{ p: 3, borderRadius: 3, border: (theme) => `1px solid ${theme.palette.divider}` }} elevation={0}>
+                  <Stack spacing={3}>
+                    <Box display="flex" alignItems="center" gap={1.5} mb={1}>
+                      <KeyIcon color="primary" />
+                      <Typography variant="h6">Изменение пароля</Typography>
+                    </Box>
 
-            {historyTab === 'active' ? (
-              <Stack spacing={2}>
-                {activeBookings.length === 0 ? (
-                  <Typography>У вас нет активных бронирований</Typography>
-                ) : (
-                  activeBookings.map((booking) => (
-                    <Card key={booking.id}>
-                      <CardContent>
-                        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                          <Typography variant='h6'>
-                            {booking.ParkingSpace?.ParkingLot?.name || 'Неизвестно'}
-                          </Typography>
-                          <Stack direction="row" spacing={1}>
-                            <Button
-                              variant="outlined"
-                              size="small"
-                              startIcon={<MapIcon />}
-                              onClick={() => {
-                                setSelectedBooking(booking);
-                                setShowParkingModal(true);
-                              }}
-                            >
-                              Схема
-                            </Button>
-                            <Button
-                              variant="outlined"
-                              size="small"
-                              startIcon={<DirectionsIcon />}
-                              onClick={() => {
-                                const parkingLot = booking.ParkingSpace?.ParkingLot;
-                                if (parkingLot?.id) {
-                                  handleParkingClick(parkingLot);
-                                }
-                              }}
-                            >
-                              Маршрут
-                            </Button>
-                            <Button
-                              variant="outlined"
-                              size="small"
-                              color="error"
-                              onClick={() => handleCancelBooking(booking.id)}
-                            >
-                              Отменить
-                            </Button>
-                          </Stack>
-                        </Box>
+                    <TextField
+                      fullWidth
+                      label="Текущий пароль"
+                      type={showCurrentPassword ? 'text' : 'password'}
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton onClick={() => setShowCurrentPassword(!showCurrentPassword)} edge="end">
+                              {showCurrentPassword ? <VisibilityOff /> : <Visibility />}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
 
-                        <Grid container spacing={2}>
-                          <Grid item xs={12} sm={6}>
-                            <Box sx={{
-                              bgcolor: theme.palette.mode === 'dark' ? "grey.800" : "grey.100",
-                              p: 2,
-                              borderRadius: 1,
-                              boxShadow: (theme) => theme.palette.mode === 'dark' ? 'none' : 1,
-                              height: '100%'
-                            }}>
-                              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                                Информация о парковке
-                              </Typography>
-                              <Stack spacing={1}>
-                                <Typography>
-                                  Место: {booking.ParkingSpace?.space_number || 'Неизвестно'}
-                                </Typography>
-                                <Typography>
-                                  Адрес: {booking.ParkingSpace?.ParkingLot?.location?.address || 'Неизвестно'}
-                                </Typography>
-                                <Typography>
-                                  Стоимость: {booking.ParkingSpace?.ParkingLot?.price_per_hour || 'Неизвестно'} ₽/час
-                                </Typography>
-                              </Stack>
-                            </Box>
-                          </Grid>
+                    <Divider />
 
-                          <Grid item xs={12} sm={6}>
-                            <Box sx={{
-                              bgcolor: theme.palette.mode === 'dark' ? "grey.800" : "grey.100",
-                              p: 2,
-                              borderRadius: 1,
-                              boxShadow: (theme) => theme.palette.mode === 'dark' ? 'none' : 1,
-                              height: '100%'
-                            }}>
-                              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                                Время бронирования
-                              </Typography>
-                              <Stack spacing={1}>
-                                <Box>
-                                  <Typography variant="body2" color="text.secondary">
-                                    Заезд:
-                                  </Typography>
-                                  <Typography>
-                                    {new Date(booking.start_time || booking.entry_time).toLocaleString('ru-RU', {
-                                      year: 'numeric',
-                                      month: 'long',
-                                      day: 'numeric',
-                                    })}
-                                    {' '}в{' '}
-                                    {new Date(booking.start_time || booking.entry_time).toLocaleString('ru-RU', {
-                                      hour: '2-digit',
-                                      minute: '2-digit'
-                                    })}
-                                  </Typography>
-                                </Box>
-                                <Box>
-                                  <Typography variant="body2" color="text.secondary">
-                                    Выезд:
-                                  </Typography>
-                                  <Typography>
-                                    {new Date(booking.end_time || booking.exit_time).toLocaleString('ru-RU', {
-                                      year: 'numeric',
-                                      month: 'long',
-                                      day: 'numeric',
-                                    })}
-                                    {' '}в{' '}
-                                    {new Date(booking.end_time || booking.exit_time).toLocaleString('ru-RU', {
-                                      hour: '2-digit',
-                                      minute: '2-digit'
-                                    })}
-                                  </Typography>
-                                </Box>
-                              </Stack>
-                            </Box>
-                          </Grid>
-                        </Grid>
-                      </CardContent>
-                    </Card>
-                  ))
-                )}
-              </Stack>
-            ) : (
-              <Stack spacing={2}>
-                {bookingHistory.length === 0 ? (
-                  <Typography>История бронирований пуста</Typography>
-                ) : (
-                  bookingHistory.map((booking) => (
-                    <Card key={booking.id}>
-                      <CardContent>
-                        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                          <Typography variant='h6'>
-                            {booking.ParkingSpace?.ParkingLot?.name || 'Неизвестно'}
-                          </Typography>
-                          <Stack direction="row" spacing={1}>
-                            <Button
-                              variant="outlined"
-                              size="small"
-                              startIcon={<MapIcon />}
-                              onClick={() => {
-                                setSelectedBooking(booking);
-                                setShowParkingModal(true);
-                              }}
-                            >
-                              Схема
-                            </Button>
-                            <Button
-                              variant="outlined"
-                              size="small"
-                              startIcon={<DirectionsIcon />}
-                              onClick={() => {
-                                const parkingLot = booking.ParkingSpace?.ParkingLot;
-                                if (parkingLot?.id) {
-                                  handleParkingClick(parkingLot);
-                                }
-                              }}
-                            >
-                              Маршрут
-                            </Button>
-                            <Button
-                              variant="outlined"
-                              size="small"
-                              color="error"
-                              onClick={() => handleCancelBooking(booking.id)}
-                            >
-                              Отменить
-                            </Button>
-                          </Stack>
-                        </Box>
+                    <TextField
+                      fullWidth
+                      label="Новый пароль"
+                      type={showNewPassword ? 'text' : 'password'}
+                      value={newPassword}
+                      onChange={handleNewPasswordChange}
+                      error={!!newPasswordError}
+                      helperText={newPasswordError || 'Минимум 8 символов'}
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton onClick={() => setShowNewPassword(!showNewPassword)} edge="end">
+                              {showNewPassword ? <VisibilityOff /> : <Visibility />}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
 
-                        <Grid container spacing={2}>
-                          <Grid item xs={12} sm={6}>
-                            <Box sx={{
-                              bgcolor: theme.palette.mode === 'dark' ? "grey.800" : "grey.100",
-                              p: 2,
-                              borderRadius: 1,
-                              boxShadow: (theme) => theme.palette.mode === 'dark' ? 'none' : 1,
-                              height: '100%'
-                            }}>
-                              <Typography variant="subtitle2" color="text.secondary" gutterBottom >
-                                Информация о парковке
-                              </Typography>
-                              <Stack spacing={1}>
-                                <Typography>
-                                  Место: {booking.ParkingSpace?.space_number || 'Неизвестно'}
-                                </Typography>
-                                <Typography>
-                                  Адрес: {booking.ParkingSpace?.ParkingLot?.location?.address || 'Неизвестно'}
-                                </Typography>
-                                <Typography>
-                                  Стоимость: {booking.ParkingSpace?.ParkingLot?.price_per_hour || 'Неизвестно'} ₽/час
-                                </Typography>
-                              </Stack>
-                            </Box>
-                          </Grid>
+                    <TextField
+                      fullWidth
+                      label="Подтверждение нового пароля"
+                      type="password"
+                      value={confirmPassword}
+                      onChange={handleConfirmPasswordChange}
+                      error={!!confirmPasswordError}
+                      helperText={confirmPasswordError}
+                    />
 
-                          <Grid item xs={12} sm={6}>
-                            <Box sx={{
-                              bgcolor: theme.palette.mode === 'dark' ? "grey.800" : "grey.100",
-                              p: 2,
-                              borderRadius: 1,
-                              boxShadow: (theme) => theme.palette.mode === 'dark' ? 'none' : 1,
-                              height: '100%'
-                            }}>
-                              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                                Время бронирования
-                              </Typography>
-                              <Stack spacing={1}>
-                                <Box>
-                                  <Typography variant="body2" color="text.secondary">
-                                    Заезд:
-                                  </Typography>
-                                  <Typography>
-                                    {new Date(booking.start_time || booking.entry_time).toLocaleString('ru-RU', {
-                                      year: 'numeric',
-                                      month: 'long',
-                                      day: 'numeric',
-                                    })}
-                                    {' '}в{' '}
-                                    {new Date(booking.start_time || booking.entry_time).toLocaleString('ru-RU', {
-                                      hour: '2-digit',
-                                      minute: '2-digit'
-                                    })}
-                                  </Typography>
-                                </Box>
-                                <Box>
-                                  <Typography variant="body2" color="text.secondary">
-                                    Выезд:
-                                  </Typography>
-                                  <Typography>
-                                    {new Date(booking.end_time || booking.exit_time).toLocaleString('ru-RU', {
-                                      year: 'numeric',
-                                      month: 'long',
-                                      day: 'numeric',
-                                    })}
-                                    {' '}в{' '}
-                                    {new Date(booking.end_time || booking.exit_time).toLocaleString('ru-RU', {
-                                      hour: '2-digit',
-                                      minute: '2-digit'
-                                    })}
-                                  </Typography>
-                                </Box>
-                              </Stack>
-                            </Box>
-                          </Grid>
-                        </Grid>
-                      </CardContent>
-                    </Card>
-                  ))
-                )}
-              </Stack>
+                    <Button
+                      variant="contained"
+                      size="large"
+                      onClick={handleChangePassword}
+                      disabled={!currentPassword || !newPassword || !confirmPassword || !!newPasswordError || !!confirmPasswordError}
+                      sx={{ mt: 1, borderRadius: 2 }}
+                    >
+                      Обновить пароль
+                    </Button>
+                  </Stack>
+                </Card>
+              </Box>
             )}
-          </Box>
-        )}
-      </Box>
 
-      {showParkingModal && selectedBooking?.ParkingSpace?.ParkingLot && (
-        <Dialog
-          open={showParkingModal}
-          onClose={() => setShowParkingModal(false)}
-          maxWidth={false}
-          PaperProps={{
-            sx: {
-              width: (_theme) => ({
-                small: '700px',
-                medium: '900px',
-                large: '1100px'
-              })[gridSize],
-              maxWidth: '90vw',
-              maxHeight: '90vh'
-            }
-          }}
-        >
-          <DialogTitle>
-            Схема парковки
-            <IconButton
-              aria-label="close"
-              onClick={() => setShowParkingModal(false)}
-              sx={{ position: 'absolute', right: 8, top: 8 }}
-            >
-              <CloseIcon />
-            </IconButton>
-          </DialogTitle>
-          <DialogContent>
-            <ParkingSpacePreview
-              parkingId={Number(selectedBooking.ParkingSpace.ParkingLot.id)}
-              highlightedSpaceId={Number(selectedBooking.space_id)}
-              onGridSizeChange={setGridSize}
-            />
-          </DialogContent>
-        </Dialog>
-      )}
+            {activeTab === 'settings' && (
+              <Box>
+                <Typography variant="h5" fontWeight={700} gutterBottom sx={{ mb: 4 }}>
+                  Настройки
+                </Typography>
+
+                <Card sx={{ p: 3, borderRadius: 3, border: (theme) => `1px solid ${theme.palette.divider}` }} elevation={0}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Box>
+                      <Typography variant="h6">Тема оформления</Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Выберите между светлой и темной темой
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <LightModeSharpIcon color={mode === 'light' ? 'primary' : 'disabled'} />
+                      <Switch
+                        checked={mode === 'dark'}
+                        onChange={toggleTheme}
+                        color="primary"
+                      />
+                      <DarkModeSharpIcon color={mode === 'dark' ? 'primary' : 'disabled'} />
+                    </Box>
+                  </Box>
+                </Card>
+              </Box>
+            )}
+
+            {activeTab === 'favorites' && (
+              <Box>
+                <Typography variant="h5" fontWeight={700} gutterBottom sx={{ mb: 4 }}>
+                  Избранное
+                </Typography>
+                {status === 'loading' && <CircularProgress />}
+                {status === 'succeeded' && favorites?.length === 0 && (
+                  <Typography>У вас пока нет избранных парковок</Typography>
+                )}
+                {status === 'succeeded' && favorites?.length > 0 && (
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                    {favorites.map((favorite) => (
+                      <Card key={favorite.id} sx={{ position: 'relative' }}>
+                        <CardActionArea onClick={() => handleParkingClick(favorite)}>
+                          <CardMedia
+                            component='img'
+                            height='140'
+                            image={
+                              favorite.img
+                                ? `${import.meta.env.VITE_API_URL}/img/parking/${favorite.img}`
+                                : 'parking-default.jpg'
+                            }
+                            alt={favorite.name}
+                          />
+                          <CardContent>
+                            <Typography variant="h6" component="div">
+                              {favorite.name}
+                            </Typography>
+                            <Typography variant='body2' color='text.secondary' noWrap>
+                              {favorite.location?.address}
+                            </Typography>
+                            <Box
+                              sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                            >
+                              <Rating
+                                value={Number(favorite.average_rating) || 0}
+                                readOnly
+                                size='small'
+                              />
+                              <Typography variant='body2'>
+                                {favorite.price_per_hour} ₽/час
+                              </Typography>
+                            </Box>
+                            <IconButton
+                              sx={{
+                                position: 'absolute',
+                                top: 8,
+                                right: 8,
+                                color: 'red',
+                                bgcolor: 'rgba(255, 255, 255, 0.8)',
+                                padding: '4px',
+                                '&:hover': {
+                                  bgcolor: 'rgba(255, 255, 255, 0.9)',
+                                },
+                              }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRemoveFromFavorites(favorite.id);
+                              }}
+                            >
+                              <CloseIcon />
+                            </IconButton>
+                          </CardContent>
+                        </CardActionArea>
+                      </Card>
+                    ))}
+                  </Box>
+                )}
+              </Box>
+            )}
+
+            {activeTab === 'bookings' && (
+              <Box>
+                <Typography variant="h5" fontWeight={700} gutterBottom sx={{ mb: 4 }}>
+                  Бронирования
+                </Typography>
+
+                <Tabs
+                  value={historyTab}
+                  onChange={(_, value) => setHistoryTab(value)}
+                  sx={{ mb: 2 }}
+                >
+                  <Tab label='Активные' value='active' />
+                  <Tab label='История' value='history' />
+                </Tabs>
+
+                {historyTab === 'active' ? (
+                  <Stack spacing={2}>
+                    {activeBookings.length === 0 ? (
+                      <Typography>У вас нет активных бронирований</Typography>
+                    ) : (
+                      activeBookings.map((booking) => (
+                        <Card key={booking.id}>
+                          <CardContent>
+                            <Box
+                              display="flex"
+                              flexDirection={{ xs: 'column', sm: 'row' }}
+                              justifyContent="space-between"
+                              alignItems={{ xs: 'flex-start', sm: 'center' }}
+                              mb={2}
+                              gap={{ xs: 2, sm: 0 }}
+                            >
+                              <Typography variant='h6'>
+                                {booking.ParkingSpace?.ParkingLot?.name || 'Неизвестно'}
+                              </Typography>
+                              <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
+                                <Button
+                                  variant="outlined"
+                                  size="small"
+                                  startIcon={<MapIcon />}
+                                  onClick={() => {
+                                    setSelectedBooking(booking);
+                                    setShowParkingModal(true);
+                                  }}
+                                >
+                                  Схема
+                                </Button>
+                                <Button
+                                  variant="outlined"
+                                  size="small"
+                                  startIcon={<DirectionsIcon />}
+                                  onClick={() => {
+                                    const parkingLot = booking.ParkingSpace?.ParkingLot;
+                                    if (parkingLot?.id) {
+                                      handleParkingClick(parkingLot);
+                                    }
+                                  }}
+                                >
+                                  Маршрут
+                                </Button>
+                                <Button
+                                  variant="outlined"
+                                  size="small"
+                                  color="error"
+                                  onClick={() => handleCancelBooking(booking.id)}
+                                >
+                                  Отменить
+                                </Button>
+                              </Stack>
+                            </Box>
+
+                            <Grid container spacing={2}>
+                              <Grid item xs={12} sm={6}>
+                                <Box sx={{
+                                  bgcolor: theme.palette.mode === 'dark' ? "grey.800" : "grey.100",
+                                  p: 2,
+                                  borderRadius: 1,
+                                  boxShadow: (theme) => theme.palette.mode === 'dark' ? 'none' : 1,
+                                  height: '100%'
+                                }}>
+                                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                                    Информация о парковке
+                                  </Typography>
+                                  <Stack spacing={1}>
+                                    <Typography>
+                                      Место: {booking.ParkingSpace?.space_number || 'Неизвестно'}
+                                    </Typography>
+                                    <Typography>
+                                      Адрес: {booking.ParkingSpace?.ParkingLot?.location?.address || 'Неизвестно'}
+                                    </Typography>
+                                    <Typography>
+                                      Стоимость: {booking.ParkingSpace?.ParkingLot?.price_per_hour || 'Неизвестно'} ₽/час
+                                    </Typography>
+                                  </Stack>
+                                </Box>
+                              </Grid>
+
+                              <Grid item xs={12} sm={6}>
+                                <Box sx={{
+                                  bgcolor: theme.palette.mode === 'dark' ? "grey.800" : "grey.100",
+                                  p: 2,
+                                  borderRadius: 1,
+                                  boxShadow: (theme) => theme.palette.mode === 'dark' ? 'none' : 1,
+                                  height: '100%'
+                                }}>
+                                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                                    Время бронирования
+                                  </Typography>
+                                  <Stack spacing={1}>
+                                    <Box>
+                                      <Typography variant="body2" color="text.secondary">
+                                        Заезд:
+                                      </Typography>
+                                      <Typography>
+                                        {new Date(booking.start_time || booking.entry_time).toLocaleString('ru-RU', {
+                                          year: 'numeric',
+                                          month: 'long',
+                                          day: 'numeric',
+                                        })}
+                                        {' '}в{' '}
+                                        {new Date(booking.start_time || booking.entry_time).toLocaleString('ru-RU', {
+                                          hour: '2-digit',
+                                          minute: '2-digit'
+                                        })}
+                                      </Typography>
+                                    </Box>
+                                    <Box>
+                                      <Typography variant="body2" color="text.secondary">
+                                        Выезд:
+                                      </Typography>
+                                      <Typography>
+                                        {new Date(booking.end_time || booking.exit_time).toLocaleString('ru-RU', {
+                                          year: 'numeric',
+                                          month: 'long',
+                                          day: 'numeric',
+                                        })}
+                                        {' '}в{' '}
+                                        {new Date(booking.end_time || booking.exit_time).toLocaleString('ru-RU', {
+                                          hour: '2-digit',
+                                          minute: '2-digit'
+                                        })}
+                                      </Typography>
+                                    </Box>
+                                  </Stack>
+                                </Box>
+                              </Grid>
+                            </Grid>
+                          </CardContent>
+                        </Card>
+                      ))
+                    )}
+                  </Stack>
+                ) : (
+                  <Stack spacing={2}>
+                    {bookingHistory.length === 0 ? (
+                      <Typography>История бронирований пуста</Typography>
+                    ) : (
+                      bookingHistory.map((booking) => (
+                        <Card key={booking.id}>
+                          <CardContent>
+                            <Box
+                              display="flex"
+                              flexDirection={{ xs: 'column', sm: 'row' }}
+                              justifyContent="space-between"
+                              alignItems={{ xs: 'flex-start', sm: 'center' }}
+                              mb={2}
+                              gap={{ xs: 2, sm: 0 }}
+                            >
+                              <Typography variant='h6'>
+                                {booking.ParkingSpace?.ParkingLot?.name || 'Неизвестно'}
+                              </Typography>
+                              <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
+                                <Button
+                                  variant="outlined"
+                                  size="small"
+                                  startIcon={<MapIcon />}
+                                  onClick={() => {
+                                    setSelectedBooking(booking);
+                                    setShowParkingModal(true);
+                                  }}
+                                >
+                                  Схема
+                                </Button>
+                                <Button
+                                  variant="outlined"
+                                  size="small"
+                                  startIcon={<DirectionsIcon />}
+                                  onClick={() => {
+                                    const parkingLot = booking.ParkingSpace?.ParkingLot;
+                                    if (parkingLot?.id) {
+                                      handleParkingClick(parkingLot);
+                                    }
+                                  }}
+                                >
+                                  Маршрут
+                                </Button>
+                                <Button
+                                  variant="outlined"
+                                  size="small"
+                                  color="error"
+                                  onClick={() => handleCancelBooking(booking.id)}
+                                >
+                                  Отменить
+                                </Button>
+                              </Stack>
+                            </Box>
+
+                            <Grid container spacing={2}>
+                              <Grid item xs={12} sm={6}>
+                                <Box sx={{
+                                  bgcolor: theme.palette.mode === 'dark' ? "grey.800" : "grey.100",
+                                  p: 2,
+                                  borderRadius: 1,
+                                  boxShadow: (theme) => theme.palette.mode === 'dark' ? 'none' : 1,
+                                  height: '100%'
+                                }}>
+                                  <Typography variant="subtitle2" color="text.secondary" gutterBottom >
+                                    Информация о парковке
+                                  </Typography>
+                                  <Stack spacing={1}>
+                                    <Typography>
+                                      Место: {booking.ParkingSpace?.space_number || 'Неизвестно'}
+                                    </Typography>
+                                    <Typography>
+                                      Адрес: {booking.ParkingSpace?.ParkingLot?.location?.address || 'Неизвестно'}
+                                    </Typography>
+                                    <Typography>
+                                      Стоимость: {booking.ParkingSpace?.ParkingLot?.price_per_hour || 'Неизвестно'} ₽/час
+                                    </Typography>
+                                  </Stack>
+                                </Box>
+                              </Grid>
+
+                              <Grid item xs={12} sm={6}>
+                                <Box sx={{
+                                  bgcolor: theme.palette.mode === 'dark' ? "grey.800" : "grey.100",
+                                  p: 2,
+                                  borderRadius: 1,
+                                  boxShadow: (theme) => theme.palette.mode === 'dark' ? 'none' : 1,
+                                  height: '100%'
+                                }}>
+                                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                                    Время бронирования
+                                  </Typography>
+                                  <Stack spacing={1}>
+                                    <Box>
+                                      <Typography variant="body2" color="text.secondary">
+                                        Заезд:
+                                      </Typography>
+                                      <Typography>
+                                        {new Date(booking.start_time || booking.entry_time).toLocaleString('ru-RU', {
+                                          year: 'numeric',
+                                          month: 'long',
+                                          day: 'numeric',
+                                        })}
+                                        {' '}в{' '}
+                                        {new Date(booking.start_time || booking.entry_time).toLocaleString('ru-RU', {
+                                          hour: '2-digit',
+                                          minute: '2-digit'
+                                        })}
+                                      </Typography>
+                                    </Box>
+                                    <Box>
+                                      <Typography variant="body2" color="text.secondary">
+                                        Выезд:
+                                      </Typography>
+                                      <Typography>
+                                        {new Date(booking.end_time || booking.exit_time).toLocaleString('ru-RU', {
+                                          year: 'numeric',
+                                          month: 'long',
+                                          day: 'numeric',
+                                        })}
+                                        {' '}в{' '}
+                                        {new Date(booking.end_time || booking.exit_time).toLocaleString('ru-RU', {
+                                          hour: '2-digit',
+                                          minute: '2-digit'
+                                        })}
+                                      </Typography>
+                                    </Box>
+                                  </Stack>
+                                </Box>
+                              </Grid>
+                            </Grid>
+                          </CardContent>
+                        </Card>
+                      ))
+                    )}
+                  </Stack>
+                )
+                }
+              </Box>
+            )}
+          </Paper>
+        </Grid>
+      </Grid>
+
+      {
+        showParkingModal && selectedBooking?.ParkingSpace?.ParkingLot && (
+          <Dialog
+            open={showParkingModal}
+            onClose={() => setShowParkingModal(false)}
+            maxWidth={false}
+            PaperProps={{
+              sx: {
+                width: (_theme) => ({
+                  small: '700px',
+                  medium: '900px',
+                  large: '1100px'
+                })[gridSize],
+                maxWidth: '90vw',
+                maxHeight: '90vh'
+              }
+            }}
+          >
+            <DialogTitle>
+              Схема парковки
+              <IconButton
+                aria-label="close"
+                onClick={() => setShowParkingModal(false)}
+                sx={{ position: 'absolute', right: 8, top: 8 }}
+              >
+                <CloseIcon />
+              </IconButton>
+            </DialogTitle>
+            <DialogContent>
+              <ParkingSpacePreview
+                parkingId={Number(selectedBooking.ParkingSpace.ParkingLot.id)}
+                highlightedSpaceId={Number(selectedBooking.space_id)}
+                onGridSizeChange={setGridSize}
+              />
+            </DialogContent>
+          </Dialog>
+        )
+      }
 
 
-    </Box>
+    </Container >
   );
 }

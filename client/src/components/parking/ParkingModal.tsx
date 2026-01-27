@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, Box, Typography, Button, Rating, Stack, CircularProgress, DialogTitle, IconButton, useTheme } from '@mui/material';
 import { Parking } from '../../types/parking';
 import { ParkingSpace, ParkingEntrance } from '../../types/parking.types';
@@ -32,6 +32,8 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
   const [exitTime, setExitTime] = useState<Date | null>(null);
   const [gridSize, setGridSize] = useState<keyof typeof GRID_SIZES>('medium');
   const [isGridSizeLoaded, setIsGridSizeLoaded] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState(800);
 
   const BASE_IMG_URL = `${import.meta.env.VITE_API_URL}/img/parking/`;
 
@@ -167,6 +169,19 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
       fetchParkingSpaces(parking.id);
     }
   }, [parking, open]);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        setContainerWidth(entry.contentRect.width);
+      }
+    });
+
+    resizeObserver.observe(containerRef.current);
+    return () => resizeObserver.disconnect();
+  }, [showSpaces]);
 
 
 
@@ -350,29 +365,29 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
                     <CircularProgress />
                   </Box>
                 ) : (
-                  <Box sx={{
-                    maxWidth: '100%',
-                    maxHeight: '70vh',
-                    overflow: 'auto',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    px: 2,
-                    pb: 2
-
-                  }}>
+                  <Box
+                    ref={containerRef}
+                    sx={{
+                      maxWidth: '100%',
+                      maxHeight: '70vh',
+                      overflow: 'hidden',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      p: { xs: 1, sm: 2 },
+                      bgcolor: 'background.default',
+                      borderRadius: 2
+                    }}
+                  >
                     <Box sx={{
-                      width: '800px',
-                      height: '600px',
+                      width: containerWidth,
+                      height: containerWidth * (GRID_SIZES[gridSize].height / GRID_SIZES[gridSize].width),
                       position: 'relative'
                     }}>
                       <ConstructorGrid
                         sx={{
                           width: GRID_SIZES[gridSize].width,
                           height: GRID_SIZES[gridSize].height,
-                          transform: `scale(${Math.min(
-                            800 / GRID_SIZES[gridSize].width,
-                            596 / GRID_SIZES[gridSize].height
-                          )})`,
+                          transform: `scale(${containerWidth / GRID_SIZES[gridSize].width})`,
                           transformOrigin: 'top left',
                           bgcolor: 'background.paper'
                         }}

@@ -44,9 +44,9 @@ export const ParkingMap = () => {
           relativeAnchor: [0.5, 0],
         }
       });
-      
+
       userMarkerRef.current = marker;
-      
+
       map.setCenter(coords);
       map.setZoom(15);
 
@@ -124,7 +124,7 @@ export const ParkingMap = () => {
     const initialize = async () => {
       try {
         setIsLoading(true);
-        
+
         // Загружаем парковки
         const response = await fetch(`${import.meta.env.VITE_API_URL}/parking-lots/all`);
         if (!response.ok) {
@@ -151,7 +151,7 @@ export const ParkingMap = () => {
 
         // Создаем маркеры
         createUserMarker(mapglAPI, map, userCoords);
-        
+
         data.forEach((parking: Parking) => {
           const marker = new mapglAPI.Marker(map, {
             coordinates: [parking.location.coordinates.lon, parking.location.coordinates.lat],
@@ -194,12 +194,12 @@ export const ParkingMap = () => {
         parking.location.coordinates.lon,
         parking.location.coordinates.lat
       ];
-      
+
       if (mapglAPI && mapInstanceRef.current) {
         await buildRoute(
-          mapglAPI, 
-          mapInstanceRef.current, 
-          userCoords, 
+          mapglAPI,
+          mapInstanceRef.current,
+          userCoords,
           parkingCoords
         );
       }
@@ -209,18 +209,18 @@ export const ParkingMap = () => {
   };
 
   return (
-    <Container  maxWidth={false} 
-    sx={{ 
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      px: { xs: 2, sm: 3 }, 
-      py: 3 
-    }}>
-      <Paper 
-        elevation={4} 
-        sx={{ 
-          p: { xs: 1.5, md: 3 }, 
+    <Container maxWidth={false}
+      sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        px: { xs: 2, sm: 3 },
+        py: 3
+      }}>
+      <Paper
+        elevation={4}
+        sx={{
+          p: { xs: 1.5, md: 3 },
           mt: { xs: 2, md: 10 },
           width: { xs: '100%', md: '1400px' },
           maxWidth: '100%',
@@ -228,9 +228,9 @@ export const ParkingMap = () => {
           borderRadius: { xs: 2, md: 3 },
         }}
       >
-        <Typography 
-          variant="h5" 
-          component="h1" 
+        <Typography
+          variant="h5"
+          component="h1"
           gutterBottom
           sx={{
             fontSize: { xs: '1.25rem', md: '1.5rem' },
@@ -262,20 +262,20 @@ export const ParkingMap = () => {
             if (!mapInstanceRef.current || !mapglAPI) return;
             createUserMarker(mapglAPI, mapInstanceRef.current, coords);
           }} />
-          <Box 
-            ref={mapContainerRef} 
-            sx={{ 
+          <Box
+            ref={mapContainerRef}
+            sx={{
               height: { xs: '60vh', sm: '65vh', md: '70vh' },
               width: '100%',
               minHeight: { xs: 400, md: 600 },
               borderRadius: 2,
               overflow: 'hidden',
               boxShadow: 2
-            }} 
+            }}
           />
         </Box>
       </Paper>
-      <ParkingModal 
+      <ParkingModal
         parking={selectedParking}
         open={!!selectedParking}
         onClose={() => setSelectedParking(null)}
