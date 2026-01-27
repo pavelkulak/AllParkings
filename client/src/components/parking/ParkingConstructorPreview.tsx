@@ -23,7 +23,7 @@ export default function ParkingConstructorPreview({ parkingId }: ParkingConstruc
         const response = await fetch(`${import.meta.env.VITE_API_URL}/parking-lots/${parkingId}/spaces`);
 
         if (!response.ok) {
-          const errorData = await response.json();
+
           throw new Error('Failed to fetch spaces');
         }
 
