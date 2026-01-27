@@ -28,8 +28,6 @@ export default function Root() {
         minHeight: '100vh',
         display: 'flex',
         flexDirection: 'column',
-        position: 'relative',
-        paddingBottom: '200px',
       }}
     >
       <NotificationHost />

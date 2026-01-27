@@ -401,9 +401,7 @@ export default function ParkingEditor({ parkingId }: ParkingEditorProps) {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'flex-start',
-        minHeight: 'calc(100vh - 64px)',
-        p: 3,
-        mt: 4
+        p: 1,
       }}
     >
       <Box sx={{ width: '100%', maxWidth: 1200, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>

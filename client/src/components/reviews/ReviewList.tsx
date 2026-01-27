@@ -19,26 +19,28 @@ import { Star, StarBorder } from '@mui/icons-material';
 
 interface ReviewListProps {
   parkingId: number;
+  onReviewAdded?: () => void;
 }
 
-export const ReviewList = ({ parkingId }: ReviewListProps) => {
+export const ReviewList = ({ parkingId, onReviewAdded }: ReviewListProps) => {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const { user } = useAppSelector((state) => state.auth);
 
-  const fetchReviews = async () => {
+  const fetchReviews = async (silent = false) => {
     try {
-      setLoading(true);
-      const response = await axiosInstance.get<Review[]>(`/reviews/parking/${parkingId}`);
+      if (!silent) setLoading(true);
+      // Добавляем timestamp для предотвращения кеширования
+      const response = await axiosInstance.get<Review[]>(`/reviews/parking/${parkingId}?t=${Date.now()}`);
       setReviews(response.data);
       setError(null);
     } catch (err) {
       setError('Ошибка при загрузке отзывов');
       console.error(err);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
@@ -47,8 +49,11 @@ export const ReviewList = ({ parkingId }: ReviewListProps) => {
   }, [parkingId]);
 
   const handleReviewSubmit = () => {
-    fetchReviews();
+    fetchReviews(true); // Обновляем список "тихо"
     setShowReviewForm(false);
+    if (onReviewAdded) {
+      onReviewAdded();
+    }
   };
 
   if (loading) {

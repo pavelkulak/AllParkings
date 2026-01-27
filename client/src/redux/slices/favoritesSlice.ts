@@ -21,6 +21,12 @@ const favoritesSlice = createSlice({
     clearFavoritesError: (state) => {
       state.error = null;
     },
+    updateFavoriteParking: (state, action: { payload: Parking }) => {
+      const index = state.favorites.findIndex(p => p.id === action.payload.id);
+      if (index !== -1) {
+        state.favorites[index] = action.payload;
+      }
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -46,5 +52,5 @@ const favoritesSlice = createSlice({
   }
 });
 
-export const { clearFavoritesError } = favoritesSlice.actions;
+export const { clearFavoritesError, updateFavoriteParking } = favoritesSlice.actions;
 export default favoritesSlice.reducer;
