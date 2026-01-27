@@ -16,14 +16,12 @@ import {
   CardContent,
   CardMedia,
   CardActionArea,
-  Tooltip,
   Divider,
 } from "@mui/material";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import RateReviewIcon from '@mui/icons-material/RateReview';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
-import SaveIcon from '@mui/icons-material/Save';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { showNotification } from "../../redux/slices/uiSlice";
 import { useEffect, useRef, useState } from "react";
@@ -34,21 +32,19 @@ import {
   updateMyParkings,
   deleteMyParkings,
 } from "../../redux/parkingThunks";
-import { Parking } from "../../types/parking";
 import { LocationButton } from "../map/LocationButton";
 import ReviewsModal from '../modals/ReviewsModal';
-import axiosInstance from "../../services/axiosInstance";
+
 import ParkingEditor from '../parking/ParkingEditor';
 import { FileUploader } from '../common/FileUploader';
-
 export default function ParkingOwnerPage() {
-  const user = useAppSelector((state) => state.auth.user);
+
   const { parkingLots } = useAppSelector((state) => state.parking);
   const dispatch = useAppDispatch();
 
   const [addressMethod, setAddressMethod] = useState<"input" | "map">("input");
   const [map, setMap] = useState<any>(null);
-  const [marker, setMarker] = useState<any>(null);
+  const [_, setMarker] = useState<any>(null);
   const [isReviewsModalOpen, setIsReviewsModalOpen] = useState(false);
   const [selectedParking, setSelectedParking] = useState<any>(null);
   const [isSaving, setIsSaving] = useState(false);
