@@ -27,7 +27,7 @@ export const ReviewForm = ({ parkingId, onSuccess, onCancel }: ReviewFormProps) 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!rating) {
       setSnackbar({ open: true, message: 'Пожалуйста, поставьте оценку', severity: 'error' });
       return;
@@ -41,11 +41,9 @@ export const ReviewForm = ({ parkingId, onSuccess, onCancel }: ReviewFormProps) 
         rating,
         comment: comment.trim()
       });
-      
+
       setSnackbar({ open: true, message: 'Отзыв успешно отправлен!', severity: 'success' });
-      setTimeout(() => {
-        onSuccess();
-      }, 1500);
+      onSuccess();
     } catch (err: any) {
       const message = err.response?.data?.message || 'Ошибка при отправке отзыва';
       setSnackbar({ open: true, message, severity: 'error' });
@@ -102,8 +100,8 @@ export const ReviewForm = ({ parkingId, onSuccess, onCancel }: ReviewFormProps) 
           />
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
-            <Button 
-              variant="contained" 
+            <Button
+              variant="contained"
               type="submit"
               disabled={submitting || !rating}
               fullWidth
@@ -116,8 +114,8 @@ export const ReviewForm = ({ parkingId, onSuccess, onCancel }: ReviewFormProps) 
             >
               {submitting ? 'Отправка...' : 'Отправить'}
             </Button>
-            <Button 
-              variant="outlined" 
+            <Button
+              variant="outlined"
               onClick={onCancel}
               disabled={submitting}
               fullWidth
@@ -139,8 +137,8 @@ export const ReviewForm = ({ parkingId, onSuccess, onCancel }: ReviewFormProps) 
         onClose={() => setSnackbar({ ...snackbar, open: false })}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
-        <Alert 
-          onClose={() => setSnackbar({ ...snackbar, open: false })} 
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
           severity={snackbar.severity}
           variant="filled"
           sx={{ width: '100%' }}

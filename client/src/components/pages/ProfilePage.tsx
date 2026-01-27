@@ -53,6 +53,7 @@ import DirectionsIcon from '@mui/icons-material/Directions';
 import LightModeSharpIcon from '@mui/icons-material/LightModeSharp';
 import DarkModeSharpIcon from '@mui/icons-material/DarkModeSharp';
 import MapIcon from '@mui/icons-material/Map';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
 import { useThemeContext } from '../theme/ThemeContext';
 import { ParkingSpacePreview } from '../parking/ParkingSpacePreview';
 
@@ -287,9 +288,12 @@ export default function ProfilePage() {
     if (activeTab === 'favorites') {
       dispatch(getFavorites());
     }
+    if (activeTab === 'bookings') {
+
+      dispatch(getActiveBookings());
+    }
     if (activeTab === 'history') {
       dispatch(getBookingHistory());
-      dispatch(getActiveBookings());
     }
   }, [activeTab, dispatch]);
 
@@ -675,63 +679,101 @@ export default function ProfilePage() {
                   <Typography>У вас пока нет избранных парковок</Typography>
                 )}
                 {status === 'succeeded' && favorites?.length > 0 && (
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                  <Grid container spacing={3} sx={{ justifyContent: { xs: 'center', sm: 'flex-start' } }}>
                     {favorites.map((favorite) => (
-                      <Card key={favorite.id} sx={{ position: 'relative' }}>
-                        <CardActionArea onClick={() => handleParkingClick(favorite)}>
-                          <CardMedia
-                            component='img'
-                            height='140'
-                            image={
-                              favorite.img
-                                ? `${import.meta.env.VITE_API_URL}/img/parking/${favorite.img}`
-                                : 'parking-default.jpg'
+                      <Grid item xs={12} sm={6} lg={4} key={favorite.id}>
+                        <Card
+                          sx={{
+                            position: 'relative',
+                            height: '100%',
+                            borderRadius: 4,
+                            border: '1px solid',
+                            borderColor: 'divider',
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                              transform: 'translateY(-4px)',
+                              boxShadow: (theme) => theme.palette.mode === 'dark' ? '0 10px 20px rgba(0,0,0,0.4)' : '0 10px 20px rgba(0,0,0,0.05)',
+                              borderColor: 'primary.main'
                             }
-                            alt={favorite.name}
-                          />
-                          <CardContent>
-                            <Typography variant="h6" component="div">
-                              {favorite.name}
-                            </Typography>
-                            <Typography variant='body2' color='text.secondary' noWrap>
-                              {favorite.location?.address}
-                            </Typography>
-                            <Box
-                              sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
-                            >
-                              <Rating
-                                value={Number(favorite.average_rating) || 0}
-                                readOnly
-                                size='small'
-                              />
-                              <Typography variant='body2'>
-                                {favorite.price_per_hour} ₽/час
+                          }}
+                        >
+                          <CardActionArea
+                            onClick={() => handleParkingClick(favorite)}
+                            sx={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}
+                          >
+                            <CardMedia
+                              component='img'
+                              height='160'
+                              image={
+                                favorite.img
+                                  ? `${import.meta.env.VITE_API_URL}/img/parking/${favorite.img}`
+                                  : 'parking-default.jpg'
+                              }
+                              alt={favorite.name}
+                              sx={{ bgcolor: 'grey.200' }}
+                            />
+                            <CardContent sx={{ flexGrow: 1, p: 2.5 }}>
+                              <Typography variant="h6" fontWeight={800} gutterBottom noWrap>
+                                {favorite.name}
                               </Typography>
-                            </Box>
-                            <IconButton
-                              sx={{
-                                position: 'absolute',
-                                top: 8,
-                                right: 8,
-                                color: 'red',
-                                bgcolor: 'rgba(255, 255, 255, 0.8)',
-                                padding: '4px',
-                                '&:hover': {
-                                  bgcolor: 'rgba(255, 255, 255, 0.9)',
-                                },
-                              }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleRemoveFromFavorites(favorite.id);
-                              }}
-                            >
-                              <CloseIcon />
-                            </IconButton>
-                          </CardContent>
-                        </CardActionArea>
-                      </Card>
+                              <Stack direction="row" spacing={1} alignItems="flex-start" sx={{ color: 'text.secondary', mb: 2, minHeight: 40 }}>
+                                <LocationOnIcon sx={{ fontSize: 18, mt: 0.3, color: 'primary.main' }} />
+                                <Typography variant='body2' sx={{
+                                  display: '-webkit-box',
+                                  WebkitLineClamp: 2,
+                                  WebkitBoxOrient: 'vertical',
+                                  overflow: 'hidden'
+                                }}>
+                                  {favorite.location?.address}
+                                </Typography>
+                              </Stack>
+
+                              <Divider sx={{ mb: 2, borderStyle: 'dashed' }} />
+
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                  <Rating
+                                    value={Number(favorite.average_rating) || 0}
+                                    readOnly
+                                    size='small'
+                                    precision={0.5}
+                                  />
+                                  <Typography variant="caption" fontWeight={700} sx={{ opacity: 0.7 }}>
+                                    {Number(favorite.average_rating || 0).toFixed(1)}
+                                  </Typography>
+                                </Box>
+                                <Typography variant='subtitle2' fontWeight={800} color="primary.main">
+                                  {favorite.price_per_hour} ₽/ч
+                                </Typography>
+                              </Box>
+                            </CardContent>
+                          </CardActionArea>
+                          <IconButton
+                            sx={{
+                              position: 'absolute',
+                              top: 12,
+                              right: 12,
+                              color: 'error.main',
+                              bgcolor: 'background.paper',
+                              boxShadow: 2,
+                              '&:hover': {
+                                bgcolor: 'error.main',
+                                color: 'white',
+                              },
+                              zIndex: 2
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoveFromFavorites(favorite.id);
+                            }}
+                            size="small"
+                          >
+                            <CloseIcon fontSize="small" />
+                          </IconButton>
+                        </Card>
+                      </Grid>
                     ))}
-                  </Box>
+                  </Grid>
                 )}
               </Box>
             )}

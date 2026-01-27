@@ -9,20 +9,18 @@ function Footer() {
       component="footer"
       display="flex"
       flexDirection={{ xs: "column", sm: "row" }}
+      mt={{ xs: "40px", sm: "80px" }}
       sx={{
         width: "100%",
         backgroundColor: (theme) => theme.palette.mode === 'dark' ? theme.palette.grey[900] : theme.palette.primary.main,
         color: (theme) => (theme.palette.mode === "dark" ? "#fff" : "#fff"),
-        position: "absolute",
-        bottom: 0,
-        left: 0,
-        right: 0,
+
       }}
     >
       <Container maxWidth="lg">
         <Box
           display="flex"
-          flexDirection= "row" 
+          flexDirection="row"
           justifyContent="center"
           alignItems="center"
           flexWrap="wrap"
@@ -31,7 +29,7 @@ function Footer() {
         >
           <Box
             display="flex"
-            flexDirection= "row" 
+            flexDirection="row"
             alignItems="center"
             gap={1}
           >
@@ -64,11 +62,11 @@ function Footer() {
             </IconButton>
             <Typography variant="body2">
               Павел Кулаков
-            </Typography>            
+            </Typography>
           </Box>
         </Box>
-      </Container>      
-              
+      </Container>
+
     </Box>
   );
 }

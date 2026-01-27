@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { 
-  Box, 
-  Container, 
-  Typography, 
-  Button, 
-  Grid, 
-  Paper, 
-  Tabs, 
+import {
+  Box,
+  Container,
+  Typography,
+  Button,
+  Grid,
+  Paper,
+  Tabs,
   Tab,
   useTheme,
   List,
@@ -28,9 +28,6 @@ import { StarBorder, Favorite } from '@mui/icons-material';
 
 import parkingImage from '../../assets/images/parking.png';
 import InteractivePark from "../../assets/images/InteractivePark.png";
-// import favoriteScreenshot from '../../assets/images/favorite-screenshot.png';
-// import reviewsScreenshot from '../../assets/images/reviews-screenshot.png';
-// import constructorScreenshot from '../../assets/images/constructor-screenshot.png';
 
 export const LandingPage = () => {
   const navigate = useNavigate();
@@ -48,31 +45,31 @@ export const LandingPage = () => {
     inDevelopment?: boolean;
     textColor?: string;
   }> = [
-    {
-      icon: <SearchIcon sx={{ fontSize: 40, color: "primary.main" }} />,
-      title: "Поиск парковок",
-      description: "Находите удобные парковки рядом с вашим местоположением",
-    },
+      {
+        icon: <SearchIcon sx={{ fontSize: 40, color: "primary.main" }} />,
+        title: "Поиск парковок",
+        description: "Находите удобные парковки рядом с вашим местоположением",
+      },
 
-    {
-      icon: <StarBorder sx={{ fontSize: 40, color: "primary.main" }} />,
-      title: "Отзывы и оценки",
-      description: "Делитесь своим опытом и читайте отзывы других водителей",
-    },
-    {
-      icon: <Favorite sx={{ fontSize: 40, color: "primary.main" }} />,
-      title: "Избранное",
-      description: "Сохрайте любимые парковки для быстрого доступа",
-    },
-    {
-      icon: <PaymentIcon sx={{ fontSize: 40, color: "white" }} />,
-      title: "Онлайн оплата",
-      description:
-        "Оплачивайте парковку через приложение без лишних хлопот",
-      inDevelopment: true,
-      textColor: theme.palette.mode === "dark" ? "white" : "black",
-    }
-  ];
+      {
+        icon: <StarBorder sx={{ fontSize: 40, color: "primary.main" }} />,
+        title: "Отзывы и оценки",
+        description: "Делитесь своим опытом и читайте отзывы других водителей",
+      },
+      {
+        icon: <Favorite sx={{ fontSize: 40, color: "primary.main" }} />,
+        title: "Избранное",
+        description: "Сохрайте любимые парковки для быстрого доступа",
+      },
+      {
+        icon: <PaymentIcon sx={{ fontSize: 40, color: "white" }} />,
+        title: "Онлайн оплата",
+        description:
+          "Оплачивайте парковку через приложение без лишних хлопот",
+        inDevelopment: true,
+        textColor: theme.palette.mode === "dark" ? "white" : "black",
+      }
+    ];
 
   const ownerFeatures: Array<{
     icon: React.ReactElement;
@@ -81,41 +78,41 @@ export const LandingPage = () => {
     inDevelopment?: boolean;
     textColor?: string;
   }> = [
-    {
-      icon: <BusinessIcon sx={{ fontSize: 40, color: 'primary.main' }} />,
-      title: 'Управление парковкой',
-      description: 'Добавляйте и редактируйте информацию о вашей парковке'
-    },
-    {
-      icon: <AssessmentIcon sx={{ fontSize: 40, color: 'primary.main' }} />,
-      title: 'Рейтинг и отзывы',
-      description: 'Отслеживайте рейтинг и читайте отзывы о вашей парковке'
-    },
-    {
-      icon: <EditLocationIcon sx={{ fontSize: 40, color: 'primary.main' }} />,
-      title: 'Настройка мест',
-      description: 'Управляйте схемой парковки и количеством мест'
-    },
-    {
-      icon: <AssessmentIcon sx={{ fontSize: 40, color: 'white' }} />,
-      title: 'Статистика',
-      description: 'Отслеживайте загруженность и доход',
-      inDevelopment: true
-    },
-    {
-      icon: <PaymentIcon sx={{ fontSize: 40, color: 'white' }} />,
-      title: 'Управление ценами',
-      description: 'Гибкая настройка тарифов',
-      inDevelopment: true
-    }
-  ];
+      {
+        icon: <BusinessIcon sx={{ fontSize: 40, color: 'primary.main' }} />,
+        title: 'Управление парковкой',
+        description: 'Добавляйте и редактируйте информацию о вашей парковке'
+      },
+      {
+        icon: <AssessmentIcon sx={{ fontSize: 40, color: 'primary.main' }} />,
+        title: 'Рейтинг и отзывы',
+        description: 'Отслеживайте рейтинг и читайте отзывы о вашей парковке'
+      },
+      {
+        icon: <EditLocationIcon sx={{ fontSize: 40, color: 'primary.main' }} />,
+        title: 'Настройка мест',
+        description: 'Управляйте схемой парковки и количеством мест'
+      },
+      {
+        icon: <AssessmentIcon sx={{ fontSize: 40, color: 'white' }} />,
+        title: 'Статистика',
+        description: 'Отслеживайте загруженность и доход',
+        inDevelopment: true
+      },
+      {
+        icon: <PaymentIcon sx={{ fontSize: 40, color: 'white' }} />,
+        title: 'Управление ценами',
+        description: 'Гибкая настройка тарифов',
+        inDevelopment: true
+      }
+    ];
 
   return (
     <Box>
       {/* Hero секция */}
       <Box
         sx={{
-          background: theme.palette.mode === 'dark' 
+          background: theme.palette.mode === 'dark'
             ? 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)'
             : 'linear-gradient(135deg, #1976d2 0%, #1565c0 50%, #0d47a1 100%)',
           color: "white",
@@ -137,8 +134,8 @@ export const LandingPage = () => {
         <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
           <Grid container spacing={4} alignItems="center">
             <Grid item xs={12} md={6}>
-              <Typography 
-                variant="h2" 
+              <Typography
+                variant="h2"
                 gutterBottom
                 sx={{
                   fontWeight: 700,
@@ -149,8 +146,8 @@ export const LandingPage = () => {
               >
                 ALLPARKINGS
               </Typography>
-              <Typography 
-                variant="h5" 
+              <Typography
+                variant="h5"
                 gutterBottom
                 sx={{
                   mb: 3,
@@ -210,9 +207,9 @@ export const LandingPage = () => {
 
       {/* Tabs для переключения между водителями и владельцами */}
       <Container maxWidth="lg" sx={{ mt: { xs: 6, md: 8 }, px: { xs: 2, md: 3 } }}>
-        <Typography 
-          variant="h3" 
-          textAlign="center" 
+        <Typography
+          variant="h3"
+          textAlign="center"
           gutterBottom
           sx={{
             fontWeight: 600,
@@ -226,7 +223,7 @@ export const LandingPage = () => {
           value={activeTab}
           onChange={handleTabChange}
           centered
-          sx={{ 
+          sx={{
             mb: 6,
             '& .MuiTab-root': {
               fontSize: { xs: '0.9rem', md: '1rem' },
@@ -271,8 +268,8 @@ export const LandingPage = () => {
                     </Box>
                     <Typography
                       variant="h6"
-                      sx={{ 
-                        mb: 2, 
+                      sx={{
+                        mb: 2,
                         color: feature.textColor,
                         fontWeight: 600,
                         fontSize: { xs: '1rem', md: '1.25rem' },
@@ -281,7 +278,7 @@ export const LandingPage = () => {
                       {feature.title}
                     </Typography>
                     <Typography
-                      sx={{ 
+                      sx={{
                         color: feature.textColor,
                         fontSize: { xs: '0.875rem', md: '1rem' },
                       }}
@@ -312,10 +309,10 @@ export const LandingPage = () => {
             </Grid>
 
             {/* Секция поиска машины */}
-            <Box 
-              sx={{ 
-                bgcolor: theme.palette.mode === 'dark' 
-                  ? "grey.900" 
+            <Box
+              sx={{
+                bgcolor: theme.palette.mode === 'dark'
+                  ? "grey.900"
                   : "linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)",
                 py: { xs: 6, md: 10 },
                 mt: { xs: 6, md: 10 },
@@ -326,8 +323,8 @@ export const LandingPage = () => {
               <Container maxWidth="lg">
                 <Grid container spacing={{ xs: 3, md: 6 }} alignItems="center">
                   <Grid item xs={12} md={6} order={{ xs: 2, md: 1 }}>
-                    <Typography 
-                      variant="h3" 
+                    <Typography
+                      variant="h3"
                       gutterBottom
                       sx={{
                         fontWeight: 700,
@@ -337,8 +334,8 @@ export const LandingPage = () => {
                     >
                       Никогда не теряйте свою машину
                     </Typography>
-                    <Typography 
-                      variant="body1" 
+                    <Typography
+                      variant="body1"
                       paragraph
                       sx={{
                         fontSize: { xs: '1rem', md: '1.1rem' },
@@ -354,8 +351,8 @@ export const LandingPage = () => {
                     <List sx={{ pl: { xs: 0, md: 2 } }}>
                       <ListItem sx={{ px: 0 }}>
                         <ListItemIcon>
-                          <DirectionsCarIcon 
-                            color="primary" 
+                          <DirectionsCarIcon
+                            color="primary"
                             sx={{ fontSize: { xs: 32, md: 40 } }}
                           />
                         </ListItemIcon>
@@ -369,7 +366,7 @@ export const LandingPage = () => {
                       </ListItem>
                       <ListItem sx={{ px: 0 }}>
                         <ListItemIcon>
-                          <MapIcon 
+                          <MapIcon
                             color="primary"
                             sx={{ fontSize: { xs: 32, md: 40 } }}
                           />
@@ -437,8 +434,8 @@ export const LandingPage = () => {
                     </Box>
                     <Typography
                       variant="h6"
-                      sx={{ 
-                        mb: 2, 
+                      sx={{
+                        mb: 2,
                         color: feature.textColor,
                         fontWeight: 600,
                         fontSize: { xs: '1rem', md: '1.25rem' },
@@ -447,7 +444,7 @@ export const LandingPage = () => {
                       {feature.title}
                     </Typography>
                     <Typography
-                      sx={{ 
+                      sx={{
                         color: feature.textColor,
                         fontSize: { xs: '0.875rem', md: '1rem' },
                       }}

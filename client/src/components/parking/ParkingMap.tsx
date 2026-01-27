@@ -17,7 +17,7 @@ export const ParkingMap = () => {
   const isInitializedRef = useRef(false);
   const [mapglAPI, setMapglAPI] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [, setParkings] = useState<Parking[]>([]);
+  const [parkings, setParkings] = useState<Parking[]>([]);
   const [selectedParking, setSelectedParking] = useState<Parking | null>(null);
 
   const location = useLocation();
@@ -149,16 +149,8 @@ export const ParkingMap = () => {
         mapInstanceRef.current = map;
         isInitializedRef.current = true;
 
-        // Создаем маркеры
+        // Создаем маркер пользователя
         createUserMarker(mapglAPI, map, userCoords);
-
-        data.forEach((parking: Parking) => {
-          const marker = new mapglAPI.Marker(map, {
-            coordinates: [parking.location.coordinates.lon, parking.location.coordinates.lat],
-          });
-          marker.on('click', () => handleMarkerClick(parking));
-          markersRef.current.push(marker);
-        });
 
         setIsLoading(false);
       } catch (error) {
@@ -182,6 +174,24 @@ export const ParkingMap = () => {
       }
     };
   }, []);
+
+  // Эффект для обновления маркеров при изменении списка парковок
+  useEffect(() => {
+    if (!isInitializedRef.current || !mapglAPI || !mapInstanceRef.current) return;
+
+    // Удаляем старые маркеры
+    markersRef.current.forEach(marker => marker.destroy());
+    markersRef.current = [];
+
+    // Создаем новые маркеры
+    parkings.forEach((parking: Parking) => {
+      const marker = new mapglAPI.Marker(mapInstanceRef.current, {
+        coordinates: [parking.location.coordinates.lon, parking.location.coordinates.lat],
+      });
+      marker.on('click', () => handleMarkerClick(parking));
+      markersRef.current.push(marker);
+    });
+  }, [parkings, mapglAPI]);
 
   const handleMarkerClick = (parking: Parking) => {
     setSelectedParking(parking);
@@ -208,6 +218,13 @@ export const ParkingMap = () => {
     }
   };
 
+  const handleParkingUpdate = (updatedParking: Parking) => {
+    setParkings(prev => prev.map(p => p.id === updatedParking.id ? updatedParking : p));
+    if (selectedParking?.id === updatedParking.id) {
+      setSelectedParking(updatedParking);
+    }
+  };
+
   return (
     <Container maxWidth={false}
       sx={{
@@ -221,7 +238,7 @@ export const ParkingMap = () => {
         elevation={4}
         sx={{
           p: { xs: 1.5, md: 3 },
-          mt: { xs: 2, md: 10 },
+          mt: { xs: 3, md: 10 },
           width: { xs: '100%', md: '1400px' },
           maxWidth: '100%',
           height: { xs: 'auto', md: '1000px' },
@@ -265,9 +282,8 @@ export const ParkingMap = () => {
           <Box
             ref={mapContainerRef}
             sx={{
-              height: { xs: '60vh', sm: '65vh', md: '70vh' },
+              height: { xs: '70vh', sm: '65vh', md: '70vh' },
               width: '100%',
-              minHeight: { xs: 400, md: 600 },
               borderRadius: 2,
               overflow: 'hidden',
               boxShadow: 2
@@ -279,6 +295,7 @@ export const ParkingMap = () => {
         parking={selectedParking}
         open={!!selectedParking}
         onClose={() => setSelectedParking(null)}
+        onParkingUpdate={handleParkingUpdate}
         onBuildRoute={async () => {
           if (selectedParking) {
             await handleBuildRoute(selectedParking);
