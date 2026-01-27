@@ -1,6 +1,14 @@
-import { PaletteMode } from "@mui/material";
+import { PaletteMode, ThemeOptions } from "@mui/material";
 
-export const getDesignTokens = (mode: PaletteMode) => ({
+declare module '@mui/material/styles' {
+  interface TypeBackground {
+    header?: string;
+    footer?: string;
+    pink?: string;
+  }
+}
+
+export const getDesignTokens = (mode: PaletteMode): ThemeOptions => ({
   typography: {
     fontFamily: ["Merriweather", "sans-serif"].join(","),
     h1: {
@@ -100,7 +108,7 @@ export const getDesignTokens = (mode: PaletteMode) => ({
         paper: "#1e1e1e",
         header: "#1e1e1e",
         footer: "#1e1e1e",
-        pink: "f748bd",
+        pink: "#f748bd",
       },
       text: {
         primary: '#fff',

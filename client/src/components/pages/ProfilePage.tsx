@@ -32,7 +32,7 @@ import {
 import { getFavorites, removeFromFavorites } from '../../redux/favoritesThunks';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { IconButton, InputAdornment } from '@mui/material';
-import { Tooltip } from '@mui/material';
+
 import InputMask from 'react-input-mask';
 import { Card, CardContent, CardMedia, Rating, Grid, List, ListItem, ListItemIcon, ListItemText, Paper, useMediaQuery } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
@@ -40,7 +40,6 @@ import SecurityIcon from '@mui/icons-material/Security';
 import HistoryIcon from '@mui/icons-material/History';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import SettingsIcon from '@mui/icons-material/Settings';
-import LogoutIcon from '@mui/icons-material/Logout';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import SaveIcon from '@mui/icons-material/Save';
 import CloseIcon from '@mui/icons-material/Close';
@@ -51,7 +50,6 @@ import {
 } from '../../redux/bookingThunks';
 import KeyIcon from '@mui/icons-material/Key';
 import DirectionsIcon from '@mui/icons-material/Directions';
-import InfoIcon from '@mui/icons-material/Info';
 import LightModeSharpIcon from '@mui/icons-material/LightModeSharp';
 import DarkModeSharpIcon from '@mui/icons-material/DarkModeSharp';
 import MapIcon from '@mui/icons-material/Map';
@@ -335,11 +333,6 @@ export default function ProfilePage() {
     { id: 'settings', label: 'Настройки', icon: <SettingsIcon /> },
   ];
 
-  const handleSignOut = () => {
-    // This should probably be handled by a prop or a separate dispatch
-    // For now, I'll just navigate, but in a real app, we'd dispatch logout
-    navigate('/');
-  };
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
