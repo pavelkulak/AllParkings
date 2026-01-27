@@ -579,10 +579,10 @@ export default function ParkingOwnerPage() {
           <TextField
             {...params}
             label="Выберите парковку"
-            sx={{ width: '', minWidth: 300 }}
+            sx={{ width: '100%' }}
           />
         )}
-        sx={{ width: '', minWidth: 300 }}
+        sx={{ width: { xs: '100%', sm: '400px' }, mb: 2 }}
       />
 
       {!selectedParking ? (

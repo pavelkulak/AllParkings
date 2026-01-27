@@ -12,7 +12,13 @@ import {
   MenuItem,
   Stack,
   IconButton,
+  Drawer,
+  List,
+  ListItemText,
+  ListItemButton,
+  Divider,
 } from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
 import logo from '../../img/logo.svg';
 import LogoutIcon from '@mui/icons-material/Logout';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -32,6 +38,10 @@ interface NavBarProps {
 
 export default function NavBar({ user, handleSignOut }: NavBarProps) {
   const navigate = useNavigate();
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const theme = useTheme();
+
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -40,8 +50,44 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
     setAnchorEl(null);
   };
 
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const theme = useTheme();
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
+
+  const navItems = [
+    { label: 'Карта парковок', path: '/parkings/map', icon: <MapIcon /> },
+    ...(user?.role === 'owner' || user?.role === 'admin'
+      ? [{ label: 'Создать парковку', path: '/create-parking', icon: <AddLocationIcon /> }]
+      : []),
+    { label: 'Чат', path: '/chat', icon: <ChatIcon /> }
+  ];
+
+  const drawer = (
+    <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center', p: 2 }}>
+      <Typography variant="h6" sx={{ my: 2, fontWeight: 'bold', color: 'primary.main' }}>
+        AllParkings
+      </Typography>
+      <Divider />
+      <List>
+        {navItems.map((item) => (
+          <ListItemButton
+            key={item.label}
+            onClick={() => navigate(item.path)}
+            sx={{ borderRadius: 2, mb: 1 }}
+          >
+            <ListItemIcon color="primary">{item.icon}</ListItemIcon>
+            <ListItemText primary={item.label} />
+          </ListItemButton>
+        ))}
+      </List>
+      {!user && (
+        <Stack spacing={1} sx={{ mt: 2 }}>
+          <Button fullWidth variant="outlined" onClick={() => navigate('/signin')}>Войти</Button>
+          <Button fullWidth variant="contained" onClick={() => navigate('/signup')}>Регистрация</Button>
+        </Stack>
+      )}
+    </Box>
+  );
 
   return (
     <AppBar position="static" sx={{
@@ -54,8 +100,18 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
             display: "flex",
             alignItems: "center",
             fontFamily: "Merriweather",
+            flexGrow: { xs: 1, sm: 0 }
           }}
         >
+          <IconButton
+            color="inherit"
+            aria-label="open drawer"
+            edge="start"
+            onClick={handleDrawerToggle}
+            sx={{ mr: 2, display: { sm: 'none' }, ml: 1 }}
+          >
+            <MenuIcon />
+          </IconButton>
           <Button
             component={Link}
             to="/"
@@ -327,11 +383,27 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
         <IconButton
           color="inherit"
           onClick={() => navigate("/chat")}
-          sx={{ mr: 2 }}
+          sx={{ mr: 2, display: { xs: 'none', sm: 'flex' } }}
         >
           <ChatIcon />
         </IconButton>
       </Toolbar>
+      <Box component="nav">
+        <Drawer
+          variant="temporary"
+          open={mobileOpen}
+          onClose={handleDrawerToggle}
+          ModalProps={{
+            keepMounted: true, // Better open performance on mobile.
+          }}
+          sx={{
+            display: { xs: 'block', sm: 'none' },
+            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 240 },
+          }}
+        >
+          {drawer}
+        </Drawer>
+      </Box>
     </AppBar>
   );
 }
