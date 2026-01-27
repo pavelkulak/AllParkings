@@ -26,7 +26,6 @@ export default function ParkingConstructorPreview({ parkingId }: ParkingConstruc
 
           throw new Error('Failed to fetch spaces');
         }
-
         const data = await response.json();
 
         setSpaces(data.ParkingSpaces || []);
