@@ -5,6 +5,7 @@ import NavBar from './NavBar';
 import Footer from "./Footer";
 import { Outlet } from 'react-router-dom';
 import { Box } from '@mui/material';
+import { NotificationHost } from '../NotificationHost';
 
 
 export default function Root() {
@@ -22,8 +23,8 @@ export default function Root() {
   };
 
   return (
-    <Box 
-      sx={{ 
+    <Box
+      sx={{
         minHeight: '100vh',
         display: 'flex',
         flexDirection: 'column',
@@ -31,9 +32,10 @@ export default function Root() {
         paddingBottom: '200px',
       }}
     >
+      <NotificationHost />
       <NavBar user={user} handleSignOut={handleSignOut} />
-      <Box 
-        sx={{ 
+      <Box
+        sx={{
           flex: 1,
           width: '100%',
         }}

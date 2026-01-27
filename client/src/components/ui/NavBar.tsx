@@ -44,7 +44,7 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
   const theme = useTheme();
 
   return (
-    <AppBar position="static" sx={{ 
+    <AppBar position="static" sx={{
       fontFamily: "Merriweather",
       bgcolor: (theme) => theme.palette.mode === 'dark' ? theme.palette.grey[900] : theme.palette.primary.main
     }}>
@@ -151,7 +151,7 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
                 src={
                   user.avatar
                     ? `${import.meta.env.VITE_TARGET}${user.avatar}`
-                    : user?.name.charAt(0).toUpperCase() || undefined
+                    : user.name.charAt(0).toUpperCase()
                 }
                 sx={{
                   mr: 2,
@@ -175,11 +175,12 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
                   vertical: "top",
                   horizontal: "left",
                 }}
-                sx={{ margin: 1.2,
+                sx={{
+                  margin: 1.2,
                   '& .MuiMenu-paper': {
                     marginLeft: '-10px'
                   }
-                 }}
+                }}
                 disableScrollLock
               >
                 <MenuItem
@@ -210,7 +211,7 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
                     src={
                       user.avatar
                         ? `${import.meta.env.VITE_TARGET}${user.avatar}`
-                        : user?.name.charAt(0).toUpperCase() || undefined
+                        : user.name.charAt(0).toUpperCase()
                     }
                     sx={{ width: 40, height: 40, mr: 3 }}
                   />
@@ -270,14 +271,12 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
                   </>
                 )}
 
-                {user && (
-                  <MenuItem onClick={handleSignOut} sx={{ color: "red" }}>
-                    <ListItemIcon sx={{ color: "red" }}>
-                      <LogoutIcon fontSize="small" />
-                    </ListItemIcon>
-                    Выход
-                  </MenuItem>
-                )}
+                <MenuItem onClick={handleSignOut} sx={{ color: "red" }}>
+                  <ListItemIcon sx={{ color: "red" }}>
+                    <LogoutIcon fontSize="small" />
+                  </ListItemIcon>
+                  Выход
+                </MenuItem>
               </Menu>
             </>
           ) : (

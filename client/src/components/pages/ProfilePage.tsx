@@ -6,16 +6,13 @@ import {
   Avatar,
   Button,
   TextField,
-  Switch,
   CircularProgress,
   Stack,
   CardActionArea,
   Dialog,
   DialogContent,
   DialogTitle,
-  Snackbar,
-  Alert,
-  LinearProgress,
+  Switch,
 } from '@mui/material';
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -29,9 +26,6 @@ import {
 import { getFavorites, removeFromFavorites } from '../../redux/favoritesThunks';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { IconButton, InputAdornment } from '@mui/material';
-import LightModeSharpIcon from '@mui/icons-material/LightModeSharp';
-import DarkModeSharpIcon from '@mui/icons-material/DarkModeSharp';
-import InfoIcon from '@mui/icons-material/Info';
 import { Tooltip } from '@mui/material';
 import InputMask from 'react-input-mask';
 import { Card, CardContent, CardMedia, Rating } from '@mui/material';
@@ -43,11 +37,16 @@ import {
 } from '../../redux/bookingThunks';
 import { Tabs, Tab } from '@mui/material';
 import DirectionsIcon from '@mui/icons-material/Directions';
+import InfoIcon from '@mui/icons-material/Info';
+import LightModeSharpIcon from '@mui/icons-material/LightModeSharp';
+import DarkModeSharpIcon from '@mui/icons-material/DarkModeSharp';
 import { ParkingSpacePreview } from '../parking/ParkingSpacePreview';
 import MapIcon from '@mui/icons-material/Map';
 import { useThemeContext } from '../theme/ThemeContext';
 import { useTheme } from '@mui/material/styles';
 import { Grid } from '@mui/material';
+
+import { showNotification } from '../../redux/slices/uiSlice';
 
 export default function ProfilePage() {
   const { user } = useAppSelector((state) => state.auth);
@@ -79,15 +78,6 @@ export default function ProfilePage() {
   const { mode, toggleTheme } = useThemeContext();
 
   const theme = useTheme();
-
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
-  const [progress, setProgress] = useState(100);
-
-  const handleCloseSnackbar = () => {
-    setOpenSnackbar(false);
-  };
 
   const handleDeleteAccount = () => {
     if (
@@ -157,47 +147,35 @@ export default function ProfilePage() {
     }))
       .unwrap()
       .then(() => {
-        setSnackbarMessage('Данные успешно обновлены');
-        setSnackbarSeverity('success');
-        setOpenSnackbar(true);
+        dispatch(showNotification({ message: 'Данные успешно обновлены', severity: 'success' }));
       })
       .catch((error) => {
-        setSnackbarMessage(error || 'Произошла ошибка при обновлении данных');
-        setSnackbarSeverity('error');
-        setOpenSnackbar(true);
+        dispatch(showNotification({ message: error || 'Произошла ошибка при обновлении данных', severity: 'error' }));
       });
   };
 
   const handleChangePassword = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     if (!currentPassword || !newPassword || !confirmPassword) {
-      setSnackbarMessage('Пожалуйста, заполните все поля');
-      setSnackbarSeverity('error');
-      setOpenSnackbar(true);
+      dispatch(showNotification({ message: 'Пожалуйста, заполните все поля', severity: 'error' }));
       return;
     }
 
     const passwordError = validatePassword(newPassword);
     if (passwordError) {
-      setSnackbarMessage(passwordError);
-      setSnackbarSeverity('error');
-      setOpenSnackbar(true);
+      dispatch(showNotification({ message: passwordError, severity: 'error' }));
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setSnackbarMessage('Новый пароль и подтверждение не совпадают');
-      setSnackbarSeverity('error');
-      setOpenSnackbar(true);
+      dispatch(showNotification({ message: 'Новый пароль и подтверждение не совпадают', severity: 'error' }));
       return;
     }
 
     dispatch(changePassword({ currentPassword, newPassword }))
       .unwrap()
       .then(() => {
-        setSnackbarMessage('Пароль успешно изменен');
-        setSnackbarSeverity('success');
-        setOpenSnackbar(true);
+        dispatch(showNotification({ message: 'Пароль успешно изменен', severity: 'success' }));
         setCurrentPassword('');
         setNewPassword('');
         setConfirmPassword('');
@@ -205,9 +183,7 @@ export default function ProfilePage() {
         setConfirmPasswordError('');
       })
       .catch((error) => {
-        setSnackbarMessage(error || 'Ошибка при изменении пароля');
-        setSnackbarSeverity('error');
-        setOpenSnackbar(true);
+        dispatch(showNotification({ message: error || 'Ошибка при изменении пароля', severity: 'error' }));
       });
   };
 
@@ -288,9 +264,11 @@ export default function ProfilePage() {
     if (window.confirm('Вы уверены, что хотите удалить аватар?')) {
       dispatch(deleteAvatar())
         .unwrap()
-        .then(() => {})
+        .then(() => {
+          dispatch(showNotification({ message: 'Аватар успешно удален', severity: 'success' }));
+        })
         .catch((error) => {
-          alert(error || 'Ошибка при удалении аватара');
+          dispatch(showNotification({ message: error || 'Ошибка при удалении аватара', severity: 'error' }));
         });
     }
   };
@@ -309,39 +287,18 @@ export default function ProfilePage() {
     navigate('/parkings/map', { state: { selectedParking: parking } });
   };
 
-  useEffect(() => {
-    if (openSnackbar) {
-      setProgress(100);
-      const timer = setInterval(() => {
-        setProgress((prevProgress) => {
-          if (prevProgress <= 0) {
-            clearInterval(timer);
-            return 0;
-          }
-          return prevProgress - (100 / 60);
-        });
-      }, 100);
 
-      return () => {
-        clearInterval(timer);
-      };
-    }
-  }, [openSnackbar]);
-    
+
   const [gridSize, setGridSize] = useState('medium');
 
   const handleCancelBooking = (bookingId: number) => {
     dispatch(cancelBooking(bookingId))
       .unwrap()
       .then(() => {
-        setSnackbarMessage('Бронирование успешно отменено');
-        setSnackbarSeverity('success');
-        setOpenSnackbar(true);
+        dispatch(showNotification({ message: 'Бронирование успешно отменено', severity: 'success' }));
       })
       .catch((error) => {
-        setSnackbarMessage(error.message || 'Произошла ошибка при отмене бронирования');
-        setSnackbarSeverity('error');
-        setOpenSnackbar(true);
+        dispatch(showNotification({ message: error.message || 'Произошла ошибка при отмене бронирования', severity: 'error' }));
       });
   };
 
@@ -349,14 +306,10 @@ export default function ProfilePage() {
     dispatch(removeFromFavorites(parkingId))
       .unwrap()
       .then(() => {
-        setSnackbarMessage('Парковка удалена из избранного');
-        setSnackbarSeverity('success');
-        setOpenSnackbar(true);
+        dispatch(showNotification({ message: 'Парковка удалена из избранного', severity: 'success' }));
       })
       .catch((error) => {
-        setSnackbarMessage(error.message || 'Произошла ошибка при удалении из избранного');
-        setSnackbarSeverity('error');
-        setOpenSnackbar(true);
+        dispatch(showNotification({ message: error.message || 'Произошла ошибка при удалении из избранного', severity: 'error' }));
       });
   };
 
@@ -370,7 +323,7 @@ export default function ProfilePage() {
       }}
     >
       <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2, gap: 2 }}>
-      <Button
+        <Button
           onClick={() => setActiveTab('history')}
           variant={activeTab === 'history' ? 'contained' : 'outlined'}
         >
@@ -382,7 +335,7 @@ export default function ProfilePage() {
         >
           Избранное
         </Button>
-        
+
         <Button
           onClick={() => setActiveTab('settings')}
           variant={activeTab === 'settings' ? 'contained' : 'outlined'}
@@ -951,8 +904,8 @@ export default function ProfilePage() {
                             {booking.ParkingSpace?.ParkingLot?.name || 'Неизвестно'}
                           </Typography>
                           <Stack direction="row" spacing={1}>
-                            <Button 
-                              variant="outlined" 
+                            <Button
+                              variant="outlined"
                               size="small"
                               startIcon={<MapIcon />}
                               onClick={() => {
@@ -962,9 +915,9 @@ export default function ProfilePage() {
                             >
                               Схема
                             </Button>
-                            <Button 
+                            <Button
                               variant="outlined"
-                              size="small" 
+                              size="small"
                               startIcon={<DirectionsIcon />}
                               onClick={() => {
                                 const parkingLot = booking.ParkingSpace?.ParkingLot;
@@ -975,7 +928,7 @@ export default function ProfilePage() {
                             >
                               Маршрут
                             </Button>
-                            <Button 
+                            <Button
                               variant="outlined"
                               size="small"
                               color="error"
@@ -988,9 +941,9 @@ export default function ProfilePage() {
 
                         <Grid container spacing={2}>
                           <Grid item xs={12} sm={6}>
-                            <Box sx={{ 
+                            <Box sx={{
                               bgcolor: theme.palette.mode === 'dark' ? "grey.800" : "grey.100",
-                              p: 2, 
+                              p: 2,
                               borderRadius: 1,
                               boxShadow: (theme) => theme.palette.mode === 'dark' ? 'none' : 1,
                               height: '100%'
@@ -1011,11 +964,11 @@ export default function ProfilePage() {
                               </Stack>
                             </Box>
                           </Grid>
-                          
+
                           <Grid item xs={12} sm={6}>
-                            <Box sx={{ 
+                            <Box sx={{
                               bgcolor: theme.palette.mode === 'dark' ? "grey.800" : "grey.100",
-                              p: 2, 
+                              p: 2,
                               borderRadius: 1,
                               boxShadow: (theme) => theme.palette.mode === 'dark' ? 'none' : 1,
                               height: '100%'
@@ -1080,8 +1033,8 @@ export default function ProfilePage() {
                             {booking.ParkingSpace?.ParkingLot?.name || 'Неизвестно'}
                           </Typography>
                           <Stack direction="row" spacing={1}>
-                            <Button 
-                              variant="outlined" 
+                            <Button
+                              variant="outlined"
                               size="small"
                               startIcon={<MapIcon />}
                               onClick={() => {
@@ -1091,9 +1044,9 @@ export default function ProfilePage() {
                             >
                               Схема
                             </Button>
-                            <Button 
+                            <Button
                               variant="outlined"
-                              size="small" 
+                              size="small"
                               startIcon={<DirectionsIcon />}
                               onClick={() => {
                                 const parkingLot = booking.ParkingSpace?.ParkingLot;
@@ -1104,7 +1057,7 @@ export default function ProfilePage() {
                             >
                               Маршрут
                             </Button>
-                            <Button 
+                            <Button
                               variant="outlined"
                               size="small"
                               color="error"
@@ -1117,9 +1070,9 @@ export default function ProfilePage() {
 
                         <Grid container spacing={2}>
                           <Grid item xs={12} sm={6}>
-                            <Box sx={{ 
+                            <Box sx={{
                               bgcolor: theme.palette.mode === 'dark' ? "grey.800" : "grey.100",
-                              p: 2, 
+                              p: 2,
                               borderRadius: 1,
                               boxShadow: (theme) => theme.palette.mode === 'dark' ? 'none' : 1,
                               height: '100%'
@@ -1140,11 +1093,11 @@ export default function ProfilePage() {
                               </Stack>
                             </Box>
                           </Grid>
-                          
+
                           <Grid item xs={12} sm={6}>
-                            <Box sx={{ 
+                            <Box sx={{
                               bgcolor: theme.palette.mode === 'dark' ? "grey.800" : "grey.100",
-                              p: 2, 
+                              p: 2,
                               borderRadius: 1,
                               boxShadow: (theme) => theme.palette.mode === 'dark' ? 'none' : 1,
                               height: '100%'
@@ -1202,27 +1155,22 @@ export default function ProfilePage() {
       </Box>
 
       {showParkingModal && selectedBooking?.ParkingSpace?.ParkingLot && (
-  console.log('Selected booking:', {
-    parkingId: selectedBooking.ParkingSpace.ParkingLot.id,
-    spaceId: selectedBooking.ParkingSpace.id,
-    booking: selectedBooking
-  }),
-  <Dialog 
-    open={showParkingModal} 
-    onClose={() => setShowParkingModal(false)}
-    maxWidth={false}
-    PaperProps={{
-      sx: {
-        width: (_theme) => ({
-          small: '700px',
-          medium: '900px',
-          large: '1100px'
-        })[gridSize],
-        maxWidth: '90vw',
-        maxHeight: '90vh'
-      }
-    }}
-  >
+        <Dialog
+          open={showParkingModal}
+          onClose={() => setShowParkingModal(false)}
+          maxWidth={false}
+          PaperProps={{
+            sx: {
+              width: (_theme) => ({
+                small: '700px',
+                medium: '900px',
+                large: '1100px'
+              })[gridSize],
+              maxWidth: '90vw',
+              maxHeight: '90vh'
+            }
+          }}
+        >
           <DialogTitle>
             Схема парковки
             <IconButton
@@ -1234,7 +1182,7 @@ export default function ProfilePage() {
             </IconButton>
           </DialogTitle>
           <DialogContent>
-            <ParkingSpacePreview 
+            <ParkingSpacePreview
               parkingId={Number(selectedBooking.ParkingSpace.ParkingLot.id)}
               highlightedSpaceId={Number(selectedBooking.space_id)}
               onGridSizeChange={setGridSize}
@@ -1243,47 +1191,7 @@ export default function ProfilePage() {
         </Dialog>
       )}
 
-      <Snackbar
-        open={openSnackbar}
-        autoHideDuration={6000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-        sx={{
-          mt: 7,
-        }}
-      >
-        <Box sx={{ position: 'relative' }}>
-          <Alert
-            onClose={handleCloseSnackbar}
-            severity={snackbarSeverity}
-            variant="filled"
-            sx={{
-              width: '100%',
-              borderRadius: 2,
-              '& .MuiAlert-message': {
-                minWidth: '200px',
-              },
-            }}
-          >
-            {snackbarMessage}
-            <LinearProgress
-              variant="determinate"
-              value={progress}
-              sx={{
-                position: 'absolute',
-                bottom: 0,
-                left: 0,
-                right: 0,
-                height: 2,
-                backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                '& .MuiLinearProgress-bar': {
-                  backgroundColor: 'rgba(255, 255, 255, 0.5)',
-                },
-              }}
-            />
-          </Alert>
-        </Box>
-      </Snackbar>
+
     </Box>
   );
 }

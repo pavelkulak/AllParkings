@@ -5,6 +5,7 @@ import favoritesReducer from './slices/favoritesSlice';
 import bookingReducer from './slices/bookingSlice';
 import adminReducer from './slices/adminSlice';
 import chatReducer from './slices/chatSlice';
+import uiReducer from './slices/uiSlice';
 
 export const store = configureStore({
   reducer: {
@@ -13,7 +14,8 @@ export const store = configureStore({
     favorites: favoritesReducer,
     booking: bookingReducer,
     admin: adminReducer,
-    chat: chatReducer
+    chat: chatReducer,
+    ui: uiReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

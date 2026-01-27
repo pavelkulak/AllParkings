@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { 
+import {
   Dialog,
   DialogTitle,
   DialogContent,
@@ -21,30 +21,29 @@ interface RowCreationDialogProps {
   currentSpacesCount: number;
 }
 
-export const RowCreationDialog = ({ 
-  open, 
-  onClose, 
-  onConfirm, 
+export const RowCreationDialog = ({
+  open,
+  onClose,
+  onConfirm,
   maxSpaces,
-  currentSpacesCount 
+  currentSpacesCount
 }: RowCreationDialogProps) => {
   const [count, setCount] = useState(5);
   const [orientation, setOrientation] = useState(0);
-  
+
   const remainingSpaces = maxSpaces - currentSpacesCount;
 
   const handleConfirm = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
-    console.log('RowCreationDialog: вызов onConfirm');
+
     await onConfirm(count, orientation);
-    
-    console.log('RowCreationDialog: сброс значений');
+
+
     setCount(5);
     setOrientation(0);
-    
-    console.log('RowCreationDialog: вызов onClose');
+
+
     onClose();
   };
 

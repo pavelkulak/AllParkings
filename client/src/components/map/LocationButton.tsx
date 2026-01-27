@@ -8,7 +8,7 @@ interface LocationButtonProps {
 
 export const LocationButton = ({ onLocationFound }: LocationButtonProps) => {
   const [loading, setLoading] = useState(false);
-  
+
   const watchId = useRef<number | null>(null);
 
   useEffect(() => {
@@ -21,8 +21,8 @@ export const LocationButton = ({ onLocationFound }: LocationButtonProps) => {
 
   const handleClick = () => {
     setLoading(true);
-    console.log('LocationButton: Начало запроса геолокации');
-    
+
+
     if ('geolocation' in navigator) {
       watchId.current = navigator.geolocation.watchPosition(
         (position) => {
@@ -30,10 +30,7 @@ export const LocationButton = ({ onLocationFound }: LocationButtonProps) => {
             position.coords.longitude,
             position.coords.latitude
           ];
-          console.log('LocationButton: Получены координаты:', {
-            raw: position.coords,
-            formatted: coords
-          });
+
           onLocationFound(coords);
           setLoading(false);
         },
@@ -55,7 +52,7 @@ export const LocationButton = ({ onLocationFound }: LocationButtonProps) => {
 
   return (
     <Tooltip title="Моё местоположение">
-      <IconButton 
+      <IconButton
         onClick={handleClick}
         disabled={loading}
         sx={{

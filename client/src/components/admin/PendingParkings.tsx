@@ -2,17 +2,18 @@
 import { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../../redux/hooks';
 import { getPendingParkings, updateParkingStatus } from '../../redux/adminThunks';
-import { 
-  Box, 
-  Card, 
-  CardContent, 
-  Button, 
+import {
+  Box,
+  Card,
+  CardContent,
+  Button,
   Typography,
   Dialog,
-  DialogContent, 
+  DialogContent,
 } from '@mui/material';
 import ParkingConstructorPreview from '../parking/ParkingConstructorPreview';
 import { ParkingLot } from '../../types/parking.types';
+import { showNotification } from '../../redux/slices/uiSlice';
 
 export default function PendingParkings() {
   const dispatch = useAppDispatch();
@@ -27,8 +28,10 @@ export default function PendingParkings() {
     try {
       await dispatch(updateParkingStatus({ parkingId, status: 'active' })).unwrap();
       dispatch(getPendingParkings());
+      dispatch(showNotification({ message: 'Парковка подтверждена', severity: 'success' }));
     } catch (error) {
       console.error('Ошибка при подтверждении парковки:', error);
+      dispatch(showNotification({ message: 'Ошибка при подтверждении парковки', severity: 'error' }));
     }
   };
 
@@ -36,8 +39,10 @@ export default function PendingParkings() {
     try {
       await dispatch(updateParkingStatus({ parkingId, status: 'inactive' })).unwrap();
       dispatch(getPendingParkings());
+      dispatch(showNotification({ message: 'Парковка отклонена', severity: 'info' }));
     } catch (error) {
       console.error('Ошибка при отклонении парковки:', error);
+      dispatch(showNotification({ message: 'Ошибка при отклонении парковки', severity: 'error' }));
     }
   };
 
@@ -60,8 +65,8 @@ export default function PendingParkings() {
         </Card>
       ))}
 
-      <Dialog 
-        open={!!selectedParking} 
+      <Dialog
+        open={!!selectedParking}
         onClose={() => setSelectedParking(null)}
         maxWidth="lg"
         fullWidth

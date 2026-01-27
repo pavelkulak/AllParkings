@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Draggable from 'react-draggable';
-import { 
+import {
   Box, Button, Paper, Typography, Stack, IconButton,
   TextField, Dialog, DialogTitle, DialogContent, DialogActions,
   FormControl, InputLabel, Select, MenuItem, useTheme
@@ -13,6 +13,7 @@ import { saveSpacesConfiguration } from '../../redux/parkingThunks';
 import AddIcon from '@mui/icons-material/Add';
 import CheckIcon from '@mui/icons-material/Check';
 import ClearIcon from '@mui/icons-material/Clear';
+import { showNotification } from '../../redux/slices/uiSlice';
 import { Entrance, GRID_SIZES } from '../constructor/ParkingConstructor';
 import { ConstructorParkingSpace } from '../../types/parking.types';
 import axiosInstance from '../../services/axiosInstance';
@@ -51,7 +52,7 @@ const ParkingSpotWrapper = styled.div`
   height: 80px;
 `;
 
-const ParkingSpot = styled(Paper)<{ rotation: number }>`
+const ParkingSpot = styled(Paper) <{ rotation: number }>`
   width: 100%;
   height: 100%;
   display: flex;
@@ -161,13 +162,13 @@ export default function ParkingEditor({ parkingId }: ParkingEditorProps) {
             location: string;
           };
         }
-        
+
         const response = await axiosInstance.get<ParkingDataResponse>(`/parking-lots/${parkingId}/spaces`);
-        
+
         if (response.data.gridSize) {
           setGridSize(response.data.gridSize);
         }
-        
+
         const parsedSpaces: ConstructorParkingSpace[] = (response.data.ParkingSpaces || []).map((space: any) => {
           const location = JSON.parse(space.location);
           return {
@@ -180,9 +181,9 @@ export default function ParkingEditor({ parkingId }: ParkingEditorProps) {
             height: 100 as const
           };
         });
-        
+
         setSpaces(parsedSpaces);
-        
+
         if (response.data.ParkingEntrance) {
           const entranceData = JSON.parse(response.data.ParkingEntrance.location);
           setEntrance({
@@ -217,23 +218,26 @@ export default function ParkingEditor({ parkingId }: ParkingEditorProps) {
   const handleEntranceDragStop = (x: number, y: number) => {
     const maxX = GRID_SIZES[gridSize].width - 40;
     const maxY = GRID_SIZES[gridSize].height - 40;
-    
+
     const newX = Math.min(Math.max(0, Math.round(x / 20) * 20), maxX);
     const newY = Math.min(Math.max(0, Math.round(y / 20) * 20), maxY);
-    
+
     setEntrance(prev => prev ? { ...prev, x: newX, y: newY } : null);
   };
 
   const handleAddSpace = () => {
     if (spaces.length >= GRID_SIZES[gridSize].maxSpaces) {
-      alert(`Максимальное количество мест для данного размера поля: ${GRID_SIZES[gridSize].maxSpaces}`);
+      dispatch(showNotification({
+        message: `Максимальное количество мест для данного размера поля: ${GRID_SIZES[gridSize].maxSpaces}`,
+        severity: 'warning'
+      }));
       return;
     }
-    
+
     // Вычисляем центр поля
     const centerX = Math.round((GRID_SIZES[gridSize].width - 40) / 2 / 20) * 20;
     const centerY = Math.round((GRID_SIZES[gridSize].height - 80) / 2 / 20) * 20;
-    
+
     const newSpace: ConstructorParkingSpace = {
       id: Date.now(),
       number: `P-${spaces.length + 1}`,
@@ -249,18 +253,18 @@ export default function ParkingEditor({ parkingId }: ParkingEditorProps) {
   const handleRotate = (id: number) => {
     const space = spaces.find(s => s.id === id);
     if (!space) return;
-  
+
     const newRotation = space.rotation === 90 ? 0 : 90;
-    
+
     // Проверяем, не выход��т ли место за граицы после поворота
     const maxX = GRID_SIZES[gridSize].width - (newRotation === 90 ? 80 : 40);
     const maxY = GRID_SIZES[gridSize].height - (newRotation === 90 ? 40 : 80);
-    
+
     const newX = Math.min(space.x, maxX);
     const newY = Math.min(space.y, maxY);
-  
-    setSpaces(spaces.map(s => 
-      s.id === id 
+
+    setSpaces(spaces.map(s =>
+      s.id === id
         ? { ...s, rotation: newRotation, x: newX, y: newY }
         : s
     ));
@@ -275,21 +279,17 @@ export default function ParkingEditor({ parkingId }: ParkingEditorProps) {
   };
 
   const handleDragStop = (id: number, x: number, y: number) => {
-    console.log('Drag stop - Initial position:', { x, y });
-    
+
     const space = spaces.find(s => s.id === id);
-    console.log('Found space:', space);
 
     const maxX = GRID_SIZES[gridSize].width - (space?.rotation === 90 ? 80 : 40);
     const maxY = GRID_SIZES[gridSize].height - (space?.rotation === 90 ? 40 : 80);
-    console.log('Bounds:', { maxX, maxY });
 
     const newX = Math.min(Math.max(0, Math.round(x / 20) * 20), maxX);
     const newY = Math.min(Math.max(0, Math.round(y / 20) * 20), maxY);
-    console.log('New position:', { newX, newY });
 
-    setSpaces(spaces.map(s => 
-      s.id === id 
+    setSpaces(spaces.map(s =>
+      s.id === id
         ? { ...s, x: newX, y: newY }
         : s
     ));
@@ -305,26 +305,25 @@ export default function ParkingEditor({ parkingId }: ParkingEditorProps) {
   const handleSaveSpace = (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentSpace) return;
-  
+
     const form = e.target as HTMLFormElement;
     const formData = new FormData(form);
-    
-    setSpaces(spaces.map(space => 
-      space.id === currentSpace.id 
-        ? { 
-            ...space, 
-            number: formData.get('number') as string,
-          }
+
+    setSpaces(spaces.map(space =>
+      space.id === currentSpace.id
+        ? {
+          ...space,
+          number: formData.get('number') as string,
+        }
         : space
     ));
-    
+
     setIsDialogOpen(false);
   };
 
   const handleSaveConfiguration = async () => {
     if (!parkingId || !entrance) return;
-    
-    console.log('Отправляем кофигурацию с gridSize:', gridSize);
+
     try {
       await dispatch(saveSpacesConfiguration({
         parkingId: parkingId.toString(),
@@ -332,11 +331,17 @@ export default function ParkingEditor({ parkingId }: ParkingEditorProps) {
         entrance,
         gridSize
       })).unwrap();
-      
-      alert('Конфигурация парковки успешно сохранена');
+
+      dispatch(showNotification({
+        message: 'Конфигурация парковки успешно сохранена',
+        severity: 'success'
+      }));
     } catch (error) {
       console.error('Ошибка при сохранении конфигурации:', error);
-      alert('Ошибка при сохранении конфигурации парковки');
+      dispatch(showNotification({
+        message: 'Ошибка при сохранении конфигурации парковки',
+        severity: 'error'
+      }));
     }
   };
 
@@ -350,12 +355,12 @@ export default function ParkingEditor({ parkingId }: ParkingEditorProps) {
       width: 60 as const,
       height: 100 as const
     }));
-    
+
     const position = {
       x: 20,
       y: 20
     };
-    
+
     setTemporaryRow({
       spaces: rowSpaces,
       position
@@ -365,23 +370,22 @@ export default function ParkingEditor({ parkingId }: ParkingEditorProps) {
 
   const handleConfirmRow = () => {
     if (!temporaryRow) return;
-    
+
     const finalSpaces = temporaryRow.spaces.map((space, index) => {
-      const offset = space.rotation === 90 
-        ? { x: 0, y: index * 60 } 
+      const offset = space.rotation === 90
+        ? { x: 0, y: index * 60 }
         : { x: index * 60, y: 0 };
-      
-      console.log('Расстояние между местами:', space.rotation === 90 ? offset.y : offset.x);
-      
+
+
       const newSpace = {
         ...space,
         x: temporaryRow.position.x + offset.x,
         y: temporaryRow.position.y + offset.y
       };
-      
+
       return newSpace;
     });
-    
+
     setSpaces(prevSpaces => [...prevSpaces, ...finalSpaces]);
     setTemporaryRow(null);
   };
@@ -391,8 +395,8 @@ export default function ParkingEditor({ parkingId }: ParkingEditorProps) {
   };
 
   return (
-    <Box 
-      sx={{ 
+    <Box
+      sx={{
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -403,10 +407,10 @@ export default function ParkingEditor({ parkingId }: ParkingEditorProps) {
       }}
     >
       <Box sx={{ width: '100%', maxWidth: 1200, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <Stack 
-          direction="row" 
-          spacing={2} 
-          mb={1} 
+        <Stack
+          direction="row"
+          spacing={2}
+          mb={1}
           sx={{
             width: '100%',
             justifyContent: 'center',
@@ -414,34 +418,34 @@ export default function ParkingEditor({ parkingId }: ParkingEditorProps) {
             gap: 2
           }}
         >
-          <Button 
-            variant="contained" 
+          <Button
+            variant="contained"
             onClick={handleAddSpace}
             startIcon={<AddIcon />}
             sx={{ minWidth: '140px', height: '36px' }}
           >
             Добавить место
           </Button>
-          <Button 
-            variant="contained" 
+          <Button
+            variant="contained"
             onClick={() => setIsRowDialogOpen(true)}
             startIcon={<AddIcon />}
             sx={{ minWidth: '140px', height: '36px' }}
           >
             Добавить ряд
           </Button>
-          <Button 
-            variant="contained" 
+          <Button
+            variant="contained"
             onClick={handleSaveConfiguration}
             sx={{ minWidth: '140px', height: '36px' }}
           >
             Сохранить конфигурацию
           </Button>
         </Stack>
-        
-        <ConstructorGrid 
-          sx={{ 
-            width: GRID_SIZES[gridSize].width, 
+
+        <ConstructorGrid
+          sx={{
+            width: GRID_SIZES[gridSize].width,
             height: GRID_SIZES[gridSize].height,
             transition: 'width 0.3s ease, height 0.3s ease',
             bgcolor: theme.palette.mode === 'dark' ? 'grey.400' : 'white'
@@ -478,7 +482,7 @@ export default function ParkingEditor({ parkingId }: ParkingEditorProps) {
               </Box>
             </Draggable>
           )}
-          
+
           {temporaryRow && (
             <Draggable
               grid={[20, 20]}
@@ -487,12 +491,12 @@ export default function ParkingEditor({ parkingId }: ParkingEditorProps) {
                 left: 0,
                 top: 0,
                 right: GRID_SIZES[gridSize].width - (
-                  temporaryRow.spaces[0].rotation === 90 
-                    ? 80 
+                  temporaryRow.spaces[0].rotation === 90
+                    ? 80
                     : temporaryRow.spaces.length * 60
                 ),
                 bottom: GRID_SIZES[gridSize].height - (
-                  temporaryRow.spaces[0].rotation === 90 
+                  temporaryRow.spaces[0].rotation === 90
                     ? temporaryRow.spaces.length * 60
                     : 80
                 )
@@ -508,10 +512,10 @@ export default function ParkingEditor({ parkingId }: ParkingEditorProps) {
             >
               <Box sx={{ position: 'absolute', cursor: 'move' }}>
                 {temporaryRow.spaces.map((space, index) => {
-                  const offset = space.rotation === 90 
+                  const offset = space.rotation === 90
                     ? { x: 0, y: index * 60 }
                     : { x: index * 60, y: 0 };
-                  
+
                   return (
                     <Box
                       key={space.id}
@@ -533,9 +537,9 @@ export default function ParkingEditor({ parkingId }: ParkingEditorProps) {
               </Box>
             </Draggable>
           )}
-          
+
           {spaces.map((space) => {
-            
+
             return (
               <Draggable
                 key={space.id}
@@ -556,7 +560,7 @@ export default function ParkingEditor({ parkingId }: ParkingEditorProps) {
                     elevation={3}
                     onClick={() => handleSpaceClick(space)}
                   >
-                    <IconButton 
+                    <IconButton
                       size="small"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -567,8 +571,8 @@ export default function ParkingEditor({ parkingId }: ParkingEditorProps) {
                       <DeleteIcon />
                     </IconButton>
                     <Typography>{space.number}</Typography>
-                    <IconButton 
-                      size="small" 
+                    <IconButton
+                      size="small"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleRotate(space.id);
@@ -585,17 +589,17 @@ export default function ParkingEditor({ parkingId }: ParkingEditorProps) {
 
         {temporaryRow && (
           <TemporaryRowControls direction="row" spacing={1}>
-            <Button 
-              variant="contained" 
-              color="success" 
+            <Button
+              variant="contained"
+              color="success"
               onClick={handleConfirmRow}
               startIcon={<CheckIcon />}
             >
               Подтвердить
             </Button>
-            <Button 
-              variant="contained" 
-              color="error" 
+            <Button
+              variant="contained"
+              color="error"
               onClick={handleCancelRow}
               startIcon={<ClearIcon />}
             >

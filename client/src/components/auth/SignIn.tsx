@@ -11,12 +11,11 @@ import {
   Stack,
   InputAdornment,
   IconButton,
-  Snackbar,
-  Alert,
   Paper,
 } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { showNotification } from "../../redux/slices/uiSlice";
 
 export default function SignIn() {
   const dispatch = useAppDispatch();
@@ -24,22 +23,18 @@ export default function SignIn() {
   const { status, error, user } = useAppSelector((state) => state.auth);
 
   const [showPassword, setShowPassword] = useState(false);
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
 
   useEffect(() => {
     if (user) {
       navigate('/');
+      return;
     }
-  }, [user, navigate]);
-
-  useEffect(() => {
     if (status === 'succeeded' && user) {
-      setSnackbar({ open: true, message: 'Успешный вход!', severity: 'success' });
-      setTimeout(() => navigate('/'), 1000);
+      dispatch(showNotification({ message: 'Успешный вход!', severity: 'success' }));
     } else if (status === 'failed' && error) {
-      setSnackbar({ open: true, message: error || 'Ошибка при входе', severity: 'error' });
+      dispatch(showNotification({ message: error || 'Ошибка при входе', severity: 'error' }));
     }
-  }, [status, error, user, navigate]);
+  }, [status, error, user, navigate, dispatch]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -132,7 +127,7 @@ export default function SignIn() {
                 fullWidth
                 variant="contained"
                 disabled={status === "loading"}
-                sx={{ 
+                sx={{
                   mt: 2,
                   py: 1.5,
                   borderRadius: 2,
@@ -150,8 +145,8 @@ export default function SignIn() {
             variant="text"
             component={Link}
             to="/signup"
-            sx={{ 
-              mt: 3, 
+            sx={{
+              mt: 3,
               color: "text.secondary",
               textTransform: 'none',
             }}
@@ -161,21 +156,6 @@ export default function SignIn() {
         </Box>
       </Paper>
 
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={4000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-      >
-        <Alert 
-          onClose={() => setSnackbar({ ...snackbar, open: false })} 
-          severity={snackbar.severity}
-          variant="filled"
-          sx={{ width: '100%' }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
     </Container>
   );
 }

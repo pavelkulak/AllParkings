@@ -15,10 +15,9 @@ import {
   Tooltip,
   IconButton,
   InputAdornment,
-  Snackbar,
-  Alert,
   Paper,
 } from "@mui/material";
+import { showNotification } from "../../redux/slices/uiSlice";
 import { Link, useNavigate } from "react-router-dom";
 import InfoIcon from '@mui/icons-material/Info';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
@@ -28,7 +27,7 @@ export default function SignUp() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { status, error, user } = useAppSelector((state) => state.auth);
-  
+
   const [surname, setSurname] = useState('');
   const [name, setName] = useState('');
   const [patronymic, setPatronymic] = useState('');
@@ -45,10 +44,9 @@ export default function SignUp() {
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
-  
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
 
   useEffect(() => {
     if (user) {
@@ -58,12 +56,11 @@ export default function SignUp() {
 
   useEffect(() => {
     if (status === 'succeeded' && user) {
-      setSnackbar({ open: true, message: 'Регистрация успешна! Добро пожаловать!', severity: 'success' });
-      setTimeout(() => navigate('/'), 1500);
+      dispatch(showNotification({ message: 'Регистрация успешна! Добро пожаловать!', severity: 'success' }));
     } else if (status === 'failed' && error) {
-      setSnackbar({ open: true, message: error || 'Ошибка при регистрации', severity: 'error' });
+      dispatch(showNotification({ message: error || 'Ошибка при регистрации', severity: 'error' }));
     }
-  }, [status, error, user, navigate]);
+  }, [status, error, user, navigate, dispatch]);
 
   const validateName = (value: string, fieldName: string) => {
     if (value && value.length < 2) {
@@ -139,8 +136,8 @@ export default function SignUp() {
 
     const cleanedPhone = phone.replace(/\D/g, '');
 
-    if (!cleanedPhone || phoneError || surnameError || nameError || patronymicError || 
-        emailError || passwordError || confirmPasswordError) {
+    if (!cleanedPhone || phoneError || surnameError || nameError || patronymicError ||
+      emailError || passwordError || confirmPasswordError) {
       return;
     }
 
@@ -193,226 +190,211 @@ export default function SignUp() {
             onSubmit={handleSubmit}
             sx={{ width: "100%" }}
           >
-          <Stack spacing={2}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <TextField
-                required
-                fullWidth
-                value={surname}
-                onChange={handleSurnameChange}
-                label="Фамилия"
-                error={!!surnameError}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Tooltip title="Фамилия должна содержать минимум 2 буквы и только буквы" arrow>
-                        <InfoIcon sx={{ fontSize: '20px', color: 'action.active', cursor: 'help' }} />
-                      </Tooltip>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Box>
+            <Stack spacing={2}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <TextField
+                  required
+                  fullWidth
+                  value={surname}
+                  onChange={handleSurnameChange}
+                  label="Фамилия"
+                  error={!!surnameError}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Tooltip title="Фамилия должна содержать минимум 2 буквы и только буквы" arrow>
+                          <InfoIcon sx={{ fontSize: '20px', color: 'action.active', cursor: 'help' }} />
+                        </Tooltip>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Box>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <TextField
-                required
-                fullWidth
-                value={name}
-                onChange={handleNameChange}
-                label="Имя"
-                error={!!nameError}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Tooltip title="Имя должно содержать минимум 2 буквы и только буквы" arrow>
-                        <InfoIcon sx={{ fontSize: '20px', color: 'action.active', cursor: 'help' }} />
-                      </Tooltip>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <TextField
+                  required
+                  fullWidth
+                  value={name}
+                  onChange={handleNameChange}
+                  label="Имя"
+                  error={!!nameError}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Tooltip title="Имя должно содержать минимум 2 буквы и только буквы" arrow>
+                          <InfoIcon sx={{ fontSize: '20px', color: 'action.active', cursor: 'help' }} />
+                        </Tooltip>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Box>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <TextField
-                fullWidth
-                value={patronymic}
-                onChange={handlePatronymicChange}
-                label="Отчество"
-                error={!!patronymicError}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Tooltip title="Отчество должно содержать только буквы" arrow>
-                        <InfoIcon sx={{ fontSize: '20px', color: 'action.active', cursor: 'help' }} />
-                      </Tooltip>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <TextField
+                  fullWidth
+                  value={patronymic}
+                  onChange={handlePatronymicChange}
+                  label="Отчество"
+                  error={!!patronymicError}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Tooltip title="Отчество должно содержать только буквы" arrow>
+                          <InfoIcon sx={{ fontSize: '20px', color: 'action.active', cursor: 'help' }} />
+                        </Tooltip>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Box>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <InputMask
-                mask="+7 999 999 99 99"
-                value={phone}
-                onChange={handlePhoneChange}
-                maskChar="_"
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <InputMask
+                  mask="+7 999 999 99 99"
+                  value={phone}
+                  onChange={handlePhoneChange}
+                  maskChar="_"
+                >
+                  {(inputProps) => (
+                    <TextField
+                      {...inputProps}
+                      required
+                      fullWidth
+                      label="Номер телефона"
+                      error={!!phoneError}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <Tooltip title="Введите полный номер телефона в формате +7 XXX XXX XX XX" arrow>
+                              <InfoIcon sx={{ fontSize: '20px', color: 'action.active', cursor: 'help' }} />
+                            </Tooltip>
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  )}
+                </InputMask>
+              </Box>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <TextField
+                  required
+                  fullWidth
+                  value={email}
+                  onChange={handleEmailChange}
+                  label="Email"
+                  type="email"
+                  error={!!emailError}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Tooltip title="Email должен быть в формате example@example.com" arrow>
+                          <InfoIcon sx={{ fontSize: '20px', color: 'action.active', cursor: 'help' }} />
+                        </Tooltip>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Box>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <TextField
+                  required
+                  fullWidth
+                  value={password}
+                  onChange={handlePasswordChange}
+                  label="Пароль"
+                  type={showPassword ? 'text' : 'password'}
+                  error={!!passwordError}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Tooltip title="Пароль должен содержать минимум 8 символов" arrow>
+                          <InfoIcon sx={{ fontSize: '20px', color: 'action.active', cursor: 'help' }} />
+                        </Tooltip>
+                      </InputAdornment>
+                    ),
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                          {showPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Box>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <TextField
+                  required
+                  fullWidth
+                  value={confirmPassword}
+                  onChange={handleConfirmPasswordChange}
+                  label="Подтвердите пароль"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  error={!!confirmPasswordError}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)} edge="end">
+                          {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Box>
+
+              <FormControl fullWidth required>
+                <InputLabel>Роль</InputLabel>
+                <Select
+                  value={role}
+                  label="Роль"
+                  onChange={(e) => setRole(e.target.value as 'user' | 'owner')}
+                >
+                  <MenuItem value="user">Водитель</MenuItem>
+                  <MenuItem value="owner">Владелец парковки</MenuItem>
+                </Select>
+              </FormControl>
+
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                disabled={status === "loading" || !!surnameError || !!nameError ||
+                  !!patronymicError || !!phoneError || !!emailError ||
+                  !!passwordError || !!confirmPasswordError}
+                sx={{
+                  mt: 2,
+                  py: 1.5,
+                  borderRadius: 2,
+                  fontSize: '1rem',
+                  fontWeight: 600,
+                  textTransform: 'none',
+                }}
               >
-                {(inputProps) => (
-                  <TextField
-                    {...inputProps}
-                    required
-                    fullWidth
-                    label="Номер телефона"
-                    error={!!phoneError}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Tooltip title="Введите полный номер телефона в формате +7 XXX XXX XX XX" arrow>
-                            <InfoIcon sx={{ fontSize: '20px', color: 'action.active', cursor: 'help' }} />
-                          </Tooltip>
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                )}
-              </InputMask>
-            </Box>
-
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <TextField
-                required
-                fullWidth
-                value={email}
-                onChange={handleEmailChange}
-                label="Email"
-                type="email"
-                error={!!emailError}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Tooltip title="Email должен быть в формате example@example.com" arrow>
-                        <InfoIcon sx={{ fontSize: '20px', color: 'action.active', cursor: 'help' }} />
-                      </Tooltip>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Box>
-
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <TextField
-                required
-                fullWidth
-                value={password}
-                onChange={handlePasswordChange}
-                label="Пароль"
-                type={showPassword ? 'text' : 'password'}
-                error={!!passwordError}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Tooltip title="Пароль должен содержать минимум 8 символов" arrow>
-                        <InfoIcon sx={{ fontSize: '20px', color: 'action.active', cursor: 'help' }} />
-                      </Tooltip>
-                    </InputAdornment>
-                  ),
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Box>
-
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <TextField
-                required
-                fullWidth
-                value={confirmPassword}
-                onChange={handleConfirmPasswordChange}
-                label="Подтвердите пароль"
-                type={showConfirmPassword ? 'text' : 'password'}
-                error={!!confirmPasswordError}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)} edge="end">
-                        {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Box>
-
-            <FormControl fullWidth required>
-              <InputLabel>Роль</InputLabel>
-              <Select
-                value={role}
-                label="Роль"
-                onChange={(e) => setRole(e.target.value as 'user' | 'owner')}
-              >
-                <MenuItem value="user">Водитель</MenuItem>
-                <MenuItem value="owner">Владелец парковки</MenuItem>
-              </Select>
-            </FormControl>
-
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              disabled={status === "loading" || !!surnameError || !!nameError || 
-                !!patronymicError || !!phoneError || !!emailError || 
-                !!passwordError || !!confirmPasswordError}
-              sx={{ 
-                mt: 2,
-                py: 1.5,
-                borderRadius: 2,
-                fontSize: '1rem',
-                fontWeight: 600,
-                textTransform: 'none',
-              }}
-            >
-              {status === "loading" ? "Загрузка..." : "Зарегистрироваться"}
-            </Button>
-          </Stack>
+                {status === "loading" ? "Загрузка..." : "Зарегистрироваться"}
+              </Button>
+            </Stack>
+          </Box>
+          <Button
+            variant="text"
+            component={Link}
+            to="/signin"
+            sx={{
+              mt: 3,
+              color: "text.secondary",
+              textTransform: 'none',
+            }}
+          >
+            Уже есть аккаунт? Войдите
+          </Button>
         </Box>
-        <Button
-          variant="text"
-          component={Link}
-          to="/signin"
-          sx={{ 
-            mt: 3, 
-            color: "text.secondary",
-            textTransform: 'none',
-          }}
-        >
-          Уже есть аккаунт? Войдите
-        </Button>
-      </Box>
       </Paper>
 
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={4000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-      >
-        <Alert 
-          onClose={() => setSnackbar({ ...snackbar, open: false })} 
-          severity={snackbar.severity}
-          variant="filled"
-          sx={{ width: '100%' }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
     </Container>
   );
 }

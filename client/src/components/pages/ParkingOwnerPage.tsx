@@ -12,9 +12,10 @@ import {
   Tabs,
   Chip,
   Grid,
-  Snackbar,
-  Alert,
+  // Snackbar, // Removed
+  // Alert, // Removed
 } from "@mui/material";
+import { showNotification } from "../../redux/slices/uiSlice";
 import { useEffect, useRef, useState } from "react";
 import Autocomplete from "@mui/material/Autocomplete";
 import { Link } from "react-router-dom";
@@ -42,14 +43,13 @@ export default function ParkingOwnerPage() {
   const user = useAppSelector((state) => state.auth.user);
 
   const dispatch = useAppDispatch();
-  const [, setError] = useState<string | null>(null);
   const [addressMethod, setAddressMethod] = useState<"input" | "map">("input");
   const [map, setMap] = useState<any>(null);
   const [marker, setMarker] = useState<any>(null);
   const [isReviewsModalOpen, setIsReviewsModalOpen] = useState(false);
   const [selectedParking, setSelectedParking] = useState<any>(null);
   const [parkings, setParkings] = useState<Parking[]>([]);
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
+  // const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' }); // Removed
 
   const fetchParkings = async () => {
     try {
@@ -90,7 +90,7 @@ export default function ParkingOwnerPage() {
     };
     price_per_hour: string;
   }>({
-    status:"",
+    status: "",
     name: "",
     description: "",
     location: {
@@ -100,7 +100,7 @@ export default function ParkingOwnerPage() {
         lon: null,
       },
     },
-    price_per_hour: ""   
+    price_per_hour: ""
   });
 
   useEffect(() => {
@@ -130,6 +130,7 @@ export default function ParkingOwnerPage() {
     if (!selectedParking) return;
 
     if (window.confirm("Вы уверены, что хотите удалить эту парковку?")) {
+      dispatch(showNotification({ message: 'Удаление парковки...', severity: 'info' }));
       try {
         await dispatch(deleteMyParkings({ id: selectedParking.id })).unwrap();
 
@@ -151,9 +152,10 @@ export default function ParkingOwnerPage() {
 
         // Обновляем список парковок и очищаем Autocomplete
         await dispatch(getMyParkings());
+        dispatch(showNotification({ message: 'Парковка успешно удалена', severity: 'success' }));
       } catch (error) {
         console.error("Ошибка при удалении парковки:", error);
-        setError("Ошибка при удалении парковки");
+        dispatch(showNotification({ message: 'Ошибка при удалении парковки', severity: 'error' }));
       }
     }
   };
@@ -179,10 +181,11 @@ export default function ParkingOwnerPage() {
               lon: option.parking.location?.coordinates?.lon || null,
             },
           },
-          price_per_hour: option.parking.price_per_hour?.toString() || ""
+          price_per_hour: option.parking.price_per_hour?.toString() || "" // Added missing line
         });
+        // ... rest of logic
       } else {
-        alert('У вас нет доступа к этой парковке');
+        dispatch(showNotification({ message: 'У вас нет доступа к этой парковке', severity: 'error' }));
         setSelectedParking(null);
       }
     } else {
@@ -206,12 +209,12 @@ export default function ParkingOwnerPage() {
   // Обработчик клика по кнопке просмотра отзывов
   const handleReviewsClick = () => {
     if (!selectedParking) return;
-    
+
     // Проверяем права доступа перед открытием модального окна
     if (user?.role === 'admin' || selectedParking.owner_id === user?.id) {
       setIsReviewsModalOpen(true);
     } else {
-      alert('У вас нет доступа к отзывам этой парковки');
+      dispatch(showNotification({ message: 'У вас нет доступа к отзывам этой парковки', severity: 'error' }));
     }
   };
 
@@ -223,7 +226,7 @@ export default function ParkingOwnerPage() {
 
     try {
       setIsSaving(true);
-      
+
       const updateData = {
         id: selectedParking.id.toString(),
         name: parkingData.name,
@@ -241,10 +244,10 @@ export default function ParkingOwnerPage() {
       await dispatch(updateMyParkings(updateData)).unwrap();
 
       await new Promise((resolve) => setTimeout(resolve, 3000));
-      
-        // Обновляем список парковок
-        await dispatch(getMyParkings());
-      
+
+      // Обновляем список парковок
+      await dispatch(getMyParkings());
+
       // Находим обновленную парковку
       const updatedParking = parkings.find(p => p.id === selectedParking.id);
       if (updatedParking) {
@@ -264,12 +267,11 @@ export default function ParkingOwnerPage() {
           price_per_hour: updatedParking.price_per_hour?.toString() || ""
         });
       }
-      setSnackbar({ open: true, message: 'Изменения успешно сохранены!', severity: 'success' });
+      dispatch(showNotification({ message: 'Изменения успешно сохранены!', severity: 'success' }));
     } catch (error: any) {
       console.error("Ошибка при сохранении изменений:", error);
       const message = error?.response?.data?.message || "Ошибка при сохранении изменений";
-      setError(message);
-      setSnackbar({ open: true, message, severity: 'error' });
+      dispatch(showNotification({ message, severity: 'error' }));
     } finally {
       setIsSaving(false);
     }
@@ -421,8 +423,7 @@ export default function ParkingOwnerPage() {
 
         try {
           const response = await fetch(
-            `https://catalog.api.2gis.com/3.0/items/geocode?lat=${
-              coordinates[1]
+            `https://catalog.api.2gis.com/3.0/items/geocode?lat=${coordinates[1]
             }&lon=${coordinates[0]}&key=${import.meta.env.VITE_2GIS_API_KEY}`
           );
           const data = await response.json();
@@ -464,27 +465,26 @@ export default function ParkingOwnerPage() {
 
   const handleAddressInput = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
-    console.log("Input value:", value);
+
     handleChange(e);
 
     if (value.length < 3) {
-      console.log("Input too short, clearing suggestions");
+
       setAddressSuggestions([]);
       return;
     }
 
     try {
       const url = `https://catalog.api.2gis.com/3.0/items/geocode?q=${encodeURIComponent(value)}&fields=items.point,items.full_name&key=${import.meta.env.VITE_2GIS_API_KEY}`;
-      console.log("Fetching suggestions from:", url);
+
 
       const response = await fetch(url);
-      console.log("Response status:", response.status);
+
 
       const data = await response.json();
-      console.log("API Response:", data);
+
 
       if (!data.result || !data.result.items) {
-        console.log("No items in response");
         return;
       }
 
@@ -496,7 +496,6 @@ export default function ParkingOwnerPage() {
           coordinates: [item.point.lon, item.point.lat],
         }));
 
-      console.log("Processed suggestions:", suggestions);
       setAddressSuggestions(suggestions);
     } catch (error) {
       console.error("Error fetching suggestions:", error);
@@ -506,7 +505,6 @@ export default function ParkingOwnerPage() {
   const handleSuggestionSelect = (
     suggestion: (typeof addressSuggestions)[0]
   ) => {
-    console.log("Selected suggestion:", suggestion);
     setParkingData((prev) => ({
       ...prev,
       location: {
@@ -520,7 +518,6 @@ export default function ParkingOwnerPage() {
     setAddressSuggestions([]);
 
     if (map && marker) {
-      console.log("Moving marker to:", suggestion.coordinates);
       marker.setCoordinates(suggestion.coordinates);
     }
   };
@@ -579,8 +576,8 @@ export default function ParkingOwnerPage() {
         } : null}
         onChange={handleParkingChange}
         renderInput={(params) => (
-          <TextField 
-            {...params} 
+          <TextField
+            {...params}
             label="Выберите парковку"
             sx={{ width: '', minWidth: 300 }}
           />
@@ -603,7 +600,7 @@ export default function ParkingOwnerPage() {
           <Grid container spacing={{ xs: 2, md: 4 }}>
             <Grid item xs={12} md={7}>
               {selectedParking && (
-                <ParkingEditor 
+                <ParkingEditor
                   parkingId={selectedParking.id}
                 />
               )}
@@ -620,286 +617,272 @@ export default function ParkingOwnerPage() {
                   gap: 2,
                 }}
               >
-            <Stack direction="row" spacing={2} alignItems="center">
-              <Typography variant="body2">Статус:</Typography>
-              <Chip
-                label={getStatusInfo(parkingData.status).label}
-                color={getStatusInfo(parkingData.status).color}
-                size="small"
-              />
-            </Stack>
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <Typography variant="body2">Статус:</Typography>
+                  <Chip
+                    label={getStatusInfo(parkingData.status).label}
+                    color={getStatusInfo(parkingData.status).color}
+                    size="small"
+                  />
+                </Stack>
 
-            <TextField
-              size="small"
-              required
-              fullWidth
-              name="name"
-              label="Название парковки"
-              value={parkingData.name}
-              onChange={handleChange}
-              autoFocus
-            />
-
-            <TextField
-              size="small"
-              fullWidth
-              multiline
-              rows={4}
-              name="description"
-              label="Описание парковки"
-              value={parkingData.description}
-              onChange={handleChange}
-              helperText="Укажите особенности парковки, режим работы и другую полезную информацию"
-            />
-
-            <Box
-              sx={{
-                width: "100%",
-                display: "flex",
-                justifyContent: "flex-start",
-              }}
-            >
-              <Tabs
-                value={addressMethod}
-                onChange={(_, value) => setAddressMethod(value)}
-                sx={{
-                  mb: 2,
-                  "& .MuiTabs-flexContainer": {
-                    justifyContent: "flex-start",
-                  },
-                }}
-              >
-                <Tab value="input" label="Ввести адрес" />
-                <Tab value="map" label="Выбрать на карте" />
-              </Tabs>
-            </Box>
-
-            {addressMethod === "map" ? (
-              <Box sx={{ position: "relative", width: "100%" }}>
-                {isLoading && (
-                  <Box
-                    sx={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      backgroundColor: "rgba(255, 255, 255, 0.8)",
-                      zIndex: 2,
-                    }}
-                  >
-                    <CircularProgress />
-                  </Box>
-                )}
-                <Box
-                  ref={mapContainerRef}
-                  sx={{ 
-                    height: { xs: 250, md: 350 }, 
-                    width: "100%", 
-                    mb: 1,
-                    borderRadius: 2,
-                    overflow: 'hidden',
-                  }}
-                />
-                <LocationButton
-                  onLocationFound={(coords) => {
-                    if (!map || !mapglAPI) return;
-                    createUserMarker(mapglAPI, map, coords);
-                  }}
-                />
-                <TextField
-                  size="small"
-                  fullWidth
-                  label="Выбранный адрес"
-                  value={parkingData.location.address}
-                  disabled
-                />
-              </Box>
-            ) : (
-              <Box sx={{ position: "relative", width: "100%" }}>
                 <TextField
                   size="small"
                   required
                   fullWidth
-                  name="address"
-                  label="Адрес парковки"
-                  value={parkingData.location.address}
-                  onChange={handleAddressInput}
-                  autoComplete="off"
+                  name="name"
+                  label="Название парковки"
+                  value={parkingData.name}
+                  onChange={handleChange}
+                  autoFocus
                 />
-                {addressSuggestions.length > 0 && (
-                  <Paper
+
+                <TextField
+                  size="small"
+                  fullWidth
+                  multiline
+                  rows={4}
+                  name="description"
+                  label="Описание парковки"
+                  value={parkingData.description}
+                  onChange={handleChange}
+                  helperText="Укажите особенности парковки, режим работы и другую полезную информацию"
+                />
+
+                <Box
+                  sx={{
+                    width: "100%",
+                    display: "flex",
+                    justifyContent: "flex-start",
+                  }}
+                >
+                  <Tabs
+                    value={addressMethod}
+                    onChange={(_, value) => setAddressMethod(value)}
                     sx={{
-                      position: "absolute",
-                      width: "100%",
-                      maxHeight: 200,
-                      overflow: "auto",
-                      zIndex: 1000,
-                      mt: 1,
+                      mb: 2,
+                      "& .MuiTabs-flexContainer": {
+                        justifyContent: "flex-start",
+                      },
                     }}
                   >
-                    {addressSuggestions.map((suggestion, index) => (
+                    <Tab value="input" label="Ввести адрес" />
+                    <Tab value="map" label="Выбрать на карте" />
+                  </Tabs>
+                </Box>
+
+                {addressMethod === "map" ? (
+                  <Box sx={{ position: "relative", width: "100%" }}>
+                    {isLoading && (
                       <Box
-                        key={index}
                         sx={{
-                          p: 1,
-                          cursor: "pointer",
-                          "&:hover": { bgcolor: "action.hover" },
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          backgroundColor: "rgba(255, 255, 255, 0.8)",
+                          zIndex: 2,
                         }}
-                        onClick={() => handleSuggestionSelect(suggestion)}
                       >
-                        <Typography variant="body2">
-                          {suggestion.full_name}
-                        </Typography>
+                        <CircularProgress />
                       </Box>
-                    ))}
-                  </Paper>
+                    )}
+                    <Box
+                      ref={mapContainerRef}
+                      sx={{
+                        height: { xs: 250, md: 350 },
+                        width: "100%",
+                        mb: 1,
+                        borderRadius: 2,
+                        overflow: 'hidden',
+                      }}
+                    />
+                    <LocationButton
+                      onLocationFound={(coords) => {
+                        if (!map || !mapglAPI) return;
+                        createUserMarker(mapglAPI, map, coords);
+                      }}
+                    />
+                    <TextField
+                      size="small"
+                      fullWidth
+                      label="Выбранный адрес"
+                      value={parkingData.location.address}
+                      disabled
+                    />
+                  </Box>
+                ) : (
+                  <Box sx={{ position: "relative", width: "100%" }}>
+                    <TextField
+                      size="small"
+                      required
+                      fullWidth
+                      name="address"
+                      label="Адрес парковки"
+                      value={parkingData.location.address}
+                      onChange={handleAddressInput}
+                      autoComplete="off"
+                    />
+                    {addressSuggestions.length > 0 && (
+                      <Paper
+                        sx={{
+                          position: "absolute",
+                          width: "100%",
+                          maxHeight: 200,
+                          overflow: "auto",
+                          zIndex: 1000,
+                          mt: 1,
+                        }}
+                      >
+                        {addressSuggestions.map((suggestion, index) => (
+                          <Box
+                            key={index}
+                            sx={{
+                              p: 1,
+                              cursor: "pointer",
+                              "&:hover": { bgcolor: "action.hover" },
+                            }}
+                            onClick={() => handleSuggestionSelect(suggestion)}
+                          >
+                            <Typography variant="body2">
+                              {suggestion.full_name}
+                            </Typography>
+                          </Box>
+                        ))}
+                      </Paper>
+                    )}
+                  </Box>
                 )}
-              </Box>
-            )}
 
-            <Box sx={{ width: '100%', mb: 2 }}>
-              <FileUploader
-                files={files}
-                onFilesChange={handleFilesChange}
-                maxFiles={1}
-                acceptedFileTypes={["image/jpeg", "image/png"]}
-                maxFileSize={5 * 1024 * 1024}
-              >
-                <Box sx={{
-                  border: "2px dashed #ccc",
-                  borderRadius: 2,
-                  p: 3,
-                  alignContent: "center",
-                  cursor: "pointer",
-                  "&:hover": {
-                    borderColor: "primary.main",
-                    bgcolor: "rgba(0, 0, 0, 0.04)",
-                  },
-                  display: "flex",
-                  alignItems: "center",
-                  flexDirection: "column",
-                }}>
-                  <CloudUploadIcon sx={{ fontSize: 36, color: "text.secondary" }} />
-                  <Typography variant="body2" sx={{ mt: 1 }}>
-                    Перетащите фотографию сюда или кликните для выбора
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Поддерживаются JPG, PNG. Максимальный размер файла: 5MB
-                  </Typography>
+                <Box sx={{ width: '100%', mb: 2 }}>
+                  <FileUploader
+                    files={files}
+                    onFilesChange={handleFilesChange}
+                    maxFiles={1}
+                    acceptedFileTypes={["image/jpeg", "image/png"]}
+                    maxFileSize={5 * 1024 * 1024}
+                  >
+                    <Box sx={{
+                      border: "2px dashed #ccc",
+                      borderRadius: 2,
+                      p: 3,
+                      alignContent: "center",
+                      cursor: "pointer",
+                      "&:hover": {
+                        borderColor: "primary.main",
+                        bgcolor: "rgba(0, 0, 0, 0.04)",
+                      },
+                      display: "flex",
+                      alignItems: "center",
+                      flexDirection: "column",
+                    }}>
+                      <CloudUploadIcon sx={{ fontSize: 36, color: "text.secondary" }} />
+                      <Typography variant="body2" sx={{ mt: 1 }}>
+                        Перетащите фотографию сюда или кликните для выбора
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Поддерживаются JPG, PNG. Максимальный размер файла: 5MB
+                      </Typography>
+                    </Box>
+                  </FileUploader>
+
+                  {(selectedParking?.img || files.length > 0) && (
+                    <Box sx={{ mt: 2 }}>
+                      <Box
+                        component="img"
+                        src={files.length > 0
+                          ? URL.createObjectURL(files[0])
+                          : `${import.meta.env.VITE_API_URL}/img/parking/${selectedParking.img}`
+                        }
+                        alt={parkingData.name}
+                        sx={{
+                          width: '100%',
+                          height: 200,
+                          objectFit: "cover",
+                          borderRadius: 1,
+                        }}
+                      />
+                    </Box>
+                  )}
                 </Box>
-              </FileUploader>
 
-              {(selectedParking?.img || files.length > 0) && (
-                <Box sx={{ mt: 2 }}>
-                  <Box
-                    component="img"
-                    src={files.length > 0 
-                      ? URL.createObjectURL(files[0])
-                      : `${import.meta.env.VITE_API_URL}/img/parking/${selectedParking.img}`
-                    }
-                    alt={parkingData.name}
-                    sx={{
-                      width: '100%',
-                      height: 200,
-                      objectFit: "cover",
-                      borderRadius: 1,
-                    }}
-                  />
-                </Box>
-              )}
-            </Box>
+                <TextField
+                  size="small"
+                  required
+                  fullWidth
+                  name="price_per_hour"
+                  label="Цена за час (руб)"
+                  type="number"
+                  value={parkingData.price_per_hour}
+                  onChange={handleChange}
+                  inputProps={{ min: 0 }}
+                />
 
-            <TextField
-              size="small"
-              required
-              fullWidth
-              name="price_per_hour"
-              label="Цена за час (руб)"
-              type="number"
-              value={parkingData.price_per_hour}
-              onChange={handleChange}
-              inputProps={{ min: 0 }}
-            />
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  onClick={handleReviewsClick}
+                  disabled={!selectedParking}
+                  sx={{ mt: 2 }}
+                >
+                  Посмотреть отзывы
+                </Button>
 
-            <Button
-              fullWidth
-              variant="outlined"
-              onClick={handleReviewsClick}
-              disabled={!selectedParking}
-              sx={{ mt: 2 }}
-            >
-              Посмотреть отзывы
-            </Button>
-
-            <Button
-              fullWidth
-              variant="outlined"
-              size="small"
-              component={Link}
-              to="/errorpage"
-            >
-              Статистика
-            </Button>
-            <Button
-              fullWidth
-              variant="contained"
-              onClick={handleSaveChanges}
-              disabled={isSaving}
-              sx={{
-                py: 1.5,
-                borderRadius: 2,
-                fontWeight: 600,
-                textTransform: 'none',
-              }}
-            >
-              {isSaving ? (
-                <>
-                  <CircularProgress size={24} sx={{ mr: 1 }} />
-                  Сохранение...
-                </>
-              ) : (
-                "Сохранить изменения"
-              )}
-            </Button>
-            <Button
-              fullWidth
-              variant="contained"
-              size="medium"
-              color="error"
-              onClick={handleDeleteClick}
-              sx={{
-                borderRadius: 2,
-                fontWeight: 600,
-                textTransform: 'none',
-              }}
-            >
-              Удалить
-            </Button>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  size="small"
+                  component={Link}
+                  to="/errorpage"
+                >
+                  Статистика
+                </Button>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  onClick={handleSaveChanges}
+                  disabled={isSaving}
+                  sx={{
+                    py: 1.5,
+                    borderRadius: 2,
+                    fontWeight: 600,
+                    textTransform: 'none',
+                  }}
+                >
+                  {isSaving ? (
+                    <>
+                      <CircularProgress size={24} sx={{ mr: 1 }} />
+                      Сохранение...
+                    </>
+                  ) : (
+                    "Сохранить изменения"
+                  )}
+                </Button>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  size="medium"
+                  color="error"
+                  onClick={handleDeleteClick}
+                  sx={{
+                    borderRadius: 2,
+                    fontWeight: 600,
+                    textTransform: 'none',
+                  }}
+                >
+                  Удалить
+                </Button>
               </Paper>
             </Grid>
           </Grid>
         </Container>
       )}
 
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={4000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-      >
-        <Alert 
-          onClose={() => setSnackbar({ ...snackbar, open: false })} 
-          severity={snackbar.severity}
-          variant="filled"
-          sx={{ width: '100%' }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+      {/* Removed Snackbar component */}
 
       <ReviewsModal
         open={isReviewsModalOpen}

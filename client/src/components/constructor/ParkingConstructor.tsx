@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import Draggable from 'react-draggable';
-import { 
-  Box, 
-  Button, 
-  Paper, 
+import {
+  Box,
+  Button,
+  Paper,
   Typography,
   Stack,
   IconButton,
@@ -27,17 +27,18 @@ import { saveSpacesConfiguration } from '../../redux/parkingThunks';
 import AddIcon from '@mui/icons-material/Add';
 import CheckIcon from '@mui/icons-material/Check';
 import ClearIcon from '@mui/icons-material/Clear';
-import { 
-  Entrance, 
-  ConstructorParkingSpace, 
-  GRID_SIZES 
+import { showNotification } from '../../redux/slices/uiSlice';
+import {
+  Entrance,
+  ConstructorParkingSpace,
+  GRID_SIZES
 } from '../../types/parking.types';
 
 // Экспортируем для обратной совместимости
 export type { Entrance, ConstructorParkingSpace as ParkingSpace };
 export { GRID_SIZES };
 
-  export const ConstructorGrid = styled(Box)`
+export const ConstructorGrid = styled(Box)`
   border: 1px solid #ccc;
   position: relative;
   background-size: 20px 20px;
@@ -58,7 +59,7 @@ const ParkingSpotWrapper = styled.div`
   height: 80px;
 `;
 
-const ParkingSpot = styled(Paper)<{ rotation: number }>`
+const ParkingSpot = styled(Paper) <{ rotation: number }>`
   width: 100%;
   height: 100%;
   display: flex;
@@ -88,11 +89,11 @@ interface RowDialogData {
   orientation: 'horizontal' | 'vertical';
 }
 
-const AddRowDialog = ({ 
-  open, 
-  onClose, 
-  onConfirm 
-}: { 
+const AddRowDialog = ({
+  open,
+  onClose,
+  onConfirm
+}: {
   open: boolean;
   onClose: () => void;
   onConfirm: (data: RowDialogData) => void;
@@ -168,7 +169,7 @@ export default function ParkingConstructor() {
   useEffect(() => {
     const centerX = Math.round((GRID_SIZES[gridSize].width - 40) / 2 / 20) * 20;
     const centerY = Math.round((GRID_SIZES[gridSize].height - 40) / 2 / 20) * 20;
-    
+
     setEntrance(prev => ({
       ...prev,
       x: centerX,
@@ -199,23 +200,26 @@ export default function ParkingConstructor() {
   const handleEntranceDragStop = (x: number, y: number) => {
     const maxX = GRID_SIZES[gridSize].width - 40;
     const maxY = GRID_SIZES[gridSize].height - 40;
-    
+
     const newX = Math.min(Math.max(0, Math.round(x / 20) * 20), maxX);
     const newY = Math.min(Math.max(0, Math.round(y / 20) * 20), maxY);
-    
+
     setEntrance(prev => prev ? { ...prev, x: newX, y: newY } : null);
   };
 
   const handleAddSpace = () => {
     if (spaces.length >= GRID_SIZES[gridSize].maxSpaces) {
-      alert(`Максимальное количество мест для данного размера поля: ${GRID_SIZES[gridSize].maxSpaces}`);
+      dispatch(showNotification({
+        message: `Максимальное количество мест для данного размера поля: ${GRID_SIZES[gridSize].maxSpaces}`,
+        severity: 'warning'
+      }));
       return;
     }
-    
+
     // Вычисляем центр поля
     const centerX = Math.round((GRID_SIZES[gridSize].width - 40) / 2 / 20) * 20;
     const centerY = Math.round((GRID_SIZES[gridSize].height - 80) / 2 / 20) * 20;
-    
+
     const newSpace: ConstructorParkingSpace = {
       id: Date.now(),
       number: `P-${spaces.length + 1}`,
@@ -231,18 +235,18 @@ export default function ParkingConstructor() {
   const handleRotate = (id: number) => {
     const space = spaces.find(s => s.id === id);
     if (!space) return;
-  
+
     const newRotation = space.rotation === 90 ? 0 : 90;
-    
+
     // Проверяем, не выходит ли место за границы после поворота
     const maxX = GRID_SIZES[gridSize].width - (newRotation === 90 ? 80 : 40);
     const maxY = GRID_SIZES[gridSize].height - (newRotation === 90 ? 40 : 80);
-    
+
     const newX = Math.min(space.x, maxX);
     const newY = Math.min(space.y, maxY);
-  
-    setSpaces(spaces.map(s => 
-      s.id === id 
+
+    setSpaces(spaces.map(s =>
+      s.id === id
         ? { ...s, rotation: newRotation, x: newX, y: newY }
         : s
     ));
@@ -259,66 +263,67 @@ export default function ParkingConstructor() {
   const handleDragStop = (id: number, x: number, y: number) => {
     const space = spaces.find(s => s.id === id);
     if (!space) return;
-  
+
     const maxX = GRID_SIZES[gridSize].width - (space.rotation === 90 ? 80 : 40);
     const maxY = GRID_SIZES[gridSize].height - (space.rotation === 90 ? 40 : 80);
-  
+
     const newX = Math.min(Math.max(0, Math.round(x / 20) * 20), maxX);
     const newY = Math.min(Math.max(0, Math.round(y / 20) * 20), maxY);
-  
-    setSpaces(spaces.map(s => 
-      s.id === id 
+
+    setSpaces(spaces.map(s =>
+      s.id === id
         ? { ...s, x: newX, y: newY }
         : s
     ));
-    
+
     setTimeout(() => {
       setIsDragging(false);
     }, 100);
   };
 
- const handleSpaceClick = (space: ConstructorParkingSpace) => {
-  // авим небольшую задержку перед открытием диалога
-  setTimeout(() => {
-    if (!isDragging) {
-      setCurrentSpace(space);
-      setIsDialogOpen(true);
-    }
-  }, 0);
-};
+  const handleSpaceClick = (space: ConstructorParkingSpace) => {
+    // авим небольшую задержку перед открытием диалога
+    setTimeout(() => {
+      if (!isDragging) {
+        setCurrentSpace(space);
+        setIsDialogOpen(true);
+      }
+    }, 0);
+  };
 
   const handleSaveSpace = (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentSpace) return;
-  
+
     const form = e.target as HTMLFormElement;
     const formData = new FormData(form);
-    
-    setSpaces(spaces.map(space => 
-      space.id === currentSpace.id 
-        ? { 
-            ...space, 
-            number: formData.get('number') as string,
-          }
+
+    setSpaces(spaces.map(space =>
+      space.id === currentSpace.id
+        ? {
+          ...space,
+          number: formData.get('number') as string,
+        }
         : space
     ));
-    
+
     setIsDialogOpen(false);
   };
 
   const handleGridSizeChange = (newSize: keyof typeof GRID_SIZES) => {
-    console.log('Changing grid size to:', newSize);
+
     setGridSize(newSize);
     if (spaces.length > GRID_SIZES[newSize].maxSpaces) {
-      alert(`Текущее количесто мест (${spaces.length}) превышает лимит для выбранного размера поля (${GRID_SIZES[newSize].maxSpaces}). Удалите лишние места.`);
+      dispatch(showNotification({
+        message: `Текущее количесто мест (${spaces.length}) превышает лимит для выбранного размера поля (${GRID_SIZES[newSize].maxSpaces}). Удалите лишние места.`,
+        severity: 'error'
+      }));
     }
-    console.log('New grid size:', GRID_SIZES[newSize]);
   };
 
   const handleSaveConfiguration = async () => {
     if (!parkingId || !entrance) return;
-    
-    console.log('Отправляем конфигурацию с gridSize:', gridSize);
+
     try {
       await dispatch(saveSpacesConfiguration({
         parkingId,
@@ -326,11 +331,17 @@ export default function ParkingConstructor() {
         entrance,
         gridSize
       })).unwrap();
-      
-      alert('Конфигурация парковки успешно сохранена');
+
+      dispatch(showNotification({
+        message: 'Конфигурация парковки успешно сохранена',
+        severity: 'success'
+      }));
     } catch (error) {
       console.error('Ошибка при сохранении конфигурации:', error);
-      alert('Ошибка при сохранении конфигурации парковки');
+      dispatch(showNotification({
+        message: 'Ошибка при сохранении конфигурации парковки',
+        severity: 'error'
+      }));
     }
   };
 
@@ -359,23 +370,21 @@ export default function ParkingConstructor() {
 
   const handleConfirmRow = () => {
     if (!temporaryRow) return;
-    
+
     const finalSpaces = temporaryRow.spaces.map((space, index) => {
-      const offset = space.rotation === 90 
-        ? { x: 0, y: index * 60 } 
+      const offset = space.rotation === 90
+        ? { x: 0, y: index * 60 }
         : { x: index * 60, y: 0 };
-      
-      console.log('Расстояние между местами:', space.rotation === 90 ? offset.y : offset.x);
-      
+
       const newSpace = {
         ...space,
         x: temporaryRow.position.x + offset.x,
         y: temporaryRow.position.y + offset.y
       };
-      
+
       return newSpace;
     });
-    
+
     setSpaces(prevSpaces => [...prevSpaces, ...finalSpaces]);
     setTemporaryRow(null);
   };
@@ -384,15 +393,12 @@ export default function ParkingConstructor() {
     setTemporaryRow(null);
   };
 
-  useEffect(() => {
-    console.log('temporaryRow зменился:', temporaryRow);
-  }, [temporaryRow]);
 
   const theme = useTheme();
 
   return (
-    <Box 
-      sx={{ 
+    <Box
+      sx={{
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -403,10 +409,10 @@ export default function ParkingConstructor() {
       }}
     >
       <Box sx={{ width: '100%', maxWidth: 1200, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <Stack 
-          direction="row" 
-          spacing={2} 
-          mb={4} 
+        <Stack
+          direction="row"
+          spacing={2}
+          mb={4}
           sx={{
             width: '100%',
             justifyContent: 'center',
@@ -414,16 +420,16 @@ export default function ParkingConstructor() {
             gap: 2
           }}
         >
-          <Button 
-            variant="contained" 
+          <Button
+            variant="contained"
             onClick={handleAddSpace}
             startIcon={<AddIcon />}
             sx={{ minWidth: '140px', height: '36px' }}
           >
             Добавить место
           </Button>
-          <Button 
-            variant="contained" 
+          <Button
+            variant="contained"
             onClick={() => setIsRowDialogOpen(true)}
             startIcon={<AddIcon />}
             sx={{ minWidth: '140px', height: '36px' }}
@@ -443,23 +449,23 @@ export default function ParkingConstructor() {
               <MenuItem value="large">Большое (до 50 мест)</MenuItem>
             </Select>
           </FormControl>
-          <Button 
-            variant="contained" 
+          <Button
+            variant="contained"
             onClick={handleSaveConfiguration}
             sx={{ minWidth: '140px', height: '36px' }}
           >
             Сохранить конфигурацию
           </Button>
         </Stack>
-        
-        <ConstructorGrid 
-  sx={{ 
-    width: GRID_SIZES[gridSize].width, 
-    height: GRID_SIZES[gridSize].height,
-    transition: 'width 0.3s ease, height 0.3s ease',
-    bgcolor: theme.palette.mode === 'dark' ? 'grey.400' : 'white'
-  }}
->
+
+        <ConstructorGrid
+          sx={{
+            width: GRID_SIZES[gridSize].width,
+            height: GRID_SIZES[gridSize].height,
+            transition: 'width 0.3s ease, height 0.3s ease',
+            bgcolor: theme.palette.mode === 'dark' ? 'grey.400' : 'white'
+          }}
+        >
           {entrance && (
             <Draggable
               grid={[20, 20]}
@@ -491,7 +497,7 @@ export default function ParkingConstructor() {
               </Box>
             </Draggable>
           )}
-          
+
           {temporaryRow && (
             <Draggable
               grid={[20, 20]}
@@ -500,12 +506,12 @@ export default function ParkingConstructor() {
                 left: 0,
                 top: 0,
                 right: GRID_SIZES[gridSize].width - (
-                  temporaryRow.spaces[0].rotation === 90 
-                    ? 80 
+                  temporaryRow.spaces[0].rotation === 90
+                    ? 80
                     : temporaryRow.spaces.length * 60
                 ),
                 bottom: GRID_SIZES[gridSize].height - (
-                  temporaryRow.spaces[0].rotation === 90 
+                  temporaryRow.spaces[0].rotation === 90
                     ? temporaryRow.spaces.length * 60
                     : 80
                 )
@@ -521,7 +527,7 @@ export default function ParkingConstructor() {
             >
               <Box sx={{ position: 'absolute', cursor: 'move' }}>
                 {temporaryRow.spaces.map((space, index) => {
-                  const offset = space.rotation === 90 
+                  const offset = space.rotation === 90
                     ? { x: 0, y: index * 60 }
                     : { x: index * 60, y: 0 };
 
@@ -546,7 +552,7 @@ export default function ParkingConstructor() {
               </Box>
             </Draggable>
           )}
-          
+
           {spaces.map((space) => (
             <Draggable
               key={space.id}
@@ -567,7 +573,7 @@ export default function ParkingConstructor() {
                   elevation={3}
                   onClick={() => handleSpaceClick(space)}
                 >
-                  <IconButton 
+                  <IconButton
                     size="small"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -578,8 +584,8 @@ export default function ParkingConstructor() {
                     <DeleteIcon />
                   </IconButton>
                   <Typography>{space.number}</Typography>
-                  <IconButton 
-                    size="small" 
+                  <IconButton
+                    size="small"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleRotate(space.id);
@@ -595,17 +601,17 @@ export default function ParkingConstructor() {
 
         {temporaryRow && (
           <TemporaryRowControls direction="row" spacing={1}>
-            <Button 
-              variant="contained" 
-              color="success" 
+            <Button
+              variant="contained"
+              color="success"
               onClick={handleConfirmRow}
               startIcon={<CheckIcon />}
             >
               Подтвердить
             </Button>
-            <Button 
-              variant="contained" 
-              color="error" 
+            <Button
+              variant="contained"
+              color="error"
               onClick={handleCancelRow}
               startIcon={<ClearIcon />}
             >
@@ -615,30 +621,30 @@ export default function ParkingConstructor() {
         )}
 
         <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
-  <form onSubmit={handleSaveSpace}>
-    <DialogTitle>Настройки парковочного места</DialogTitle>
-    <DialogContent>
-      <Stack spacing={2} sx={{ pt: 1 }}>
-        <TextField
-          name="number"
-          label="Номер места"
-          defaultValue={currentSpace?.number}
-          fullWidth
-        />
-      </Stack>
-    </DialogContent>
-    <DialogActions>
-      <Button onClick={() => setIsDialogOpen(false)}>Отмена</Button>
-      <Button type="submit" variant="contained">Сохранить</Button>
-    </DialogActions>
-  </form>
-</Dialog>
+          <form onSubmit={handleSaveSpace}>
+            <DialogTitle>Настройки парковочного места</DialogTitle>
+            <DialogContent>
+              <Stack spacing={2} sx={{ pt: 1 }}>
+                <TextField
+                  name="number"
+                  label="Номер места"
+                  defaultValue={currentSpace?.number}
+                  fullWidth
+                />
+              </Stack>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setIsDialogOpen(false)}>Отмена</Button>
+              <Button type="submit" variant="contained">Сохранить</Button>
+            </DialogActions>
+          </form>
+        </Dialog>
 
-<AddRowDialog
-  open={isRowDialogOpen}
-  onClose={() => setIsRowDialogOpen(false)}
-  onConfirm={handleAddRow}
-/>
+        <AddRowDialog
+          open={isRowDialogOpen}
+          onClose={() => setIsRowDialogOpen(false)}
+          onConfirm={handleAddRow}
+        />
       </Box>
     </Box>
   );

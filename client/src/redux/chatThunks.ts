@@ -9,10 +9,10 @@ export const getChats = createAsyncThunk<Chat[], void>(
       const response = await axios.get<Chat[]>('/messages/chats', {
         withCredentials: true
       });
-      console.log('Chats response:', response.data);
+
       return response.data;
     } catch (error: any) {
-      console.error('Error in getChats:', error);
+
       return rejectWithValue(error.response?.data || 'Ошибка при получении чатов');
     }
   }

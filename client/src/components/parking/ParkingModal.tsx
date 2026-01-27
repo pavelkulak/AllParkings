@@ -11,6 +11,7 @@ import { useAppDispatch, useAppSelector } from '../../redux/hooks';
 import { addToFavorites, removeFromFavorites, getFavorites } from '../../redux/favoritesThunks';
 import { Favorite, FavoriteBorder } from '@mui/icons-material';
 import { TimeSelector } from './TimeSelector';
+import { showNotification } from '../../redux/slices/uiSlice';
 
 interface ParkingModalProps {
   parking: Parking | null;
@@ -40,7 +41,6 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
 
   const isAuthenticated = !!user;
   const theme = useTheme();
-  console.log('Auth state:', { isAuthenticated });
 
   const isFavorite = favorites.some(fav => fav.id === parking?.id);
 
@@ -71,13 +71,13 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
     try {
       setLoading(true);
       setIsGridSizeLoaded(false);
-      
+
       const response = await fetch(`${import.meta.env.VITE_API_URL}/parking-lots/${parkingId}/spaces`);
       const data = await response.json();
-      
+
       setGridSize(data.gridSize || 'medium');
       setIsGridSizeLoaded(true);
-      
+
     } catch (error) {
       console.error('Ошибка при загрузке данных:', error);
     } finally {
@@ -103,21 +103,18 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
   const checkAvailableSpaces = async (parkingId: number, entry: Date, exit: Date) => {
     try {
       setLoading(true);
-      
+
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/parking-lots/${parkingId}/spaces?` + 
+        `${import.meta.env.VITE_API_URL}/parking-lots/${parkingId}/spaces?` +
         `entry_time=${entry.toISOString()}&exit_time=${exit.toISOString()}`
       );
-      
+
       const data = await response.json();
-      console.log('Полученные данные о местах:', {
-        totalSpaces: data.ParkingSpaces?.length,
-        freeSpaces: data.ParkingSpaces?.filter((s: ParkingSpace) => s.is_free).length
-      });
-      
+
+
       setSpaces(data.ParkingSpaces || []);
       setEntrance(data.ParkingEntrance || null);
-      
+
     } catch (error) {
       console.error('Ошибка при проверке доступности:', error);
     } finally {
@@ -129,40 +126,36 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
     if (!entryTime || !exitTime) {
       return;
     }
-    
-    console.log('Клик по месту:', {
-      spaceId: space.id,
-      isFree: space.is_free,
-      selectedTime: { entryTime, exitTime }
-    });
-    
+
+
+
     if (space.is_free) {
       setSelectedSpace(space);
     } else {
-      alert('Это место уже забронировано на выбранное время');
+      dispatch(showNotification({ message: 'Это место уже забронировано на выбранное время', severity: 'warning' }));
     }
   };
 
   const handleTimeSelect = async (entry: Date | null, exit: Date | null) => {
     if (!parking || !entry || !exit) return;
-    
+
     setEntryTime(entry);
     setExitTime(exit);
-    
+
     try {
       setLoading(true);
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/parking-lots/${parking.id}/available-spaces?` + 
+        `${import.meta.env.VITE_API_URL}/parking-lots/${parking.id}/available-spaces?` +
         `entry_time=${entry.toISOString()}&exit_time=${exit.toISOString()}`
       );
-      
+
       const data = await response.json();
       setSpaces(data.ParkingSpaces || []);
       setEntrance(data.ParkingEntrance || null);
       setShowSpaces(true);
-      
+
     } catch (error) {
-      console.error('Ошибка при проверке доступности:', error);
+      dispatch(showNotification({ message: 'Ошибка при проверке доступности мест', severity: 'error' }));
       setShowSpaces(false);
     } finally {
       setLoading(false);
@@ -176,13 +169,7 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
   }, [parking, open]);
 
 
-  useEffect(() => {
-    console.log('ParkingModal - текущий gridSize:', gridSize);
-    console.log('ParkingModal - применяемые размеры:', {
-      width: GRID_SIZES[gridSize].width,
-      height: GRID_SIZES[gridSize].height
-    });
-  }, [gridSize]);
+
 
 
   if (!parking) return null;
@@ -263,9 +250,9 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
             </Typography>
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Rating 
+              <Rating
                 value={Number(parking.average_rating) || 0}
-                readOnly 
+                readOnly
                 precision={0.5}
                 icon={<Star style={{ color: '#faaf00' }} />}
                 emptyIcon={<StarBorder style={{ color: '#faaf00', opacity: 0.55 }} />}
@@ -273,8 +260,8 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
               <Typography variant="body2" color="text.secondary">
                 {parking.average_rating ? `${parking.average_rating} из 5` : 'Нет оценок'}
               </Typography>
-              <Button 
-                variant="text" 
+              <Button
+                variant="text"
                 onClick={handleShowReviews}
                 sx={{ ml: 1 }}
               >
@@ -283,8 +270,8 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
             </Box>
 
             <Stack direction="row" spacing={2}>
-              <Button 
-                variant="contained" 
+              <Button
+                variant="contained"
                 fullWidth
                 onClick={() => {
                   if (!isAuthenticated) {
@@ -296,8 +283,8 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
               >
                 {isAuthenticated ? 'Забронировать' : 'Войдите, чтобы забронировать'}
               </Button>
-              <Button 
-                variant="outlined" 
+              <Button
+                variant="outlined"
                 fullWidth
                 onClick={onBuildRoute}
               >
@@ -317,7 +304,7 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
               Назад
             </Button>
             {!entryTime || !exitTime ? (
-              <Box sx={{ 
+              <Box sx={{
                 display: 'flex',
                 justifyContent: 'center',
                 gap: 2,
@@ -333,23 +320,23 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
                 <Typography variant="body2">
                   Время: {entryTime.toLocaleString()} - {exitTime.toLocaleString()}
                 </Typography>
-                
-                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb:0.5}}>
+
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 0.5 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Box sx={{ 
-                      width: 20, 
-                      height: 20, 
+                    <Box sx={{
+                      width: 20,
+                      height: 20,
                       bgcolor: 'rgba(3, 197, 3, 0.2)',
                       border: '2px solid #03c503',
                       borderRadius: 1
                     }} />
                     <Typography variant="body2">Свободн</Typography>
                   </Box>
-                  
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1,}}>
-                    <Box sx={{ 
-                      width: 20, 
-                      height: 20, 
+
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, }}>
+                    <Box sx={{
+                      width: 20,
+                      height: 20,
                       bgcolor: 'rgba(211, 47, 47, 0.2)',
                       border: '2px solid #d32f2f',
                       borderRadius: 1
@@ -363,15 +350,15 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
                     <CircularProgress />
                   </Box>
                 ) : (
-                  <Box sx={{ 
-                    maxWidth: '100%', 
+                  <Box sx={{
+                    maxWidth: '100%',
                     maxHeight: '70vh',
                     overflow: 'auto',
                     display: 'flex',
                     justifyContent: 'center',
                     px: 2,
                     pb: 2
-                    
+
                   }}>
                     <Box sx={{
                       width: '800px',
@@ -413,8 +400,8 @@ export const ParkingModal = ({ parking, open, onClose, onBuildRoute }: ParkingMo
                         )}
 
                         {spaces.map((space) => {
-                          const location = typeof space.location === 'string' 
-                            ? JSON.parse(space.location) 
+                          const location = typeof space.location === 'string'
+                            ? JSON.parse(space.location)
                             : space.location;
 
                           return (
@@ -488,6 +475,8 @@ const TimeSelectionSection = ({ onTimeSelect }: TimeSelectionSectionProps) => {
   const [exit, setExit] = useState<Date | null>(null);
   const [exitTime, setExitTime] = useState<string | null>(null);
 
+  const dispatch = useAppDispatch();
+
   const getDateWithTime = (date: Date, time: string) => {
     const [hours, minutes] = time.split(':');
     const newDate = new Date(date);
@@ -497,10 +486,10 @@ const TimeSelectionSection = ({ onTimeSelect }: TimeSelectionSectionProps) => {
 
   const isExitTimeValid = (exitDate: Date, exitTime: string) => {
     if (!entry || !entryTime) return true;
-    
+
     const entryDateTime = getDateWithTime(entry, entryTime);
     const exitDateTime = getDateWithTime(exitDate, exitTime);
-    
+
     return exitDateTime > entryDateTime;
   };
 
@@ -511,17 +500,17 @@ const TimeSelectionSection = ({ onTimeSelect }: TimeSelectionSectionProps) => {
 
   const handleExitTimeSelect = (time: string) => {
     if (!exit) return;
-    
+
     if (isExitTimeValid(exit, time)) {
       setExitTime(time);
     } else {
-      alert('Время выезда должно быть позже времени заезда');
+      dispatch(showNotification({ message: 'Время выезда должно быть позже времени заезда', severity: 'error' }));
     }
   };
 
   return (
-    <Box sx={{ 
-      display: 'flex', 
+    <Box sx={{
+      display: 'flex',
       gap: 2,
       justifyContent: 'center',
       flexWrap: 'wrap',

@@ -12,27 +12,23 @@ export default function ParkingConstructorPreview({ parkingId }: ParkingConstruc
   const [spaces, setSpaces] = useState<ParkingSpace[]>([]);
   const [entrance, setEntrance] = useState<ParkingEntrance | null>(null);
   const [loading, setLoading] = useState(true);
-  
-  const parking = useAppSelector(state => 
+
+  const parking = useAppSelector(state =>
     state.admin.pendingParkings.find(p => p.id === parkingId)
   );
 
   useEffect(() => {
     const fetchParkingSpaces = async () => {
       try {
-        console.log('Fetching spaces for parking:', parkingId);
         const response = await fetch(`${import.meta.env.VITE_API_URL}/parking-lots/${parkingId}/spaces`);
-        console.log('Response status:', response.status);
-        
+
         if (!response.ok) {
           const errorData = await response.json();
-          console.error('Server error:', errorData);
           throw new Error('Failed to fetch spaces');
         }
-        
+
         const data = await response.json();
-        console.log('Received data:', data);
-        
+
         setSpaces(data.ParkingSpaces || []);
         setEntrance(data.ParkingEntrance || null);
       } catch (error) {
@@ -102,7 +98,7 @@ export default function ParkingConstructorPreview({ parkingId }: ParkingConstruc
             color={getStatusInfo(parking.status).color}
             size="small"
           />
-        </Stack>        
+        </Stack>
       </Box>
 
       {parking.img && (

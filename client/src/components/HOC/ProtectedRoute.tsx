@@ -16,18 +16,12 @@ export default function ProtectedRoute({
   allowedRoles,
   user
 }: ProtectedRouteProps) {
-  console.log('Protected Route Debug:', {
-    isAllowed,
-    allowedRoles,
-    userRole: user?.role,
-    isAuthorized: isAllowed && (!allowedRoles || (user && allowedRoles.includes(user.role))),
-    user: user
-  });
+
 
   const isAuthorized = isAllowed && (!allowedRoles || (user && allowedRoles.includes(user.role)));
 
   if (!isAuthorized) {
-    console.log('Access denied, redirecting to:', redirectPath);
+
     return <Navigate to={redirectPath} replace />;
   }
 

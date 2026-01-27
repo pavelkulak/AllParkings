@@ -32,7 +32,6 @@ export const ReviewList = ({ parkingId }: ReviewListProps) => {
     try {
       setLoading(true);
       const response = await axiosInstance.get<Review[]>(`/reviews/parking/${parkingId}`);
-      console.log('Reviews response:', response.data);
       setReviews(response.data);
       setError(null);
     } catch (err) {
@@ -73,8 +72,8 @@ export const ReviewList = ({ parkingId }: ReviewListProps) => {
   return (
     <Stack spacing={2}>
       {user && !userHasReview && !showReviewForm && (
-        <Button 
-          variant="contained" 
+        <Button
+          variant="contained"
           onClick={() => setShowReviewForm(true)}
           sx={{ alignSelf: 'flex-start' }}
         >
@@ -83,8 +82,8 @@ export const ReviewList = ({ parkingId }: ReviewListProps) => {
       )}
 
       {showReviewForm && (
-        <ReviewForm 
-          parkingId={parkingId} 
+        <ReviewForm
+          parkingId={parkingId}
           onSuccess={handleReviewSubmit}
           onCancel={() => setShowReviewForm(false)}
         />
@@ -98,8 +97,8 @@ export const ReviewList = ({ parkingId }: ReviewListProps) => {
         reviews.map((review) => (
           <Box key={review.id}>
             <Box sx={{ display: 'flex', gap: 2, mb: 1 }}>
-              <Avatar 
-                src={review.User?.avatar 
+              <Avatar
+                src={review.User?.avatar
                   ? `${import.meta.env.VITE_TARGET}${review.User.avatar}`
                   : undefined
                 }
@@ -116,9 +115,9 @@ export const ReviewList = ({ parkingId }: ReviewListProps) => {
                 <Typography variant="subtitle1">
                   {review.User?.name || 'Пользователь'} {review.User?.surname || ''}
                 </Typography>
-                <Rating 
-                  value={Number(review.rating)} 
-                  readOnly 
+                <Rating
+                  value={Number(review.rating)}
+                  readOnly
                   size="small"
                   icon={<Star style={{ color: '#faaf00' }} fontSize="inherit" />}
                   emptyIcon={<StarBorder style={{ color: '#faaf00', opacity: 0.55 }} fontSize="inherit" />}

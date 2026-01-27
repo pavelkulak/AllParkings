@@ -12,7 +12,6 @@ export const refreshToken = createAsyncThunk<AuthResponse, void>(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.get<AuthResponse>('/tokens/refresh');
-      console.log('Refresh token response:', response.data);
       return response.data;
     } catch (error) {
       return rejectWithValue('Ошибка обновления токена');
