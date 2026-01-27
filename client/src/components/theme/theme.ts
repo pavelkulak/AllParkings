@@ -3,6 +3,75 @@ import { PaletteMode } from "@mui/material";
 export const getDesignTokens = (mode: PaletteMode) => ({
   typography: {
     fontFamily: ["Merriweather", "sans-serif"].join(","),
+    h1: {
+      fontSize: '2.5rem',
+      '@media (max-width:600px)': {
+        fontSize: '1.75rem',
+      },
+      fontWeight: 700,
+    },
+    h2: {
+      fontSize: '2rem',
+      '@media (max-width:600px)': {
+        fontSize: '1.5rem',
+      },
+      fontWeight: 600,
+    },
+    h3: {
+      fontSize: '1.75rem',
+      '@media (max-width:600px)': {
+        fontSize: '1.35rem',
+      },
+      fontWeight: 600,
+    },
+    h4: {
+      fontSize: '1.5rem',
+      '@media (max-width:600px)': {
+        fontSize: '1.25rem',
+      },
+      fontWeight: 500,
+    },
+    h5: {
+      fontSize: '1.25rem',
+      '@media (max-width:600px)': {
+        fontSize: '1.1rem',
+      },
+      fontWeight: 500,
+    },
+    h6: {
+      fontSize: '1rem',
+      '@media (max-width:600px)': {
+        fontSize: '0.95rem',
+      },
+      fontWeight: 500,
+    },
+    subtitle1: {
+      fontSize: '1rem',
+      '@media (max-width:600px)': {
+        fontSize: '0.9rem',
+      },
+    },
+    subtitle2: {
+      fontSize: '0.875rem',
+      '@media (max-width:600px)': {
+        fontSize: '0.8rem',
+      },
+    },
+    body1: {
+      fontSize: '1rem',
+      '@media (max-width:600px)': {
+        fontSize: '0.95rem',
+      },
+    },
+    body2: {
+      fontSize: '0.875rem',
+      '@media (max-width:600px)': {
+        fontSize: '0.8rem',
+      },
+    },
+    button: {
+      textTransform: 'none', // More modern
+    },
   },
   palette: {
     mode,

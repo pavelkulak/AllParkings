@@ -299,6 +299,17 @@ export default function ProfilePage() {
     navigate('/parkings/map', { state: { selectedParking: parking } });
   };
 
+  const handleRemoveFromFavorites = (favoriteId: number) => {
+    dispatch(removeFromFavorites(favoriteId))
+      .unwrap()
+      .then(() => {
+        dispatch(showNotification({ message: 'Парковка удалена из избранного', severity: 'success' }));
+      })
+      .catch((error) => {
+        dispatch(showNotification({ message: error.message || 'Ошибка при удалении из избранного', severity: 'error' }));
+      });
+  };
+
 
 
   const [gridSize, setGridSize] = useState('medium');

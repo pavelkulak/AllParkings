@@ -342,7 +342,7 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
                 component={Link}
                 to="/signin"
                 sx={{
-                  display: { xs: "flex", sm: "flex" },
+                  display: { xs: "none", sm: "flex" },
                   alignItems: "center",
                   padding: { xs: "8px 12px", md: "10px 20px" },
                   fontSize: { xs: '0.875rem', md: '1rem' },
@@ -362,7 +362,7 @@ export default function NavBar({ user, handleSignOut }: NavBarProps) {
                 component={Link}
                 to="/signup"
                 sx={{
-                  display: { xs: "flex", sm: "flex" },
+                  display: { xs: "none", sm: "flex" },
                   alignItems: "center",
                   padding: { xs: "8px 12px", md: "10px 20px" },
                   fontSize: { xs: '0.875rem', md: '1rem' },

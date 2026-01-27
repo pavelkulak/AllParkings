@@ -16,12 +16,13 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  useTheme
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RotateRightIcon from '@mui/icons-material/RotateRight';
 import styled from '@emotion/styled';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../../redux/hooks';
 import { saveSpacesConfiguration } from '../../redux/parkingThunks';
 import AddIcon from '@mui/icons-material/Add';
@@ -53,20 +54,20 @@ export const ConstructorGrid = styled(Box)`
   left: 0;
 `;
 
-const ParkingSpotWrapper = styled.div`
+const ParkingSpotWrapper = styled.div<{ isMobile?: boolean }>`
   position: absolute;
-  width: 40px;
-  height: 80px;
+  width: ${props => props.isMobile ? '30px' : '40px'};
+  height: ${props => props.isMobile ? '60px' : '80px'};
 `;
 
-const ParkingSpot = styled(Paper) <{ rotation: number }>`
+const ParkingSpot = styled(Paper) <{ rotation: number; isMobile?: boolean }>`
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  padding: 4px;
+  padding: ${props => props.isMobile ? '2px' : '4px'};
   background-color: rgba(25, 118, 210, 0.2);
   border: 2px solid #1976d2;
   cursor: move;
@@ -76,11 +77,14 @@ const ParkingSpot = styled(Paper) <{ rotation: number }>`
   transition: transform 0.3s ease;
 
   .MuiIconButton-root {
-    padding: 2px;
+    padding: ${props => props.isMobile ? '0px' : '2px'};
+    & .MuiSvgIcon-root {
+      font-size: ${props => props.isMobile ? '1rem' : '1.25rem'};
+    }
   }
   
   .MuiTypography-root {
-    font-size: 0.8rem;
+    font-size: ${props => props.isMobile ? '0.6rem' : '0.8rem'};
   }
 `;
 
@@ -145,15 +149,18 @@ const AddRowDialog = ({
 };
 
 const TemporaryRowControls = styled(Stack)`
-  margin-top: 16px;
+  margin-top: 8px;
   display: flex;
-  justify-content: flex-start;
-  margin-left: 20px;
+  justify-content: center;
+  width: 100%;
 `;
 
 export default function ParkingConstructor() {
   const dispatch = useAppDispatch();
   const { parkingId } = useParams();
+  const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [spaces, setSpaces] = useState<ConstructorParkingSpace[]>([]);
   const [entrance, setEntrance] = useState<Entrance | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -333,9 +340,14 @@ export default function ParkingConstructor() {
       })).unwrap();
 
       dispatch(showNotification({
-        message: 'Конфигурация парковки успешно сохранена',
+        message: 'Парковка создана - ожидайте модерации',
         severity: 'success'
       }));
+
+      // Небольшая задержка перед редиректом, чтобы пользователь успел увидеть уведомление
+      setTimeout(() => {
+        navigate('/myparking');
+      }, 1500);
     } catch (error) {
       console.error('Ошибка при сохранении конфигурации:', error);
       dispatch(showNotification({
@@ -356,9 +368,22 @@ export default function ParkingConstructor() {
       height: 100 as const
     }));
 
+    const gridWidth = GRID_SIZES[gridSize].width;
+    const gridHeight = GRID_SIZES[gridSize].height;
+
+    const rowWidth = data.orientation === 'horizontal'
+      ? (data.count - 1) * 60 + 40
+      : 80;
+    const rowHeight = data.orientation === 'horizontal'
+      ? 80
+      : (data.count - 1) * 60 + 40;
+
+    const centerX = Math.round((gridWidth - rowWidth) / 2 / 20) * 20;
+    const centerY = Math.round((gridHeight - rowHeight) / 2 / 20) * 20;
+
     const position = {
-      x: 20,
-      y: 20
+      x: Math.max(0, centerX),
+      y: Math.max(0, centerY)
     };
 
     setTemporaryRow({
@@ -394,7 +419,7 @@ export default function ParkingConstructor() {
   };
 
 
-  const theme = useTheme();
+
 
   return (
     <Box
@@ -404,20 +429,20 @@ export default function ParkingConstructor() {
         alignItems: 'center',
         justifyContent: 'flex-start',
         minHeight: 'calc(100vh - 64px)',
-        p: 3,
-        mt: 4
+        p: { xs: 1, sm: 3 },
+        mt: { xs: 1, sm: 4 }
       }}
     >
       <Box sx={{ width: '100%', maxWidth: 1200, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <Stack
           direction="row"
-          spacing={2}
-          mb={4}
+          spacing={1}
+          mb={2}
           sx={{
             width: '100%',
             justifyContent: 'center',
             flexWrap: 'wrap',
-            gap: 2
+            gap: 1
           }}
         >
           <Button
@@ -458,148 +483,180 @@ export default function ParkingConstructor() {
           </Button>
         </Stack>
 
-        <Box sx={{ width: '100%', overflowX: 'auto', display: 'flex', justifyContent: 'center', py: 2 }}>
-          <ConstructorGrid
-            sx={{
-              width: GRID_SIZES[gridSize].width,
-              height: GRID_SIZES[gridSize].height,
-              transition: 'width 0.3s ease, height 0.3s ease',
-              bgcolor: theme.palette.mode === 'dark' ? 'grey.400' : 'white',
-              flexShrink: 0
-            }}
-          >
-            {entrance && (
-              <Draggable
-                grid={[20, 20]}
-                position={{ x: entrance.x, y: entrance.y }}
-                onStop={(_e, data) => handleEntranceDragStop(data.x, data.y)}
-                bounds={{
-                  left: 0,
-                  top: 0,
-                  right: GRID_SIZES[gridSize].width - 40,
-                  bottom: GRID_SIZES[gridSize].height - 40
-                }}
-              >
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    width: '40px',
-                    height: '40px',
-                    bgcolor: 'warning.main',
-                    border: '1px solid',
-                    borderColor: 'grey.300',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'move',
-                    color: 'white'
+        <Box sx={{
+          width: '100%',
+          maxHeight: isMobile ? 'calc(100vh - 350px)' : 'auto',
+          overflow: 'auto',
+          display: 'flex',
+          justifyContent: isMobile ? 'flex-start' : 'center',
+          alignItems: 'flex-start',
+          py: 2,
+          px: isMobile ? 0 : 2,
+          border: isMobile ? '1px solid rgba(0,0,0,0.1)' : 'none',
+          borderRadius: 2,
+          bgcolor: theme.palette.mode === 'dark' ? 'grey.900' : 'grey.50',
+          '&::-webkit-scrollbar': { width: 8, height: 8 },
+          '&::-webkit-scrollbar-thumb': { bgcolor: 'rgba(0,0,0,0.2)', borderRadius: 4 }
+        }}>
+          <Box sx={{
+            width: isMobile ? GRID_SIZES[gridSize].width * 0.6 : GRID_SIZES[gridSize].width,
+            height: isMobile ? GRID_SIZES[gridSize].height * 0.6 : GRID_SIZES[gridSize].height,
+            flexShrink: 0,
+            position: 'relative'
+          }}>
+            <ConstructorGrid
+              sx={{
+                width: GRID_SIZES[gridSize].width,
+                height: GRID_SIZES[gridSize].height,
+                transition: 'all 0.3s ease',
+                bgcolor: theme.palette.mode === 'dark' ? 'grey.400' : 'white',
+                transform: isMobile ? 'scale(0.6)' : 'scale(1)',
+                transformOrigin: 'top left',
+                margin: 0,
+                position: 'absolute',
+                top: 0,
+                left: 0
+              }}
+            >
+              {entrance && (
+                <Draggable
+                  grid={[20, 20]}
+                  scale={isMobile ? 0.6 : 1}
+                  position={{ x: entrance.x, y: entrance.y }}
+                  onStop={(_e, data) => handleEntranceDragStop(data.x, data.y)}
+                  bounds={{
+                    left: 0,
+                    top: 0,
+                    right: GRID_SIZES[gridSize].width - (isMobile ? 30 : 40),
+                    bottom: GRID_SIZES[gridSize].height - (isMobile ? 30 : 40)
                   }}
                 >
-                  <Typography>Вход</Typography>
-                </Box>
-              </Draggable>
-            )}
-
-            {temporaryRow && (
-              <Draggable
-                grid={[20, 20]}
-                position={temporaryRow.position}
-                bounds={{
-                  left: 0,
-                  top: 0,
-                  right: GRID_SIZES[gridSize].width - (
-                    temporaryRow.spaces[0].rotation === 90
-                      ? 80
-                      : temporaryRow.spaces.length * 60
-                  ),
-                  bottom: GRID_SIZES[gridSize].height - (
-                    temporaryRow.spaces[0].rotation === 90
-                      ? temporaryRow.spaces.length * 60
-                      : 80
-                  )
-                }}
-                onStop={(_e, data) => {
-                  const newX = Math.round(data.x / 20) * 20;
-                  const newY = Math.round(data.y / 20) * 20;
-                  setTemporaryRow({
-                    ...temporaryRow,
-                    position: { x: newX, y: newY }
-                  });
-                }}
-              >
-                <Box sx={{ position: 'absolute', cursor: 'move' }}>
-                  {temporaryRow.spaces.map((space, index) => {
-                    const offset = space.rotation === 90
-                      ? { x: 0, y: index * 60 }
-                      : { x: index * 60, y: 0 };
-
-                    return (
-                      <Box
-                        key={space.id}
-                        sx={{
-                          position: 'absolute',
-                          width: 40,
-                          height: 80,
-                          transform: `rotate(${space.rotation}deg)`,
-                          bgcolor: 'rgba(25, 118, 210, 0.2)',
-                          border: '2px solid #1976d2',
-                          borderRadius: 1,
-                          transformOrigin: 'center',
-                          left: offset.x,
-                          top: offset.y
-                        }}
-                      />
-                    );
-                  })}
-                </Box>
-              </Draggable>
-            )}
-
-            {spaces.map((space) => (
-              <Draggable
-                key={space.id}
-                grid={[20, 20]}
-                position={{ x: space.x, y: space.y }}
-                onStart={handleDragStart}
-                onStop={(_e, data) => handleDragStop(space.id, data.x, data.y)}
-                bounds={{
-                  left: 0,
-                  top: 0,
-                  right: GRID_SIZES[gridSize].width - (space.rotation === 90 ? 80 : 40),
-                  bottom: GRID_SIZES[gridSize].height - (space.rotation === 90 ? 40 : 80)
-                }}
-              >
-                <ParkingSpotWrapper>
-                  <ParkingSpot
-                    rotation={space.rotation}
-                    elevation={3}
-                    onClick={() => handleSpaceClick(space)}
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      width: isMobile ? '30px' : '40px',
+                      height: isMobile ? '30px' : '40px',
+                      bgcolor: 'warning.main',
+                      border: '1px solid',
+                      borderColor: 'grey.300',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'move',
+                      color: 'white',
+                      borderRadius: 1,
+                      boxShadow: 2
+                    }}
                   >
-                    <IconButton
-                      size="small"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(space.id);
-                      }}
-                      sx={{ alignSelf: 'flex-end' }}
+                    <Typography sx={{ fontSize: isMobile ? '0.6rem' : '0.8rem' }}>Вход</Typography>
+                  </Box>
+                </Draggable>
+              )}
+
+              {temporaryRow && (
+                <Draggable
+                  grid={[20, 20]}
+                  scale={isMobile ? 0.6 : 1}
+                  position={temporaryRow.position}
+                  bounds={{
+                    left: 0,
+                    top: 0,
+                    right: GRID_SIZES[gridSize].width - (
+                      temporaryRow.spaces[0].rotation === 90
+                        ? (isMobile ? 60 : 80)
+                        : temporaryRow.spaces.length * (isMobile ? 30 : 60)
+                    ),
+                    bottom: GRID_SIZES[gridSize].height - (
+                      temporaryRow.spaces[0].rotation === 90
+                        ? temporaryRow.spaces.length * (isMobile ? 30 : 60)
+                        : (isMobile ? 60 : 80)
+                    )
+                  }}
+                  onStop={(_e, data) => {
+                    const newX = Math.round(data.x / 20) * 20;
+                    const newY = Math.round(data.y / 20) * 20;
+                    setTemporaryRow({
+                      ...temporaryRow,
+                      position: { x: newX, y: newY }
+                    });
+                  }}
+                >
+                  <Box sx={{ position: 'absolute', cursor: 'move' }}>
+                    {temporaryRow.spaces.map((space, index) => {
+                      const offset = space.rotation === 90
+                        ? { x: 0, y: index * (isMobile ? 30 : 60) }
+                        : { x: index * (isMobile ? 30 : 60), y: 0 };
+
+                      return (
+                        <Box
+                          key={space.id}
+                          sx={{
+                            position: 'absolute',
+                            width: isMobile ? 30 : 40,
+                            height: isMobile ? 60 : 80,
+                            transform: `rotate(${space.rotation}deg)`,
+                            bgcolor: 'rgba(25, 118, 210, 0.2)',
+                            border: '2px solid #1976d2',
+                            borderRadius: 1,
+                            transformOrigin: 'center',
+                            left: offset.x,
+                            top: offset.y
+                          }}
+                        />
+                      );
+                    })}
+                  </Box>
+                </Draggable>
+              )}
+
+              {spaces.map((space) => (
+                <Draggable
+                  key={space.id}
+                  grid={[20, 20]}
+                  scale={isMobile ? 0.6 : 1}
+                  position={{ x: space.x, y: space.y }}
+                  onStart={handleDragStart}
+                  onStop={(_e, data) => handleDragStop(space.id, data.x, data.y)}
+                  bounds={{
+                    left: 0,
+                    top: 0,
+                    right: GRID_SIZES[gridSize].width - (space.rotation === 90 ? (isMobile ? 60 : 80) : (isMobile ? 30 : 40)),
+                    bottom: GRID_SIZES[gridSize].height - (space.rotation === 90 ? (isMobile ? 30 : 40) : (isMobile ? 60 : 80))
+                  }}
+                >
+                  <ParkingSpotWrapper isMobile={isMobile}>
+                    <ParkingSpot
+                      rotation={space.rotation}
+                      isMobile={isMobile}
+                      elevation={3}
+                      onClick={() => handleSpaceClick(space)}
                     >
-                      <DeleteIcon />
-                    </IconButton>
-                    <Typography>{space.number}</Typography>
-                    <IconButton
-                      size="small"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleRotate(space.id);
-                      }}
-                    >
-                      <RotateRightIcon />
-                    </IconButton>
-                  </ParkingSpot>
-                </ParkingSpotWrapper>
-              </Draggable>
-            ))}
-          </ConstructorGrid>
+                      <IconButton
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(space.id);
+                        }}
+                        sx={{ alignSelf: 'flex-end' }}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                      <Typography>{space.number}</Typography>
+                      <IconButton
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRotate(space.id);
+                        }}
+                      >
+                        <RotateRightIcon />
+                      </IconButton>
+                    </ParkingSpot>
+                  </ParkingSpotWrapper>
+                </Draggable>
+              ))}
+            </ConstructorGrid>
+          </Box>
         </Box>
 
         {temporaryRow && (
